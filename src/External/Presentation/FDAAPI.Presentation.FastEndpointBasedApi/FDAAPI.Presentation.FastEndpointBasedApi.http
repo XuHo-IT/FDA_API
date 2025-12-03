@@ -1,0 +1,6 @@
+@FDAAPI.Presentation.FastEndpointBasedApi_HostAddress = http://localhost:5232
+
+GET {{FDAAPI.Presentation.FastEndpointBasedApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
