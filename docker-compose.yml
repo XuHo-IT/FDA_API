@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  # 1. DỊCH VỤ DATABASE (PostgreSQL)
+  db:
+    image: postgres:16-alpine 
+    container_name: postgres_db
+    restart: always            
+    environment:
+      # Cấu hình BẮT BUỘC cho PostgreSQL
+      POSTGRES_USER: postgres          # Người dùng
+      POSTGRES_PASSWORD: hoa09062004   # Mật khẩu (Nên đổi khi triển khai chính thức)
+      POSTGRES_DB: FDA                 # Tên Database
+    
+    # Thiết lập Volumes để lưu trữ dữ liệu VĨNH VIỄN
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      
+    # Cổng 5432 bị ẩn khỏi Internet (Best Practice)
+
+  # 2. DỊCH VỤ ỨNG DỤNG .NET CỦA BẠN
+  app:
+    build: 
+      context: . # Xây dựng từ Dockerfile trong thư mục hiện tại
+    container_name: dotnet_app
+    restart: always
+    ports:
+      - "80:8080" # Ánh xạ cổng 80 của VPS (HTTP) tới cổng 8080 của Kestrel (trong container)
+    environment:
+      # Connection string cho ứng dụng .NET (Host=db vì là tên service trong compose)
+      ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=FDA;Username=postgres;Password=hoa09062004;
+    depends_on:
+      - db # Đảm bảo container 'db' khởi động trước container 'app'
+
+# Định nghĩa Volume để lưu trữ dữ liệu vật lý
+volumes:
+  postgres_data:
