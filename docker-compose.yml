@@ -28,7 +28,7 @@ services:
       - "80:8080" # Ánh xạ cổng 80 của VPS (HTTP) tới cổng 8080 của Kestrel (trong container)
     environment:
       # Connection string cho ứng dụng .NET (Host=db vì là tên service trong compose)
-      ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=FDA;Username=postgres;Password=hoa09062004;
+      ConnectionStrings__PostgreSQLConnection: Host=db;Port=5432;Database=FDA;Username=postgres;Password=hoa09062004;
     depends_on:
       - db # Đảm bảo container 'db' khởi động trước container 'app'
 
