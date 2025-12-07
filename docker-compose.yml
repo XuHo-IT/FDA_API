@@ -7,10 +7,13 @@ services:
     container_name: postgres_db
     restart: always            
     environment:
+    
       # Cấu hình BẮT BUỘC cho PostgreSQL
       POSTGRES_USER: postgres          # Người dùng
       POSTGRES_PASSWORD: hoa09062004   # Mật khẩu (Nên đổi khi triển khai chính thức)
       POSTGRES_DB: FDA                 # Tên Database
+    ports:
+     - "5432:5432"
     
     # Thiết lập Volumes để lưu trữ dữ liệu VĨNH VIỄN
     volumes:
