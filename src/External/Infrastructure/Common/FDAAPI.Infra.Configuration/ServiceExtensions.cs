@@ -10,6 +10,7 @@ using FDAAPI.Domain.RelationalDb.RealationalDB;
 using FDAAPI.Domain.RelationalDb.Repositories;
 using System.Reflection;
 using Microsoft.Extensions.Hosting;
+using FDAAPI.App.FeatG5;
 
 namespace FDAAPI.Infra.Configuration
 {
@@ -70,6 +71,8 @@ namespace FDAAPI.Infra.Configuration
             services.AddTransient<IFeatureHandler<GetWaterLevelRequest, GetWaterLevelResponse>, GetWaterLevelHandler>();
 
             services.AddTransient<IFeatureHandler<DeleteWaterLevelRequest, DeleteWaterLevelResponse>, DeleteWaterLevelHandler>();
+            services.AddTransient<IFeatureHandler<GetStaticDataRequest, GetStaticDataResponse>, GetStaticDataHandler>();
+
 
             return services;
         }
