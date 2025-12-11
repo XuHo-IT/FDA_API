@@ -15,7 +15,9 @@ COPY ["src/Core/Application/FDAAPI.App.FeatG1/FDAAPI.App.FeatG1.csproj", "src/Co
 COPY ["src/Core/Application/FDAAPI.App.FeatG2/FDAAPI.App.FeatG2.csproj", "src/Core/Application/FDAAPI.App.FeatG2/"]
 COPY ["src/Core/Application/FDAAPI.App.FeatG3/FDAAPI.App.FeatG3.csproj", "src/Core/Application/FDAAPI.App.FeatG3/"]
 COPY ["src/Core/Application/FDAAPI.App.FeatG4/FDAAPI.App.FeatG4.csproj", "src/Core/Application/FDAAPI.App.FeatG4/"]
+COPY ["src/Core/Application/FDAAPI.App.FeatG5/FDAAPI.App.FeatG5.csproj", "src/Core/Application/FDAAPI.App.FeatG5/"]
 COPY ["src/Core/Domain/FDAAPI.Domain.RelationalDb/FDAAPI.Domain.RelationalDb.csproj", "src/Core/Domain/FDAAPI.Domain.RelationalDb/"]
+COPY ["src/External/Infrastructure/Persistence/FDAAPI.Infra.Persistence/FDAAPI.Infra.Persistence.csproj", "src/External/Infrastructure/Persistence/FDAAPI.Infra.Persistence/"]
 COPY ["src/External/BuildingBlock/FDAAPI.BuildingBlock.FeatRegister/FDAAPI.BuildingBlock.FeatRegister.csproj", "src/External/BuildingBlock/FDAAPI.BuildingBlock.FeatRegister/"]
 
 # 2. Restore các gói NuGet
