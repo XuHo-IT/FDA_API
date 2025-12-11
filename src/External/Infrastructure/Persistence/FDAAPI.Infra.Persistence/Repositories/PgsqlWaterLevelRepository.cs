@@ -1,12 +1,15 @@
+using FDAAPI.Domain.RelationalDb;
 using FDAAPI.Domain.RelationalDb.Entities;
 using FDAAPI.Domain.RelationalDb.RealationalDB;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using FDAAPI.Domain.RelationalDb.Repositories;
 using Microsoft.EntityFrameworkCore;
 
-namespace FDAAPI.Domain.RelationalDb.Repositories
+namespace FDAAPI.Infra.Persistence.Repositories
 {
+    /// <summary>
+    /// PostgreSQL implementation of IWaterLevelRepository
+    /// This is the concrete implementation that belongs in Infrastructure layer
+    /// </summary>
     public class PgsqlWaterLevelRepository : IWaterLevelRepository
     {
         private readonly AppDbContext _context;
@@ -54,3 +57,4 @@ namespace FDAAPI.Domain.RelationalDb.Repositories
         }
     }
 }
+

@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using FDAAPI.Domain.RelationalDb.RealationalDB;
 using FDAAPI.Domain.RelationalDb.Repositories;
+using FDAAPI.Infra.Persistence.Repositories;
 using System.Reflection;
 using Microsoft.Extensions.Hosting;
 using FDAAPI.App.FeatG5;

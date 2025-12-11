@@ -14,6 +14,7 @@
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG4\FDAAPI.App.FeatG4.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG5\FDAAPI.App.FeatG5.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Domain\FDAAPI.Domain.RelationalDb\FDAAPI.Domain.RelationalDb.csproj" />
+    <ProjectReference Include="..\..\Persistence\FDAAPI.Infra.Persistence\FDAAPI.Infra.Persistence.csproj" />
   </ItemGroup>
 
   <ItemGroup>
