@@ -10,11 +10,17 @@ jobs:
         if: ${{ github.event.pull_request.merged == true }}
         name: Publish new change to dev server
         runs-on: ubuntu-22.04
+        # Đảm bảo Docker-Push job từ CI workflow đã hoàn thành trước khi chạy CD
+        needs: [Docker-Push] 
 
         steps:
-            - name: Execute cd script
+            - name: Checkout Code (Optional but recommended for context)
+              uses: actions/checkout@v4
+
+            - name: Execute deployment script on VPS
               uses: appleboy/ssh-action@v1.2.0
               with:
+                  # LƯU Ý: Đổi tên Secrets cho phù hợp (SSH_HOST -> VPS_HOST, vv.)
                   host: ${{ secrets.SSH_HOST }}
                   username: ${{ secrets.SSH_USERNAME }}
                   key: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -22,5 +28,17 @@ jobs:
                   port: ${{ secrets.SSH_PORT }}
                   script_stop: true
                   script: |
-                      sudo su -c /root/penomy/dev/Main/Server/dev-cd-script.sh
+                   # 1. SET BIẾN MÔI TRƯỜNG TRÊN VPS (CHỈ TRONG PHIÊN SSH NÀY)
+                   export DOCKER_USERNAME="${{ secrets.DOCKER_USERNAME }}"
 
+                   # 2. Đăng nhập Docker Hub trên VPS (không thể dùng secrets trong command)
+                   docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
+
+                   # 3. Di chuyển đến thư mục chứa docker-compose.yml
+                   cd /home/dev/FDA_API 
+
+                   # 4. docker compose sẽ đọc ${DOCKER_USERNAME} từ biến môi trường vừa export
+                   docker compose pull
+
+                   # 5. Khởi động lại dịch vụ 
+                   docker compose up -d --force-recreate
