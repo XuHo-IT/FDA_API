@@ -1,34 +1,36 @@
 name: dev-cd
 
 on:
-    workflow_run:
-        workflows: ["dev-ci"] # Tên chính xác của workflow CI
-        types: [completed]
-        branches: [dev] # Chỉ chạy khi CI hoàn thành trên nhánh dev
+  workflow_run:
+    workflows: ["dev-ci"]
+    types:
+      - completed
+    branches:
+      - dev
 
 jobs:
-    Publish-source:
-        if: ${{ github.event.pull_request.merged == true }}
-        name: Publish new change to dev server
-        runs-on: ubuntu-22.04
-        needs: [Docker-Push] 
-        
-        steps:
-            - name: Checkout Code (Optional but recommended for context)
-              uses: actions/checkout@v4
+  publish-source:
+    name: Publish new change to dev server
+    runs-on: ubuntu-22.04
 
-            - name: Execute deployment script on VPS
-              uses: appleboy/ssh-action@v1.2.0
-              with:
-                  # LƯU Ý: Đổi tên Secrets cho phù hợp (SSH_HOST -> VPS_HOST, vv.)
-                  host: ${{ secrets.SSH_HOST }}
-                  username: ${{ secrets.SSH_USERNAME }}
-                  key: ${{ secrets.SSH_PRIVATE_KEY }}
-                  passphrase: ${{ secrets.SSH_PASSPHRASE }}
-                  port: ${{ secrets.SSH_PORT }}
-                  script_stop: true
-                  script: |
-                    docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
-                    cd /home/dev/FDA_API
-                    docker compose pull
-                    docker compose up -d --force-recreate
+    # Chỉ chạy khi CI thành công
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          port: ${{ secrets.SSH_PORT }}
+          script_stop: true
+          script: |
+            docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
+            cd /home/dev/FDA_API
+            docker compose pull
+            docker compose up -d --force-recreate
