@@ -11,8 +11,6 @@ jobs:
         if: ${{ github.event.pull_request.merged == true }}
         name: Publish new change to dev server
         runs-on: ubuntu-22.04
-        # Đảm bảo Docker-Push job từ CI workflow đã hoàn thành trước khi chạy CD
-        needs: [Docker-Push] 
 
         steps:
             - name: Checkout Code (Optional but recommended for context)
