@@ -2,23 +2,19 @@ name: dev-ci
 
 on:
     push:
-        branches: ["main"]
+        branches: ["dev"]
 
     pull_request:
         branches: ["dev"]
 
 jobs:
+    # 1. ANALYZE JOB (Giữ nguyên cho CodeQL)
     Analyze-source:
         name: Analyze (${{ matrix.language }}) on dev branch
         runs-on: ubuntu-22.04
         permissions:
-            # required for all workflows
             security-events: write
-
-            # required to fetch internal or private CodeQL packs
             packages: read
-
-            # only required for workflows in private repositories
             actions: read
             contents: read
 
@@ -26,29 +22,24 @@ jobs:
             fail-fast: false
             matrix:
                 include:
-                    # Analyzes C# code by automatically detecting a build
                     - language: csharp
                       build-mode: autobuild
-                    # CodeQL supports the following values keywords for 'language': 'c-cpp', 'csharp', 'go', 'java-kotlin', 'javascript-typescript', 'python', 'ruby', 'swift'
-
         steps:
-            # Checkout the repository
             - name: Checkout repository
               uses: actions/checkout@v4
 
-            # Initializes the CodeQL tools for scanning.
             - name: Initialize CodeQL
               uses: github/codeql-action/init@v3
               with:
                   languages: ${{ matrix.language }}
                   build-mode: ${{ matrix.build-mode }}
 
-            # Analyzes the code using the CodeQL action
             - name: Perform CodeQL Analysis
               uses: github/codeql-action/analyze@v3
               with:
                   category: "/language:${{matrix.language}}"
 
+    # 2. BUILD JOB (Giữ nguyên cho kiểm tra C# build)
     Build-source:
         name: Build the project
         runs-on: ubuntu-22.04
@@ -58,25 +49,54 @@ jobs:
             DOTNET_CLI_TELEMETRY_OPTOUT: 1
 
         steps:
-            # Load source code from the branch that has the new PR
-            # In this case, it is the source code of dev branch
             - name: Checkout to the source code
               uses: actions/checkout@v4
 
-            # Install dotnet sdk
-            # If dotnet sdk is not found in cache
-            #
-            # This step would be skipped if cache is hit
             - name: Setup dotnet installation
               uses: actions/setup-dotnet@v4
               with:
-                  global-json-file: global.json
+                 dotnet-version: '9.0.x'
+                 include-prerelease: true
 
-            # Restore dependencies of the project
             - name: Restore dependencies
               run: dotnet restore
 
-            # Build the project
             - name: Build app
               run: dotnet build --no-restore -c Release
 
+    # 3. DOCKER PUSH JOB (MỚI: Build Docker Image và Push lên Docker Hub)
+    Docker-Push:
+        name: Build and Push Docker Image to Registry
+        runs-on: ubuntu-22.04
+        needs: [Build-source] # Chạy sau khi build C# thành công
+
+        env:
+            # SỬ DỤNG TÊN IMAGE CỦA BẠN (Cần thêm Tên đăng nhập Docker Hub/Tên image)
+            # VD: myusername/fda_api-fdaapi. Thay 'fda_api-fdaapi' bằng tên đầy đủ có username/namespace
+            DOCKER_IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/fda_api-fdaapi 
+            IMAGE_TAG: ${{ github.sha }} 
+            
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v4
+
+            - name: Set up QEMU
+              uses: docker/setup-qemu-action@v3
+            
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Login to Docker Hub
+              uses: docker/login-action@v3
+              with:
+                username: ${{ secrets.DOCKER_USERNAME }}
+                password: ${{ secrets.DOCKER_PASSWORD }} 
+
+            - name: Build and Push Image
+              uses: docker/build-push-action@v5
+              with:
+                context: . 
+                push: true
+                tags: |
+                  ${{ env.DOCKER_IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+                  ${{ env.DOCKER_IMAGE_NAME }}:latest
