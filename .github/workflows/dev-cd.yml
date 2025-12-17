@@ -1,9 +1,10 @@
 name: dev-cd
 
 on:
-    pull_request:
-        branches: ["dev"]
-        types: [closed]
+    workflow_run:
+        workflows: ["dev-ci"] # Tên chính xác của workflow CI
+        types: [completed]
+        branches: [dev] # Chỉ chạy khi CI hoàn thành trên nhánh dev
 
 jobs:
     Publish-source:
