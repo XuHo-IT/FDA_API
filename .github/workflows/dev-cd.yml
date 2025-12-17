@@ -11,7 +11,8 @@ jobs:
         if: ${{ github.event.pull_request.merged == true }}
         name: Publish new change to dev server
         runs-on: ubuntu-22.04
-
+        needs: [Docker-Push] 
+        
         steps:
             - name: Checkout Code (Optional but recommended for context)
               uses: actions/checkout@v4
@@ -27,17 +28,7 @@ jobs:
                   port: ${{ secrets.SSH_PORT }}
                   script_stop: true
                   script: |
-                   # 1. SET BIẾN MÔI TRƯỜNG TRÊN VPS (CHỈ TRONG PHIÊN SSH NÀY)
-                   export DOCKER_USERNAME="${{ secrets.DOCKER_USERNAME }}"
-
-                   # 2. Đăng nhập Docker Hub trên VPS (không thể dùng secrets trong command)
-                   docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
-
-                   # 3. Di chuyển đến thư mục chứa docker-compose.yml
-                   cd /home/dev/FDA_API 
-
-                   # 4. docker compose sẽ đọc ${DOCKER_USERNAME} từ biến môi trường vừa export
-                   docker compose pull
-
-                   # 5. Khởi động lại dịch vụ 
-                   docker compose up -d --force-recreate
+                    docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
+                    cd /home/dev/FDA_API
+                    docker compose pull
+                    docker compose up -d --force-recreate
