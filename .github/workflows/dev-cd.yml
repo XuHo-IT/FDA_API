@@ -1,17 +1,19 @@
 name: dev-cd
 
 on:
- pull_request:
-        branches: ["dev"]
-        types: [closed]
+  pull_request:
+    branches:
+      - dev
+    types:
+      - closed
 
 jobs:
   publish-source:
     name: Publish new change to dev server
     runs-on: ubuntu-22.04
 
-    # Chỉ chạy khi CI thành công
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    # CHỈ chạy khi PR được merge
+    if: ${{ github.event.pull_request.merged == true }}
 
     steps:
       - name: Checkout Code
