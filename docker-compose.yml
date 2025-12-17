@@ -2,19 +2,31 @@ version: "3.9"
 
 services:
   fdaapi:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    # 1. THAY THẾ 'build' bằng 'image' và sử dụng tên image đã push lên Docker Hub
+    image: ${DOCKER_USERNAME}/fda_api-fdaapi:latest 
+    
     container_name: fdaapi_prod 
+    
+    # Port 7097 là cổng công khai (exposed public port)
     ports:
       - "7097:8080" 
+      
+    # Đảm bảo file .env trên VPS chứa ConnectionStrings__MyDB
     env_file:
       - .env
+      
     environment:
       ASPNETCORE_URLS: http://0.0.0.0:8080
       ASPNETCORE_ENVIRONMENT: Production
-      # *** Reverse Proxy Configuration ***
-      # Running behind HTTPS/HTTP proxy.
       ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
-      ConnectionStrings__MyDB: ${ConnectionStrings__MyDB}
+      # LƯU Ý: Không cần ${ConnectionStrings__MyDB} nếu đã có env_file
+      # ConnectionStrings__MyDB: ${ConnectionStrings__MyDB}
+      
+    # Thêm dịch vụ database nếu bạn đang chạy Postgres trên VPS bằng Docker
+    # depends_on:
+    #   - postgres
+    
     restart: unless-stopped
+    
+# Thêm dịch vụ postgres và volumes nếu cần
+# ...
