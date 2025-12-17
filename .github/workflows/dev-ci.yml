@@ -99,4 +99,4 @@ jobs:
                 push: true
                 tags: |
                   ${{ env.DOCKER_IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-                  ${{ env.DOCKER_IMAGE_NAME }}:latest # Gắn tag latest cho dễ triển khai
+                  ${{ env.DOCKER_IMAGE_NAME }}:latest
