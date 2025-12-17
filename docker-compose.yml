@@ -1,40 +1,20 @@
-version: '3.8'
+version: "3.9"
 
 services:
-  # 1. DỊCH VỤ DATABASE (PostgreSQL)
-  db:
-    image: postgres:16-alpine 
-    container_name: postgres_db
-    restart: always            
-    environment:
-    
-      # Cấu hình BẮT BUỘC cho PostgreSQL
-      POSTGRES_USER: postgres          # Người dùng
-      POSTGRES_PASSWORD: hoa09062004   # Mật khẩu (Nên đổi khi triển khai chính thức)
-      POSTGRES_DB: FDA                 # Tên Database
+  fdaapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fdaapi_prod 
     ports:
-     - "5432:5432"
-    
-    # Thiết lập Volumes để lưu trữ dữ liệu VĨNH VIỄN
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      
-    # Cổng 5432 bị ẩn khỏi Internet (Best Practice)
-
-  # 2. DỊCH VỤ ỨNG DỤNG .NET CỦA BẠN
-  app:
-    build: 
-      context: . # Xây dựng từ Dockerfile trong thư mục hiện tại
-    container_name: dotnet_app
-    restart: always
-    ports:
-      - "80:8080" # Ánh xạ cổng 80 của VPS (HTTP) tới cổng 8080 của Kestrel (trong container)
+      - "7097:8080" 
+    env_file:
+      - .env
     environment:
-      # Connection string cho ứng dụng .NET (Host=db vì là tên service trong compose)
-      ConnectionStrings__PostgreSQLConnection: Host=db;Port=5432;Database=FDA;Username=postgres;Password=hoa09062004;
-    depends_on:
-      - db # Đảm bảo container 'db' khởi động trước container 'app'
-
-# Định nghĩa Volume để lưu trữ dữ liệu vật lý
-volumes:
-  postgres_data:
+      ASPNETCORE_URLS: http://0.0.0.0:8080
+      ASPNETCORE_ENVIRONMENT: Production
+      # *** Reverse Proxy Configuration ***
+      # Running behind HTTPS/HTTP proxy.
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      ConnectionStrings__MyDB: ${ConnectionStrings__MyDB}
+    restart: unless-stopped

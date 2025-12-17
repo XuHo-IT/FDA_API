@@ -1,0 +1,19 @@
+version: "3.9"
+services:
+  fdaapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fdaapi_dev 
+    ports:
+      - "5232:8080"
+    env_file:
+      - .env
+  postgres:
+    env_file:
+      - .env
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__MyDB: ${ConnectionStrings__MyDB}
+    restart: always
