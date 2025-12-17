@@ -1,7 +1,7 @@
 # =================================================================
 # STAGE 1: BUILD - Sử dụng SDK để restore và publish
 # =================================================================
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0-preview AS build
 WORKDIR /src
 
 # 1. Sao chép SLN file và tất cả các file .csproj (Tận dụng Build Cache)
@@ -27,6 +27,17 @@ RUN dotnet restore "src/External/Presentation/FDAAPI.Presentation.FastEndpointBa
 COPY . .
 WORKDIR "/src/src/External/Presentation/FDAAPI.Presentation.FastEndpointBasedApi"
 
+# --- START NEW STEPS FOR MIGRATION IN BUILD STAGE ---
+# Install the EF Core CLI tool globally in the build image
+RUN dotnet tool install --global dotnet-ef --version 9.0.*
+# Set the environment path so the 'dotnet ef' command is available
+ENV PATH="${PATH}:/root/.dotnet/tools"
+
+# Copy the entrypoint script into a known location for the final stage
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+# --- END NEW STEPS ---
+
 # Lệnh Publish cuối cùng (để tạo ra các file cần thiết cho runtime)
 FROM build AS publish
 # /p:UseAppHost=false là quan trọng để file chạy được trong container Linux
@@ -35,7 +46,7 @@ RUN dotnet publish "FDAAPI.Presentation.FastEndpointBasedApi.csproj" -c Release 
 # =================================================================
 # STAGE 2: FINAL - Sử dụng Runtime image nhẹ hơn
 # =================================================================
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-preview AS final
 WORKDIR /app
 # Ứng dụng Kestrel mặc định chạy trên cổng 8080 (hoặc 8081 cho HTTPS)
 EXPOSE 8080
@@ -44,5 +55,12 @@ EXPOSE 8081
 # Sao chép các file đã publish vào thư mục làm việc cuối cùng
 COPY --from=publish /app/publish .
 
-# Định nghĩa điểm vào (ENTRYPOINT) - Quan trọng: Tên file DLL phải chính xác
-ENTRYPOINT ["dotnet", "FDAAPI.Presentation.FastEndpointBasedApi.dll"]
+# --- NEW ENTRYPOINT DEFINITION ---
+# Copy the executable script from the build stage into the final image
+COPY --from=build /usr/local/bin/entrypoint.sh /usr/local/bin/entrypoint.sh
+
+# REPLACE THE OLD ENTRYPOINT
+# OLD: ENTRYPOINT ["dotnet", "FDAAPI.Presentation.FastEndpointBasedApi.dll"] 
+# NEW: Định nghĩa điểm vào là script, script này sẽ chạy migrations và sau đó chạy app
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+# --- END NEW ENTRYPOINT DEFINITION ---
