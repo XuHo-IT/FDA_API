@@ -1,6 +1,9 @@
 name: dev-cd
 
 on:
+  push:
+    branches:
+      - dev
   pull_request:
     branches:
       - dev
@@ -9,17 +12,19 @@ on:
 
 jobs:
   publish-source:
-    name: Publish new change to dev server
+    name: 🚀 Publish new change to dev server
     runs-on: ubuntu-22.04
 
-    # CHỈ chạy khi PR được merge
-    if: ${{ github.event.pull_request.merged == true }}
+    # Chạy khi: push trực tiếp HOẶC merge PR (không chạy nếu close PR mà không merge)
+    if: |
+      github.event_name == 'push' ||
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
 
     steps:
-      - name: Checkout Code
+      - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
-      - name: Deploy to VPS
+      - name: 🔐 Deploy to VPS
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -31,5 +36,5 @@ jobs:
           script: |
             docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
             cd /home/dev/FDA_API
-            docker compose pull
-            docker compose up -d --force-recreate
+            docker compose -f docker-compose.local.yml pull
+            docker compose -f docker-compose.local.yml up -d --force-recreate

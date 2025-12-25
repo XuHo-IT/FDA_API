@@ -10,7 +10,7 @@ on:
 jobs:
     # 1. ANALYZE JOB (Giữ nguyên cho CodeQL)
     Analyze-source:
-        name: Analyze (${{ matrix.language }}) on dev branch
+        name: 🔍 Analyze (${{ matrix.language }}) on dev branch
         runs-on: ubuntu-22.04
         permissions:
             security-events: write
@@ -25,23 +25,23 @@ jobs:
                     - language: csharp
                       build-mode: autobuild
         steps:
-            - name: Checkout repository
+            - name: 📥 Checkout repository
               uses: actions/checkout@v4
 
-            - name: Initialize CodeQL
+            - name: 🔧 Initialize CodeQL
               uses: github/codeql-action/init@v3
               with:
                   languages: ${{ matrix.language }}
                   build-mode: ${{ matrix.build-mode }}
 
-            - name: Perform CodeQL Analysis
+            - name: 🛡️ Perform CodeQL Analysis
               uses: github/codeql-action/analyze@v3
               with:
                   category: "/language:${{matrix.language}}"
 
     # 2. BUILD JOB (Giữ nguyên cho kiểm tra C# build)
     Build-source:
-        name: Build the project
+        name: 🔨 Build the project
         runs-on: ubuntu-22.04
         needs: Analyze-source
 
@@ -49,53 +49,53 @@ jobs:
             DOTNET_CLI_TELEMETRY_OPTOUT: 1
 
         steps:
-            - name: Checkout to the source code
+            - name: 📥 Checkout to the source code
               uses: actions/checkout@v4
 
-            - name: Setup dotnet installation
+            - name: ⚙️ Setup dotnet installation
               uses: actions/setup-dotnet@v4
               with:
                  dotnet-version: '9.0.x'
                  include-prerelease: true
 
-            - name: Restore dependencies
+            - name: 📦 Restore dependencies
               run: dotnet restore
 
-            - name: Build app
+            - name: 🏗️ Build app
               run: dotnet build --no-restore -c Release
 
     # 3. DOCKER PUSH JOB (MỚI: Build Docker Image và Push lên Docker Hub)
     Docker-Push:
-        name: Build and Push Docker Image to Registry
+        name: 🐳 Build and Push Docker Image to Registry
         runs-on: ubuntu-22.04
         needs: [Build-source] # Chạy sau khi build C# thành công
 
         env:
             # SỬ DỤNG TÊN IMAGE CỦA BẠN (Cần thêm Tên đăng nhập Docker Hub/Tên image)
             # VD: myusername/fda_api-fdaapi. Thay 'fda_api-fdaapi' bằng tên đầy đủ có username/namespace
-            DOCKER_IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/fda_api-fdaapi 
-            IMAGE_TAG: ${{ github.sha }} 
-            
+            DOCKER_IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/fda_api-fdaapi
+            IMAGE_TAG: ${{ github.sha }}
+
         steps:
-            - name: Checkout Code
+            - name: 📥 Checkout Code
               uses: actions/checkout@v4
 
-            - name: Set up QEMU
+            - name: 🖥️ Set up QEMU
               uses: docker/setup-qemu-action@v3
-            
-            - name: Set up Docker Buildx
+
+            - name: 🔧 Set up Docker Buildx
               uses: docker/setup-buildx-action@v3
 
-            - name: Login to Docker Hub
+            - name: 🔐 Login to Docker Hub
               uses: docker/login-action@v3
               with:
                 username: ${{ secrets.DOCKER_USERNAME }}
-                password: ${{ secrets.DOCKER_PASSWORD }} 
+                password: ${{ secrets.DOCKER_PASSWORD }}
 
-            - name: Build and Push Image
+            - name: 🚀 Build and Push Image
               uses: docker/build-push-action@v5
               with:
-                context: . 
+                context: .
                 push: true
                 tags: |
                   ${{ env.DOCKER_IMAGE_NAME }}:${{ env.IMAGE_TAG }}

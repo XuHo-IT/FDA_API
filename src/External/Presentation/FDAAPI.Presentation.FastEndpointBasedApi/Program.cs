@@ -5,12 +5,14 @@ using FDAAPI.Infra.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 ConfigurationManager configuration = builder.Configuration;
 
-//var envPath = Path.Combine("..", ".env");
-//DotNetEnv.Env.Load(envPath);
+
+// var envPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "..", "..", ".env"));
+// DotNetEnv.Env.Load(envPath);
 
 configuration.AddEnvironmentVariables();
 
