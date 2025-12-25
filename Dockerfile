@@ -1,7 +1,7 @@
 # =================================================================
 # STAGE 1: BUILD - Sử dụng SDK để restore và publish
 # =================================================================
-FROM mcr.microsoft.com/dotnet/sdk:9.0-preview AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 # 1. Sao chép SLN file và tất cả các file .csproj (Tận dụng Build Cache)
@@ -29,7 +29,7 @@ WORKDIR "/src/src/External/Presentation/FDAAPI.Presentation.FastEndpointBasedApi
 
 # --- START NEW STEPS FOR MIGRATION IN BUILD STAGE ---
 # Install the EF Core CLI tool globally in the build image
-RUN dotnet tool install --global dotnet-ef --version 9.0.*
+RUN dotnet tool install --global dotnet-ef --version 8.0.*
 # Set the environment path so the 'dotnet ef' command is available
 ENV PATH="${PATH}:/root/.dotnet/tools"
 
@@ -46,7 +46,7 @@ RUN dotnet publish "FDAAPI.Presentation.FastEndpointBasedApi.csproj" -c Release 
 # =================================================================
 # STAGE 2: FINAL - Sử dụng Runtime image nhẹ hơn
 # =================================================================
-FROM mcr.microsoft.com/dotnet/aspnet:9.0-preview AS final
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 # Ứng dụng Kestrel mặc định chạy trên cổng 8080 (hoặc 8081 cho HTTPS)
 EXPOSE 8080
@@ -62,5 +62,15 @@ COPY --from=build /usr/local/bin/entrypoint.sh /usr/local/bin/entrypoint.sh
 # REPLACE THE OLD ENTRYPOINT
 # OLD: ENTRYPOINT ["dotnet", "FDAAPI.Presentation.FastEndpointBasedApi.dll"] 
 # NEW: Định nghĩa điểm vào là script, script này sẽ chạy migrations và sau đó chạy app
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+# Copy entrypoint từ build stage hoặc từ folder gốc
+# ... (Phần trước giữ nguyên)
+
+# Copy entrypoint
+COPY entrypoint.sh /app/entrypoint.sh
+
+# Lệnh này sẽ ép file về định dạng Linux (LF) ngay khi build
+RUN sed -i 's/\r$//' /app/entrypoint.sh && chmod +x /app/entrypoint.sh
+
+# Sử dụng ENTRYPOINT dạng mảng để tránh lỗi shell
+ENTRYPOINT ["/bin/bash", "/app/entrypoint.sh"]
 # --- END NEW ENTRYPOINT DEFINITION ---
