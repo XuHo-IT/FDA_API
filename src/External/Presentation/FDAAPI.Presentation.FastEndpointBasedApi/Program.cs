@@ -7,11 +7,17 @@ using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+ConfigurationManager configuration = builder.Configuration;
+
+//var envPath = Path.Combine("..", ".env");
+//DotNetEnv.Env.Load(envPath);
+
+configuration.AddEnvironmentVariables();
 
 builder.Services
     .AddApplicationServices()
     .AddInfrastructureServices()
-    .AddPersistenceServices(builder.Configuration);
+    .AddPersistenceServices(configuration);
 
 
 builder.Services.AddFastEndpoints().SwaggerDocument(); 

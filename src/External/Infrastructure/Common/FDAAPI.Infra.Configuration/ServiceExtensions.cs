@@ -77,18 +77,13 @@ namespace FDAAPI.Infra.Configuration
 
             return services;
         }
-    public static IServiceCollection AddPersistenceServices(this IServiceCollection services, IConfiguration configuration)
-{
-    // Ưu tiên lấy từ biến môi trường Docker (ConnectionStrings__PostgreSQLConnection)
-    var connectionString = configuration.GetConnectionString("PostgreSQLConnection");
+        public static IServiceCollection AddPersistenceServices(this IServiceCollection services, IConfiguration configuration)
+        {
+            // Try multiple ways to get connection string (same as AddInfraConfiguration)
+            var connectionString = configuration.GetConnectionString("PostgreSQLConnection");
 
-    if (string.IsNullOrEmpty(connectionString))
-    {
-        throw new InvalidOperationException("Connection String undefined!");
-    }
-
-    services.AddDbContext<AppDbContext>(options =>
-        options.UseNpgsql(connectionString));
+            services.AddDbContext<AppDbContext>(options =>
+                options.UseNpgsql(connectionString));
 
     services.AddScoped<IWaterLevelRepository, PgsqlWaterLevelRepository>();
 
