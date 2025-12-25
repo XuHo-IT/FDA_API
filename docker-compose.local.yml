@@ -13,24 +13,24 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://0.0.0.0:8080
-    depends_on:
-      - postgres
+      ConnectionStrings__PostgreSQLConnection: ${ConnectionStrings__PostgreSQLConnection}
+    # depends_on:
+    #   - postgres
     restart: unless-stopped
+#   postgres:
+#     image: postgres:16
+#     container_name: postgres_dev
+#     env_file:
+#       - .env
+#     environment:
+#       POSTGRES_DB: ${POSTGRES_DB}
+#       POSTGRES_USER: ${POSTGRES_USER}
+#       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#     ports:
+#       - "5432:5432"
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data
+#     restart: unless-stopped
 
-  postgres:
-    image: postgres:16
-    container_name: postgres_dev
-    env_file:
-      - .env
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    restart: unless-stopped
-
-volumes:
-  postgres_data:
+# volumes:
+#   postgres_data:

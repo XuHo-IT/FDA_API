@@ -79,8 +79,11 @@ namespace FDAAPI.Infra.Configuration
         }
         public static IServiceCollection AddPersistenceServices(this IServiceCollection services, IConfiguration configuration)
         {
+            // Try multiple ways to get connection string (same as AddInfraConfiguration)
+            var connectionString = configuration.GetConnectionString("PostgreSQLConnection");
+
             services.AddDbContext<AppDbContext>(options =>
-                options.UseNpgsql(configuration.GetConnectionString("PostgreSQLConnection")));
+                options.UseNpgsql(connectionString));
 
             services.AddScoped<IWaterLevelRepository, PgsqlWaterLevelRepository>();
 
