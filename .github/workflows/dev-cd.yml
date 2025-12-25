@@ -34,7 +34,11 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script_stop: true
           script: |
-            docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
+            set -e
             cd /home/dev/FDA_API
-            docker compose -f docker-compose.local.yml pull
-            docker compose -f docker-compose.local.yml up -d --force-recreate
+            git fetch origin
+            git reset --hard origin/dev
+            docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
+            docker compose -f docker-compose.local.yml down
+            docker compose -f docker-compose.local.yml up -d --build
+            docker image prune -f
