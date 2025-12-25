@@ -10,6 +10,7 @@ namespace FDAAPI.Domain.RelationalDb
         public string LocationName { get; set; } = string.Empty;
         public double Value { get; set; }
         public string Unit { get; set; } = "meters";
+        public string? Description { get; set; }
         public DateTime MeasuredAt { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }

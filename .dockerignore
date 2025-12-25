@@ -48,6 +48,7 @@
 **/.env
 **/.env.local
 **/.env.*.local
+**/.env.*
 
 # GitHub workflows (not needed in container)
 **/.github/
