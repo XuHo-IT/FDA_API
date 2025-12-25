@@ -25,7 +25,6 @@ builder.Services
 builder.Services.AddFastEndpoints().SwaggerDocument(); 
 
 
-builder.Services.AddOpenApi();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", builder =>
@@ -41,7 +40,7 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+   
 }
 app.MapScalarApiReference(options =>
 {
@@ -54,18 +53,19 @@ app.UseFastEndpoints()
 
 using (var scope = app.Services.CreateScope())
 {
-    var services = scope.ServiceProvider;
-    try
-    {
-        var context = services.GetRequiredService<AppDbContext>();
-        context.Database.Migrate();
-        Console.WriteLine("Database Migrated Successfully.");
-    }
-    catch (Exception ex)
-    {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while migrating the database.");
-    }
+   var services = scope.ServiceProvider;
+   try
+   {
+       var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+       context.Database.Migrate();
+       Console.WriteLine("Database Migrated Successfully.");
+
+   }
+   catch (Exception ex)
+   {
+       var logger = services.GetRequiredService<ILogger<Program>>();
+       logger.LogError(ex, "An error occurred while migrating the database.");
+   }
 }
 
 app.Run();

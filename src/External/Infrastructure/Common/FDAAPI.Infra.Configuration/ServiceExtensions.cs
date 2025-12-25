@@ -85,9 +85,9 @@ namespace FDAAPI.Infra.Configuration
             services.AddDbContext<AppDbContext>(options =>
                 options.UseNpgsql(connectionString));
 
-            services.AddScoped<IWaterLevelRepository, PgsqlWaterLevelRepository>();
+    services.AddScoped<IWaterLevelRepository, PgsqlWaterLevelRepository>();
 
-            return services;
-        }
+    return services;
+}
     }
 }
