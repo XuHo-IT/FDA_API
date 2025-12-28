@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using FDAAPI.Domain.RelationalDb.Entities;
 using FDAAPI.Domain.RelationalDb.RealationalDB;
+using FDAAPI.Domain.RelationalDb.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace FDAAPI.Infra.Persistence.Repositories
 {
@@ -24,8 +26,7 @@ namespace FDAAPI.Infra.Persistence.Repositories
         public async Task<bool> AssignRoleToUserAsync(Guid userId, Guid roleId, CancellationToken ct = default)
         {
             // Check if relationship already exists
-            var existingUserRole = await _context.UserRoles
-                .FirstOrDefaultAsync(ur => ur.UserId == userId && ur.RoleId == roleId, ct);
+            var existingUserRole = await _context.UserRoles.FirstOrDefaultAsync(ur => ur.UserId == userId && ur.RoleId == roleId, ct);
 
             if (existingUserRole != null)
             {

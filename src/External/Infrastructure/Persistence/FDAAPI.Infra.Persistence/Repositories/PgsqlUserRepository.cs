@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FDAAPI.Domain.RelationalDb.Entities;
 using FDAAPI.Domain.RelationalDb.RealationalDB;
+using FDAAPI.Domain.RelationalDb.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace FDAAPI.Infra.Persistence.Repositories

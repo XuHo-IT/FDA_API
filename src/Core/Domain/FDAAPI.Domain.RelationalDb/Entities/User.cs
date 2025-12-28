@@ -14,7 +14,7 @@ namespace FDAAPI.Domain.RelationalDb.Entities
         public string? PasswordHash { get; set; }
         public string? FullName { get; set; }
         public string? PhoneNumber { get; set; }
-        public string? AvartarUrl { get; set; }
+        public string? AvatarUrl { get; set; }
         public string Provider { get; set; } = "local"; // e.g., local, google, facebook, clerk
         public string Status { get; set; } = "active"; // e.g., active, inactive, banned
         public DateTime? LastLoginAt { get; set; }

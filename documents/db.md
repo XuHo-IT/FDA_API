@@ -7,35 +7,116 @@ id uuid [pk]
 email varchar(255) [unique, not null]
 password_hash varchar(255)
 full_name varchar(255)
-phone_number varchar(50)
-avatar_url text
-provider varchar(50) // local, google, clerk
-status varchar(20) // active, banned
+phone_number varchar(50) [unique]
+avartar_url text
+provider varchar(50) [default: 'local'] // local, google, clerk
+status varchar(20) [default: 'ACTIVE'] // ACTIVE, BANNED
 last_login_at timestamptz
+phone_verified_at timestamptz
+email_verified_at timestamptz
 
+created_by uuid [not null]
 created_at timestamptz [not null]
-updated_at timestamptz
+updated_by uuid [not null]
+updated_at timestamptz [not null]
 
 indexes {
-(email) [name:'ix_users_email']
+(email) [unique, name:'ix_users_email']
+(phone_number) [unique, name:'ix_users_phone']
 (status) [name:'ix_users_status']
 }
+
+Note: '''
+- phone_verified_at: Timestamp when phone is verified via OTP
+- email_verified_at: Timestamp when email is verified
+- provider: Authentication provider (local, google, clerk)
+- Auto-registration: Citizens auto-created on first phone+OTP login
+'''
 }
 
 Table roles {
 id uuid [pk]
-code varchar(50) [unique] // ADMIN, GOV, USER
-name varchar(100)
+code varchar(50) [unique, not null] // ADMIN, MODERATOR, USER
+name varchar(100) [not null]
+
+indexes {
+(code) [unique, name:'ix_roles_code']
+}
+
+Note: '''
+Seed Data:
+- ADMIN: Administrator
+- MODERATOR: Moderator Government Officer (previously GOV)
+- USER: Citizen User
+'''
 }
 
 Table user_roles {
 id uuid [pk]
-user_id uuid [ref: > users.id]
-role_id uuid [ref: > roles.id]
+user_id uuid [ref: > users.id, delete: cascade]
+role_id uuid [ref: > roles.id, delete: cascade]
 
 indexes {
-(user_id, role_id) [unique]
+(user_id, role_id) [unique, name:'uq_user_roles']
+(user_id) [name:'ix_user_roles_user']
+(role_id) [name:'ix_user_roles_role']
 }
+
+Note: '''
+Many-to-many relationship between users and roles.
+Cascade delete: Deleting user removes all role assignments.
+'''
+}
+
+Table refresh_tokens {
+id uuid [pk]
+user_id uuid [ref: > users.id, delete: cascade]
+token varchar(255) [unique, not null]
+expires_at timestamptz [not null]
+is_revoked boolean [default: false]
+revoked_at timestamptz
+device_info text
+ip_address varchar(50)
+
+created_by uuid [not null]
+created_at timestamptz [not null]
+
+indexes {
+(token) [unique, name:'ix_refresh_tokens_token']
+(user_id) [name:'ix_refresh_tokens_user']
+(is_revoked) [name:'ix_refresh_tokens_revoked']
+}
+
+Note: '''
+- Token rotation: Old token revoked when issuing new token
+- Expires in 7 days
+- Tracks device info and IP for security audit
+'''
+}
+
+Table otp_codes {
+id uuid [pk]
+phone_number varchar(50) [not null]
+code varchar(6) [not null]
+expires_at timestamptz [not null]
+is_used boolean [default: false]
+used_at timestamptz
+attempt_count int [default: 0]
+
+created_by uuid [not null]
+created_at timestamptz [not null]
+
+indexes {
+(phone_number) [name:'ix_otp_codes_phone']
+(phone_number, is_used) [name:'ix_otp_codes_phone_used']
+}
+
+Note: '''
+- Mock OTP in development: "123456"
+- Expires in 5 minutes
+- Maximum 3 attempts tracked
+- Marked as used after successful login
+'''
 }
 
 ///////////////////////////////////////////////////////

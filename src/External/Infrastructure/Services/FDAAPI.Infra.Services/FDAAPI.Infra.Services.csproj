@@ -12,4 +12,8 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.Common\FDAAPI.App.Common.csproj" />
+  </ItemGroup>
+
 </Project>
