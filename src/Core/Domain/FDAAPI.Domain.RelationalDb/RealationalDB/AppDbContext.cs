@@ -22,6 +22,7 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB
         public DbSet<UserRole> UserRoles { get; set; } = null!;
         public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
         public DbSet<OtpCode> OtpCodes { get; set; } = null!;
+        public DbSet<UserOAuthProvider> UserOAuthProviders { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -111,7 +112,38 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB
                     Name = "Citizen User"
                 }
             );
+
+            // UserOAuthProviders table configuration
+            modelBuilder.Entity<UserOAuthProvider>(entity =>
+            {
+                entity.ToTable("UserOAuthProviders");
+                entity.HasKey(e => e.Id);
+
+                // Unique constraint: One provider per user
+                entity.HasIndex(e => new { e.UserId, e.Provider })
+                    .IsUnique()
+                    .HasDatabaseName("uq_user_oauth_provider");
+
+                // Unique constraint: One provider user ID per provider
+                entity.HasIndex(e => new { e.Provider, e.ProviderUserId })
+                    .IsUnique()
+                    .HasDatabaseName("uq_provider_user_id");
+
+                // Foreign key relationship with cascade delete
+                entity.HasOne(e => e.User)
+                    .WithMany(u => u.OAuthProviders)
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                // Required fields
+                entity.Property(e => e.Provider).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.ProviderUserId).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.Email).HasMaxLength(255);
+                entity.Property(e => e.DisplayName).HasMaxLength(255);
+                entity.Property(e => e.ProfilePictureUrl).HasMaxLength(500);
+            });
+
         }
-        
+
     }
 }

@@ -14,8 +14,8 @@ var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration;
 
 
-// var envPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "..", "..", ".env"));
-// DotNetEnv.Env.Load(envPath);
+//var envPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "..", "..", ".env"));
+//DotNetEnv.Env.Load(envPath);
 
 // Add environment variables (for .env file support)
 configuration.AddEnvironmentVariables();
@@ -25,9 +25,10 @@ configuration.AddEnvironmentVariables();
 // ==================================================
 builder.Services
     .AddApplicationServices()
-    .AddInfrastructureServices()
+    .AddInfrastructureServices(configuration)
     .AddPersistenceServices(configuration)
-    .AddAuthenticationServices(configuration);
+    .AddAuthenticationServices(configuration)
+    .AddCacheServices(configuration);
 
 
 // FastEndpoints
@@ -89,7 +90,7 @@ app.UseAuthorization();
 // 6. FastEndpoints (MUST be after Auth middleware)
 app.UseFastEndpoints(config =>
 {
-    config.Endpoints.RoutePrefix = "api";
+    //config.Endpoints.RoutePrefix = "api";
 
     // Global error handler
     config.Errors.ResponseBuilder = (failures, ctx, statusCode) =>
