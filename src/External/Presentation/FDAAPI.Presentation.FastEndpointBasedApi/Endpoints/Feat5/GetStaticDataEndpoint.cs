@@ -1,7 +1,7 @@
 ﻿using FastEndpoints;
 using FDAAPI.App.Common.Features;
-using FDAAPI.App.FeatG5;
-using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.FeatG5.DTOs;
+using FDAAPI.App.Feat5;
+using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat5.DTOs;
 
 public class GetStaticDataEndpoint
     : EndpointWithoutRequest<GetStaticDataResponseDto>

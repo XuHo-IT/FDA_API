@@ -1,6 +1,6 @@
 using FDAAPI.App.Common.Models.StaticData;
 
-namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.FeatG5.DTOs;
+namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat5.DTOs;
 
 public class GetStaticDataResponseDto
 {

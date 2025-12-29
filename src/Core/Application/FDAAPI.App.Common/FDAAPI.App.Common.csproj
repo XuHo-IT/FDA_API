@@ -17,6 +17,7 @@
     <Folder Include="Repositories\" />
     <Folder Include="Tokens\" />
     <Folder Include="Serializer\" />
+	  <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>

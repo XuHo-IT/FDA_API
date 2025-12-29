@@ -8,23 +8,42 @@ using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ==================================================
+// CONFIGURATION
+// ==================================================
 ConfigurationManager configuration = builder.Configuration;
 
 
 // var envPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "..", "..", ".env"));
 // DotNetEnv.Env.Load(envPath);
 
+// Add environment variables (for .env file support)
 configuration.AddEnvironmentVariables();
 
+// ==================================================
+// SERVICE REGISTRATION
+// ==================================================
 builder.Services
     .AddApplicationServices()
     .AddInfrastructureServices()
-    .AddPersistenceServices(configuration);
+    .AddPersistenceServices(configuration)
+    .AddAuthenticationServices(configuration);
 
 
-builder.Services.AddFastEndpoints().SwaggerDocument(); 
+// FastEndpoints
+builder.Services
+    .AddFastEndpoints()
+    .SwaggerDocument(o =>
+    {
+        o.DocumentSettings = s =>
+        {
+            s.Title = "FDA API";
+            s.Version = "v1";
+            s.Description = "Flood Detection & Alert API - Authentication & Water Level Monitoring";
+        };
+    });
 
-
+// CORS Configuration
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", builder =>
@@ -35,37 +54,86 @@ builder.Services.AddCors(options =>
                .AllowAnyHeader();
     });
 });
+
+// ==================================================
+// BUILD APPLICATION
+// ==================================================
 var app = builder.Build();
 
+// ==================================================
+// MIDDLEWARE PIPELINE (ORDER MATTERS!)
+// ==================================================
 
+// 1. API Documentation (Development)
 if (app.Environment.IsDevelopment())
 {
-   
+    app.MapScalarApiReference(options =>
+    {
+        options.Title = "FDA API Documentation";
+        options.Theme = ScalarTheme.Purple;
+    });
 }
-app.MapScalarApiReference(options =>
-{
-    options.Title = "FDA API Documentation";
-});
-app.UseHttpsRedirection();
-app.UseCors("CorsPolicy");
-app.UseFastEndpoints()
-   .UseSwaggerGen();
 
+// 2. HTTPS Redirection
+app.UseHttpsRedirection();
+
+// 3. CORS (before authentication)
+app.UseCors("CorsPolicy");
+
+// 4. Authentication (NEW - MUST be before Authorization)
+app.UseAuthentication();
+
+// 5. Authorization (NEW - MUST be after Authentication)
+app.UseAuthorization();
+
+// 6. FastEndpoints (MUST be after Auth middleware)
+app.UseFastEndpoints(config =>
+{
+    config.Endpoints.RoutePrefix = "api";
+
+    // Global error handler
+    config.Errors.ResponseBuilder = (failures, ctx, statusCode) =>
+    {
+        return new
+        {
+            success = false,
+            message = "Validation failed",
+            errors = failures.Select(f => new
+            {
+                field = f.PropertyName,
+                message = f.ErrorMessage
+            })
+        };
+    };
+});
+
+// 7. Swagger (after FastEndpoints)
+app.UseSwaggerGen();
+
+// ==================================================
+// DATABASE MIGRATION (Auto-apply on startup)
+// ==================================================
 using (var scope = app.Services.CreateScope())
 {
-   var services = scope.ServiceProvider;
-   try
-   {
-       var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-       context.Database.Migrate();
-       Console.WriteLine("Database Migrated Successfully.");
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-   }
-   catch (Exception ex)
-   {
-       var logger = services.GetRequiredService<ILogger<Program>>();
-       logger.LogError(ex, "An error occurred while migrating the database.");
-   }
+        // Apply pending migrations
+        context.Database.Migrate();
+
+
+        Console.WriteLine("✅ Database migrated successfully.");
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "❌ An error occurred while migrating the database.");
+    }
 }
 
+// ==================================================
+// RUN APPLICATION
+// ==================================================
 app.Run();

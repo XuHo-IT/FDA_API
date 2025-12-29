@@ -3,6 +3,7 @@ using System;
 using FDAAPI.Domain.RelationalDb.RealationalDB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FDAAPI.Domain.RelationalDb.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251228053807_Authentication")]
+    partial class Authentication
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -28,9 +31,7 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<int>("AttemptCount")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
+                        .HasColumnType("integer");
 
                     b.Property<string>("Code")
                         .IsRequired()
@@ -46,9 +47,7 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsUsed")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
+                        .HasColumnType("boolean");
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
@@ -58,8 +57,6 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("PhoneNumber");
 
                     b.ToTable("OtpCodes");
                 });
@@ -99,9 +96,6 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Token")
-                        .IsUnique();
-
                     b.HasIndex("UserId");
 
                     b.ToTable("RefreshTokens");
@@ -122,30 +116,7 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Code")
-                        .IsUnique();
-
                     b.ToTable("Roles");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
-                            Code = "ADMIN",
-                            Name = "Administrator"
-                        },
-                        new
-                        {
-                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
-                            Code = "MODERATOR",
-                            Name = "Moderator Government Officer"
-                        },
-                        new
-                        {
-                            Id = new Guid("33333333-3333-3333-3333-333333333333"),
-                            Code = "USER",
-                            Name = "Citizen User"
-                        });
                 });
 
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.User", b =>
@@ -153,7 +124,7 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("AvatarUrl")
+                    b.Property<string>("AvartarUrl")
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
@@ -186,15 +157,11 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
 
                     b.Property<string>("Provider")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("local");
+                        .HasColumnType("text");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("ACTIVE");
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -203,12 +170,6 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Email")
-                        .IsUnique();
-
-                    b.HasIndex("PhoneNumber")
-                        .IsUnique();
 
                     b.ToTable("Users");
                 });
@@ -228,8 +189,7 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.HasIndex("UserId", "RoleId")
-                        .IsUnique();
+                    b.HasIndex("UserId");
 
                     b.ToTable("UserRoles");
                 });

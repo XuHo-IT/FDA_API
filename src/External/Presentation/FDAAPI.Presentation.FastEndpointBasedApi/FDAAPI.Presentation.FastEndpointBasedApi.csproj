@@ -15,7 +15,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4"  />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
     <PackageReference Include="Scalar.AspNetCore" Version="2.11.0" />
   </ItemGroup>
 
@@ -25,6 +25,10 @@
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG2\FDAAPI.App.FeatG2.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG3\FDAAPI.App.FeatG3.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG4\FDAAPI.App.FeatG4.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG6\FDAAPI.App.FeatG6.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG7\FDAAPI.App.FeatG7.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG8\FDAAPI.App.FeatG8.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG9\FDAAPI.App.FeatG9.csproj" />
     <ProjectReference Include="..\..\..\Core\Domain\FDAAPI.Domain.RelationalDb\FDAAPI.Domain.RelationalDb.csproj" />
     <ProjectReference Include="..\..\Infrastructure\Common\FDAAPI.Infra.Configuration\FDAAPI.Infra.Configuration.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG5\FDAAPI.App.FeatG5.csproj" />

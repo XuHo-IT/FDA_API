@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using FDAAPI.Domain.RelationalDb.Entities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -16,12 +17,100 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB
         }
 
         public DbSet<WaterLevel> WaterLevels { get; set; } = null!;
+        public DbSet<User> Users { get; set; } = null!;
+        public DbSet<Role> Roles { get; set; } = null!;
+        public DbSet<UserRole> UserRoles { get; set; } = null!;
+        public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
+        public DbSet<OtpCode> OtpCodes { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<WaterLevel>()
                 .Property(w => w.Id)
                 .ValueGeneratedOnAdd();
+
+            // Existing WaterLevel config
+            modelBuilder.Entity<WaterLevel>()
+                .Property(w => w.Id)
+                .ValueGeneratedOnAdd();
+
+            // Users table configuration
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.Email).IsUnique();
+                entity.HasIndex(e => e.PhoneNumber).IsUnique();
+                entity.Property(e => e.Status).HasDefaultValue("ACTIVE");
+                entity.Property(e => e.Provider).HasDefaultValue("local");
+            });
+
+            // Roles table configuration
+            modelBuilder.Entity<Role>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.Code).IsUnique();
+            });
+
+            // UserRoles table configuration (many-to-many)
+            modelBuilder.Entity<UserRole>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasOne(e => e.User)
+                    .WithMany(u => u.UserRoles)
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.Role)
+                    .WithMany(r => r.UserRoles)
+                    .HasForeignKey(e => e.RoleId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(e => new { e.UserId, e.RoleId }).IsUnique();
+            });
+
+            // RefreshTokens table configuration
+            modelBuilder.Entity<RefreshToken>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasOne(e => e.User)
+                    .WithMany(u => u.RefreshTokens)
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(e => e.Token).IsUnique();
+                entity.HasIndex(e => e.UserId);
+            });
+
+            // OtpCodes table configuration
+            modelBuilder.Entity<OtpCode>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.PhoneNumber);
+                entity.Property(e => e.IsUsed).HasDefaultValue(false);
+                entity.Property(e => e.AttemptCount).HasDefaultValue(0);
+            });
+
+            // Seed initial Roles
+            modelBuilder.Entity<Role>().HasData(
+                new Role
+                {
+                    Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                    Code = "ADMIN",
+                    Name = "Administrator"
+                },
+                new Role
+                {
+                    Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                    Code = "MODERATOR",
+                    Name = "Moderator Government Officer"
+                },
+                new Role
+                {
+                    Id = Guid.Parse("33333333-3333-3333-3333-333333333333"),
+                    Code = "USER",
+                    Name = "Citizen User"
+                }
+            );
         }
         
     }

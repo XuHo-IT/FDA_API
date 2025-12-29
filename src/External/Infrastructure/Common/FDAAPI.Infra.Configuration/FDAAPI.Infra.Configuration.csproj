@@ -13,11 +13,17 @@
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG3\FDAAPI.App.FeatG3.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG4\FDAAPI.App.FeatG4.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG5\FDAAPI.App.FeatG5.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG6\FDAAPI.App.FeatG6.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG7\FDAAPI.App.FeatG7.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG8\FDAAPI.App.FeatG8.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG9\FDAAPI.App.FeatG9.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Domain\FDAAPI.Domain.RelationalDb\FDAAPI.Domain.RelationalDb.csproj" />
     <ProjectReference Include="..\..\Persistence\FDAAPI.Infra.Persistence\FDAAPI.Infra.Persistence.csproj" />
+    <ProjectReference Include="..\..\Services\FDAAPI.Infra.Services\FDAAPI.Infra.Services.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+	  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
 	  <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
 	  <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
   </ItemGroup>

@@ -1,7 +1,7 @@
 using FDAAPI.App.Common.Features;
 using FDAAPI.App.Common.Models.StaticData;
 
-namespace FDAAPI.App.FeatG5;
+namespace FDAAPI.App.Feat5;
 
 public class GetStaticDataHandler : IFeatureHandler<GetStaticDataRequest, GetStaticDataResponse>
 {
