@@ -21,6 +21,12 @@ using FDAAPI.App.Common.Services;
 using FDAAPI.Infra.Services.Auth;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using FDAAPI.App.FeatG10;
+using FDAAPI.App.FeatG11;
+using FDAAPI.Infra.Services.Cache;
+using FDAAPI.Infra.Services.OAuth;
+using FDAAPI.App.FeatG12;
+using FDAAPI.App.FeatG13;
 
 namespace FDAAPI.Infra.Configuration
 {
@@ -67,10 +73,17 @@ namespace FDAAPI.Infra.Configuration
 
             return services;
         }
-        public static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
+        public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
+            // Existing JWT and Password services
             services.AddScoped<IJwtTokenService, JwtTokenService>();
             services.AddScoped<IPasswordHasher, PasswordHasher>();
+
+            // Add HttpClient for Google OAuth API calls
+            services.AddHttpClient();
+
+            // Google OAuth Service
+            services.AddScoped<IGoogleOAuthService, GoogleOAuthService>();
 
             return services;
         }
@@ -91,6 +104,12 @@ namespace FDAAPI.Infra.Configuration
             services.AddTransient<IFeatureHandler<LogoutRequest, LogoutResponse>, LogoutHandler>();
             services.AddTransient<IFeatureHandler<RefreshTokenRequest, RefreshTokenResponse>, RefreshTokenHandler>();
 
+            services.AddTransient<IFeatureHandler<ChangePasswordRequest, ChangePasswordResponse>, ChangePasswordHandler>();
+            services.AddTransient<IFeatureHandler<SetPasswordRequest, SetPasswordResponse>, SetPasswordHandler>();
+
+            // Google OAuth handlers
+            services.AddTransient<IFeatureHandler<GoogleLoginInitiateRequest, GoogleLoginInitiateResponse>, GoogleLoginInitiateHandler>();
+            services.AddTransient<IFeatureHandler<GoogleOAuthCallbackRequest, GoogleOAuthCallbackResponse>, GoogleOAuthCallbackHandler>();
 
             return services;
         }
@@ -108,6 +127,9 @@ namespace FDAAPI.Infra.Configuration
             services.AddScoped<IUserRoleRepository, PgsqlUserRoleRepository>();
             services.AddScoped<IRefreshTokenRepository, PgsqlRefreshTokenRepository>();
             services.AddScoped<IOtpCodeRepository, PgsqlOtpCodeRepository>();
+
+            // OAuth provider repository
+            services.AddScoped<IUserOAuthProviderRepository, PgsqlUserOAuthProviderRepository>();
 
             return services;
         }
@@ -160,6 +182,33 @@ namespace FDAAPI.Infra.Configuration
                 options.AddPolicy("Moderator", policy => policy.RequireRole("MODERATOR"));
                 options.AddPolicy("User", policy => policy.RequireRole("USER", "ADMIN", "MODERATOR"));
             });
+
+            return services;
+        }
+
+        public static IServiceCollection AddCacheServices(this IServiceCollection services, IConfiguration configuration)
+        {
+            // Add Redis distributed cache
+            var redisConnection = configuration.GetConnectionString("RedisConnection");
+
+            if (string.IsNullOrEmpty(redisConnection))
+            {
+                throw new InvalidOperationException("Redis Connection String is not configured");
+            }
+
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = redisConnection;
+                options.InstanceName = "FDA_API_";
+                options.ConfigurationOptions = StackExchange.Redis.ConfigurationOptions.Parse(redisConnection);
+                options.ConfigurationOptions.AbortOnConnectFail = false;
+                options.ConfigurationOptions.ConnectTimeout = 15000; // 15 seconds
+                options.ConfigurationOptions.SyncTimeout = 10000; // 10 seconds
+                options.ConfigurationOptions.AsyncTimeout = 10000; // 10 seconds
+            });
+
+            // Register state cache service for OAuth
+            services.AddScoped<IStateCache, RedisStateCache>();
 
             return services;
         }
