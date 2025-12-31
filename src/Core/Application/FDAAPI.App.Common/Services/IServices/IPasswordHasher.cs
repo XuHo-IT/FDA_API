@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FDAAPI.App.Common.Services
+namespace FDAAPI.App.Common.Services.IServices
 {
     /// <summary>
     /// Service for hashing and verifying passwords using PBKDF2

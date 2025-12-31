@@ -4,7 +4,10 @@ using FDAAPI.Domain.RelationalDb.RealationalDB;
 using FDAAPI.Infra.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
+using System.IdentityModel.Tokens.Jwt;
 
+// Clear the default mapping so 'sub' remains 'sub' and 'role' remains 'role'
+JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,7 +43,26 @@ builder.Services
         {
             s.Title = "FDA API";
             s.Version = "v1";
-            s.Description = "Flood Detection & Alert API - Authentication & Water Level Monitoring";
+            s.Description = "Flood Detection & Alert API";
+
+            // Define the Security Scheme
+            s.AddSecurity("JWTBearerAuth", new NSwag.OpenApiSecurityScheme
+            {
+                Type = NSwag.OpenApiSecuritySchemeType.Http,
+                Scheme = "Bearer",
+                BearerFormat = "JWT",
+                In = NSwag.OpenApiSecurityApiKeyLocation.Header,
+                Description = "Enter your JWT Access Token"
+            });
+
+            // Global Security Requirement using PostProcess
+            s.PostProcess = doc =>
+            {
+                doc.Security.Add(new NSwag.OpenApiSecurityRequirement
+                {
+                    { "JWTBearerAuth", Array.Empty<string>() }
+                });
+            };
         };
     });
 

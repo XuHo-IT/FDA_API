@@ -17,7 +17,6 @@ using FDAAPI.App.FeatG6;
 using FDAAPI.App.FeatG9;
 using FDAAPI.App.FeatG8;
 using FDAAPI.App.FeatG7;
-using FDAAPI.App.Common.Services;
 using FDAAPI.Infra.Services.Auth;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -25,8 +24,12 @@ using FDAAPI.App.FeatG10;
 using FDAAPI.App.FeatG11;
 using FDAAPI.Infra.Services.Cache;
 using FDAAPI.Infra.Services.OAuth;
+using FDAAPI.Infra.Services.Mapping;
 using FDAAPI.App.FeatG12;
 using FDAAPI.App.FeatG13;
+using FDAAPI.App.FeatG14;
+using FDAAPI.App.FeatG15;
+using FDAAPI.App.Common.Services.IServices;
 
 namespace FDAAPI.Infra.Configuration
 {
@@ -85,6 +88,9 @@ namespace FDAAPI.Infra.Configuration
             // Google OAuth Service
             services.AddScoped<IGoogleOAuthService, GoogleOAuthService>();
 
+            // Mapping services
+            services.AddScoped<IUserProfileMapper, UserProfileMapper>();
+
             return services;
         }
 
@@ -110,6 +116,10 @@ namespace FDAAPI.Infra.Configuration
             // Google OAuth handlers
             services.AddTransient<IFeatureHandler<GoogleLoginInitiateRequest, GoogleLoginInitiateResponse>, GoogleLoginInitiateHandler>();
             services.AddTransient<IFeatureHandler<GoogleOAuthCallbackRequest, GoogleOAuthCallbackResponse>, GoogleOAuthCallbackHandler>();
+
+            // Profile management handlers
+            services.AddTransient<IFeatureHandler<GetProfileRequest, GetProfileResponse>, GetProfileHandler>();
+            services.AddTransient<IFeatureHandler<UpdateProfileRequest, UpdateProfileResponse>, UpdateProfileHandler>();
 
             return services;
         }
@@ -158,7 +168,10 @@ namespace FDAAPI.Infra.Configuration
                         ValidIssuer = jwtIssuer,
                         ValidAudience = jwtAudience,
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
-                        ClockSkew = TimeSpan.Zero // Strict expiration validation
+                        NameClaimType = "sub",
+                        RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+
+                        ClockSkew = TimeSpan.FromSeconds(30)
                     };
 
                     // Optional: Event handlers for debugging
@@ -166,10 +179,19 @@ namespace FDAAPI.Infra.Configuration
                     {
                         OnAuthenticationFailed = context =>
                         {
+                            // This will print the exact reason to your Visual Studio / Console window
+                            Console.WriteLine("-----------------------------------------");
+                            Console.WriteLine("Auth Failed: " + context.Exception.Message);
+
                             if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
                             {
                                 context.Response.Headers["Token-Expired"] = "true";
                             }
+                            return Task.CompletedTask;
+                        },
+                        OnTokenValidated = context =>
+                        {
+                            Console.WriteLine("Auth Success for User: " + context.Principal.Identity.Name);
                             return Task.CompletedTask;
                         }
                     };

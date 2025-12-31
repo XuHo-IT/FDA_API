@@ -4,7 +4,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using FDAAPI.App.Common.Services;
+using FDAAPI.App.Common.Services.IServices;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 
 namespace FDAAPI.Infra.Services.Auth
