@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FDAAPI.App.Common.Features;
-using FDAAPI.App.Common.Services.IServices;
+using FDAAPI.App.Common.Services;
 using FDAAPI.Domain.RelationalDb.Entities;
 using FDAAPI.Domain.RelationalDb.Repositories;
 

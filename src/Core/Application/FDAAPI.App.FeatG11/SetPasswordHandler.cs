@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using FDAAPI.App.Common.Features;
-using FDAAPI.App.Common.Services.IServices;
+using FDAAPI.App.Common.Services;
 using FDAAPI.Domain.RelationalDb.Repositories;
 
 namespace FDAAPI.App.FeatG11

@@ -17,10 +17,7 @@
     <Folder Include="Repositories\" />
     <Folder Include="Tokens\" />
     <Folder Include="Serializer\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\Domain\FDAAPI.Domain.RelationalDb\FDAAPI.Domain.RelationalDb.csproj" />
+	  <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>
