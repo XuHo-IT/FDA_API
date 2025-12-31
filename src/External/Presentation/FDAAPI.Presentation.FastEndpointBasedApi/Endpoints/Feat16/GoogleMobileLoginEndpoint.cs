@@ -3,7 +3,7 @@ using FDAAPI.App.Common.Features;
 using FDAAPI.App.FeatG16;
 using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat16.DTOs;
 
-namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat14
+namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat16
 {
     /// <summary>
     /// Endpoint for Google OAuth login from mobile apps (React Native)
