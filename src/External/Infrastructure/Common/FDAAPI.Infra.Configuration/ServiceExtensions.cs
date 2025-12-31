@@ -27,6 +27,7 @@ using FDAAPI.Infra.Services.Cache;
 using FDAAPI.Infra.Services.OAuth;
 using FDAAPI.App.FeatG12;
 using FDAAPI.App.FeatG13;
+using FDAAPI.App.FeatG14;
 
 namespace FDAAPI.Infra.Configuration
 {
@@ -110,6 +111,7 @@ namespace FDAAPI.Infra.Configuration
             // Google OAuth handlers
             services.AddTransient<IFeatureHandler<GoogleLoginInitiateRequest, GoogleLoginInitiateResponse>, GoogleLoginInitiateHandler>();
             services.AddTransient<IFeatureHandler<GoogleOAuthCallbackRequest, GoogleOAuthCallbackResponse>, GoogleOAuthCallbackHandler>();
+            services.AddTransient<IFeatureHandler<GoogleMobileLoginRequest, GoogleMobileLoginResponse>, GoogleMobileLoginHandler>();
 
             return services;
         }
