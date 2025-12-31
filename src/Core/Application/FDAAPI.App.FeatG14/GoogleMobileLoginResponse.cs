@@ -1,6 +1,6 @@
 ﻿using FDAAPI.App.Common.Features;
 
-namespace FDAAPI.App.FeatG14
+namespace FDAAPI.App.FeatG16
 {
     /// <summary>
     /// Response from mobile Google OAuth login

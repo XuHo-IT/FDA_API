@@ -8,9 +8,9 @@ using FDAAPI.App.Common.Services;
 using FDAAPI.Domain.RelationalDb.Entities;
 using FDAAPI.Domain.RelationalDb.Repositories;
 using FDAAPI.Infra.Services.OAuth;
-using FDAAPI.App.FeatG14;
+using FDAAPI.App.FeatG16;
 
-namespace FDAAPI.App.FeatG14
+namespace FDAAPI.App.FeatG16
 {
     /// <summary>
     /// Handler for Google OAuth login from mobile apps (React Native)

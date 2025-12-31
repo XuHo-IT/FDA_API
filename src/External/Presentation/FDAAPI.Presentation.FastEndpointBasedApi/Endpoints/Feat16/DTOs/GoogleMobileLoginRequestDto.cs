@@ -1,6 +1,6 @@
 ﻿using FDAAPI.App.Common.Features;
 
-namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat14.DTOs
+namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat16.DTOs
 {
     /// <summary>
     /// DTO for mobile Google OAuth login request

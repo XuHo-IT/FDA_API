@@ -1,6 +1,6 @@
 ﻿using FDAAPI.App.Common.Features;
 
-namespace FDAAPI.App.FeatG14
+namespace FDAAPI.App.FeatG16
 {
     /// <summary>
     /// Request to login via Google OAuth from mobile app
