@@ -17,7 +17,6 @@ using FDAAPI.App.FeatG6;
 using FDAAPI.App.FeatG9;
 using FDAAPI.App.FeatG8;
 using FDAAPI.App.FeatG7;
-using FDAAPI.App.Common.Services;
 using FDAAPI.Infra.Services.Auth;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -26,11 +25,11 @@ using FDAAPI.App.FeatG11;
 using FDAAPI.Infra.Services.Cache;
 using FDAAPI.Infra.Services.OAuth;
 using FDAAPI.Infra.Services.Mapping;
-using FDAAPI.App.Common.Services;
 using FDAAPI.App.FeatG12;
 using FDAAPI.App.FeatG13;
 using FDAAPI.App.FeatG14;
 using FDAAPI.App.FeatG15;
+using FDAAPI.App.Common.Services.IServices;
 
 namespace FDAAPI.Infra.Configuration
 {

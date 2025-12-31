@@ -1,6 +1,6 @@
 using FDAAPI.Domain.RelationalDb.Entities;
 
-namespace FDAAPI.App.Common.Services
+namespace FDAAPI.App.Common.Services.IServices
 {
     /// <summary>
     /// Service for mapping User entity to UserProfileDto

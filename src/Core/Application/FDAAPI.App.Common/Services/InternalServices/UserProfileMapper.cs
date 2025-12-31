@@ -1,4 +1,4 @@
-using FDAAPI.App.Common.Services;
+using FDAAPI.App.Common.Services.IServices;
 using FDAAPI.Domain.RelationalDb.Entities;
 
 namespace FDAAPI.Infra.Services.Mapping
