@@ -1,21 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using FDAAPI.App.Common.Features;
 using FDAAPI.App.Common.Services;
 using FDAAPI.Domain.RelationalDb.Entities;
 using FDAAPI.Domain.RelationalDb.Repositories;
-using FDAAPI.Infra.Services.Cache;
 using FDAAPI.Infra.Services.OAuth;
+using FDAAPI.App.FeatG16;
 
-namespace FDAAPI.App.FeatG13
+namespace FDAAPI.App.FeatG16
 {
-    public class GoogleOAuthCallbackHandler : IFeatureHandler<GoogleOAuthCallbackRequest, GoogleOAuthCallbackResponse>
+    /// <summary>
+    /// Handler for Google OAuth login from mobile apps (React Native)
+    /// Accepts idToken from Google SDK and returns FDA API JWT tokens
+    /// </summary>
+    public class GoogleMobileLoginHandler : IFeatureHandler<GoogleMobileLoginRequest, GoogleMobileLoginResponse>
     {
+        // Dependencies (NO IStateCache needed for mobile)
         private readonly IGoogleOAuthService _googleOAuthService;
-        private readonly IStateCache _stateCache;
         private readonly IUserRepository _userRepository;
         private readonly IUserOAuthProviderRepository _oauthProviderRepository;
         private readonly IRoleRepository _roleRepository;
@@ -23,9 +27,8 @@ namespace FDAAPI.App.FeatG13
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IJwtTokenService _jwtTokenService;
 
-        public GoogleOAuthCallbackHandler(
+        public GoogleMobileLoginHandler(
             IGoogleOAuthService googleOAuthService,
-            IStateCache stateCache,
             IUserRepository userRepository,
             IUserOAuthProviderRepository oauthProviderRepository,
             IRoleRepository roleRepository,
@@ -34,7 +37,6 @@ namespace FDAAPI.App.FeatG13
             IJwtTokenService jwtTokenService)
         {
             _googleOAuthService = googleOAuthService;
-            _stateCache = stateCache;
             _userRepository = userRepository;
             _oauthProviderRepository = oauthProviderRepository;
             _roleRepository = roleRepository;
@@ -43,57 +45,46 @@ namespace FDAAPI.App.FeatG13
             _jwtTokenService = jwtTokenService;
         }
 
-        public async Task<GoogleOAuthCallbackResponse> ExecuteAsync(
-            GoogleOAuthCallbackRequest request,
+        public async Task<GoogleMobileLoginResponse> ExecuteAsync(
+            GoogleMobileLoginRequest request,
             CancellationToken ct = default)
         {
             try
             {
-                // 1. Validate state token (CSRF protection)
-                var cachedReturnUrl = await _stateCache.GetStateAsync(request.State, ct);
-                if (cachedReturnUrl == null)
+                // 1. Validate idToken input
+                if (string.IsNullOrWhiteSpace(request.IdToken))
                 {
-                    return new GoogleOAuthCallbackResponse
+                    return new GoogleMobileLoginResponse
                     {
                         Success = false,
-                        Message = "Invalid or expired state token"
+                        Message = "IdToken is required"
                     };
                 }
 
-                // Remove state after validation (one-time use)
-                await _stateCache.RemoveStateAsync(request.State, ct);
-
-                // 2. Exchange authorization code for tokens
-                GoogleTokenResponse tokenResponse;
-                try
-                {
-                    tokenResponse = await _googleOAuthService.ExchangeCodeForTokenAsync(request.Code, ct);
-                }
-                catch (HttpRequestException ex)
-                {
-                    return new GoogleOAuthCallbackResponse
-                    {
-                        Success = false,
-                        Message = "Failed to exchange authorization code with Google"
-                    };
-                }
-
-                // 3. Verify ID token and get user info
+                // 2. Verify ID token and get user info from Google
                 GoogleUserInfo googleUser;
                 try
                 {
-                    googleUser = await _googleOAuthService.VerifyIdTokenAsync(tokenResponse.IdToken, ct);
+                    googleUser = await _googleOAuthService.VerifyIdTokenAsync(request.IdToken, ct);
                 }
-                catch (Exception ex)
+                catch (HttpRequestException ex)
                 {
-                    return new GoogleOAuthCallbackResponse
+                    return new GoogleMobileLoginResponse
                     {
                         Success = false,
-                        Message = "Failed to verify Google ID token"
+                        Message = "Failed to verify Google ID token. Please try again."
+                    };
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return new GoogleMobileLoginResponse
+                    {
+                        Success = false,
+                        Message = ex.Message // "Token audience does not match" etc.
                     };
                 }
 
-                // 4. Check if OAuth provider record exists
+                // 3. Check if OAuth provider record exists
                 var oauthProvider = await _oauthProviderRepository
                     .GetByProviderUserIdAsync("google", googleUser.Id, ct);
 
@@ -158,7 +149,7 @@ namespace FDAAPI.App.FeatG13
                         var userRole = await _roleRepository.GetByCodeAsync("USER", ct);
                         if (userRole == null)
                         {
-                            return new GoogleOAuthCallbackResponse
+                            return new GoogleMobileLoginResponse
                             {
                                 Success = false,
                                 Message = "USER role not found in database"
@@ -166,7 +157,6 @@ namespace FDAAPI.App.FeatG13
                         }
 
                         await _userRoleRepository.AssignRoleToUserAsync(user.Id, userRole.Id, ct);
-
                     }
 
                     // Create OAuth provider record
@@ -187,11 +177,11 @@ namespace FDAAPI.App.FeatG13
                     }, ct);
                 }
 
-                // 5. Load user roles
+                // 4. Load user roles
                 var roles = await _userRoleRepository.GetUserRolesAsync(user.Id, ct);
                 var roleCodes = roles.Select(r => r.Code).ToList();
 
-                // 6. Generate JWT tokens (same as LoginHandler)
+                // 5. Generate JWT tokens (same as Web OAuth)
                 var accessToken = _jwtTokenService.GenerateAccessToken(
                     user.Id,
                     user.Email,
@@ -201,7 +191,7 @@ namespace FDAAPI.App.FeatG13
                 var refreshToken = _jwtTokenService.GenerateRefreshToken();
                 var refreshTokenExpiry = DateTime.UtcNow.AddDays(7);
 
-                // 7. Store refresh token
+                // 6. Store refresh token
                 await _refreshTokenRepository.CreateAsync(new RefreshToken
                 {
                     Id = Guid.NewGuid(),
@@ -213,21 +203,21 @@ namespace FDAAPI.App.FeatG13
                     CreatedAt = DateTime.UtcNow
                 }, ct);
 
-                // 8. Update LastLoginAt
+                // 7. Update LastLoginAt
                 user.LastLoginAt = DateTime.UtcNow;
                 user.UpdatedAt = DateTime.UtcNow;
                 user.UpdatedBy = user.Id;
                 await _userRepository.UpdateAsync(user, ct);
 
-                // 9. Return success response
-                return new GoogleOAuthCallbackResponse
+                // 8. Return success response
+                return new GoogleMobileLoginResponse
                 {
                     Success = true,
                     Message = "Login successful",
                     AccessToken = accessToken,
                     RefreshToken = refreshToken,
                     ExpiresAt = DateTime.UtcNow.AddMinutes(60), // Access token expiry
-                    User = new UserInfo
+                    User = new UserDto
                     {
                         Id = user.Id,
                         Email = user.Email,
@@ -239,12 +229,13 @@ namespace FDAAPI.App.FeatG13
             }
             catch (Exception ex)
             {
-                return new GoogleOAuthCallbackResponse
+                return new GoogleMobileLoginResponse
                 {
                     Success = false,
-                    Message = $"OAuth callback error: {ex.Message}"
+                    Message = $"Mobile OAuth login error: {ex.Message}"
                 };
             }
         }
     }
 }
+

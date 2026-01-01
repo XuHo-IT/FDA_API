@@ -1,4 +1,4 @@
-﻿using FDAAPI.App.Common.Services.IServices;
+﻿using FDAAPI.App.Common.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
