@@ -85,6 +85,12 @@ namespace FDAAPI.Infra.Configuration
             // Add HttpClient for Google OAuth API calls
             services.AddHttpClient();
 
+            // ImageKit / Image storage
+            services.AddHttpClient<FDAAPI.App.Common.Services.IServices.IImageStorageService, FDAAPI.Infra.Services.Auth.ImageKitService>();
+
+            // Image upload policy
+            services.AddScoped<FDAAPI.App.Common.Services.Policies.IImageUploadPolicy, FDAAPI.Infra.Services.Auth.ImageUploadPolicy>();
+
             // Google OAuth Service
             services.AddScoped<IGoogleOAuthService, GoogleOAuthService>();
 

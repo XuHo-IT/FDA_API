@@ -11,5 +11,8 @@
     <ProjectReference Include="..\FDAAPI.App.Common\FDAAPI.App.Common.csproj" />
   </ItemGroup>
 
-</Project>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
 
+</Project>

@@ -1,4 +1,5 @@
 using FDAAPI.App.Common.Features;
+using Microsoft.AspNetCore.Http;
 
 namespace FDAAPI.App.FeatG15
 {
@@ -9,7 +10,7 @@ namespace FDAAPI.App.FeatG15
     {
         public Guid UserId { get; set; }  // From JWT claims
         public string? FullName { get; set; }
-        public string? AvatarUrl { get; set; }
+        public IFormFile? AvatarFile { get; set; }
+        public string? AvatarUrl { get; set; } // Re-added for explicit clearing or external URL
     }
 }
-

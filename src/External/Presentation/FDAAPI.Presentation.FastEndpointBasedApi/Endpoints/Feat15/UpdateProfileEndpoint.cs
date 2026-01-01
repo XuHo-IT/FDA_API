@@ -4,6 +4,7 @@ using FDAAPI.App.FeatG15;
 using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat15.DTOs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat15
 {
@@ -23,6 +24,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat15
         {
             Put("/api/v1/user-profile");
             AuthSchemes(JwtBearerDefaults.AuthenticationScheme);
+            AllowFileUploads();
             Summary(s =>
             {
                 s.Summary = "Update current user profile";
@@ -75,6 +77,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat15
                 {
                     UserId = userId,
                     FullName = req.FullName,
+                    AvatarFile = req.AvatarFile,
                     AvatarUrl = req.AvatarUrl
                 };
 

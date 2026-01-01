@@ -1,6 +1,8 @@
 using FDAAPI.App.Common.Features;
 using FDAAPI.App.Common.Services.IServices;
 using FDAAPI.Domain.RelationalDb.Repositories;
+using Microsoft.AspNetCore.Http; // Added for IFormFile and related functionalities
+using System.IO; // Added for Path.GetExtension
 
 namespace FDAAPI.App.FeatG15
 {
@@ -11,13 +13,16 @@ namespace FDAAPI.App.FeatG15
     {
         private readonly IUserRepository _userRepository;
         private readonly IUserProfileMapper _profileMapper;
+        private readonly IImageStorageService _imageKitService; 
 
         public UpdateProfileHandler(
             IUserRepository userRepository,
-            IUserProfileMapper profileMapper)
+            IUserProfileMapper profileMapper,
+            IImageStorageService imageKitService) 
         {
             _userRepository = userRepository;
             _profileMapper = profileMapper;
+            _imageKitService = imageKitService; 
         }
 
         public async Task<UpdateProfileResponse> ExecuteAsync(
@@ -27,12 +32,12 @@ namespace FDAAPI.App.FeatG15
             try
             {
                 // 1. Validate input
-                if (string.IsNullOrWhiteSpace(request.FullName) && string.IsNullOrWhiteSpace(request.AvatarUrl))
+                if (string.IsNullOrWhiteSpace(request.FullName) && request.AvatarFile == null && string.IsNullOrWhiteSpace(request.AvatarUrl)) // Modified
                 {
                     return new UpdateProfileResponse
                     {
                         Success = false,
-                        Message = "At least one field (FullName or AvatarUrl) must be provided",
+                        Message = "At least one field (FullName, AvatarFile, or AvatarUrl) must be provided",
                         StatusCode = UpdateProfileResponseStatusCode.InvalidInput
                     };
                 }
@@ -48,22 +53,7 @@ namespace FDAAPI.App.FeatG15
                     };
                 }
 
-                // 3. Validate AvatarUrl format if provided (must be HTTPS)
-                if (!string.IsNullOrWhiteSpace(request.AvatarUrl))
-                {
-                    if (!Uri.TryCreate(request.AvatarUrl, UriKind.Absolute, out var uri) ||
-                        (uri.Scheme != Uri.UriSchemeHttps && uri.Scheme != Uri.UriSchemeHttp))
-                    {
-                        return new UpdateProfileResponse
-                        {
-                            Success = false,
-                            Message = "AvatarUrl must be a valid HTTP or HTTPS URL",
-                            StatusCode = UpdateProfileResponseStatusCode.InvalidInput
-                        };
-                    }
-                }
-
-                // 4. Get user
+                // 3. Get user
                 var user = await _userRepository.GetUserWithRolesAsync(request.UserId, ct);
                 if (user == null)
                 {
@@ -75,18 +65,78 @@ namespace FDAAPI.App.FeatG15
                     };
                 }
 
-                // 5. Update fields (only update provided fields)
                 bool hasChanges = false;
+
+                // Handle FullName update
                 if (!string.IsNullOrWhiteSpace(request.FullName) && user.FullName != request.FullName)
                 {
                     user.FullName = request.FullName;
                     hasChanges = true;
                 }
 
-                if (!string.IsNullOrWhiteSpace(request.AvatarUrl) && user.AvatarUrl != request.AvatarUrl)
+                // Handle AvatarFile upload or removal
+                if (request.AvatarFile != null)
                 {
-                    user.AvatarUrl = request.AvatarUrl;
-                    hasChanges = true;
+                    // Image size validation (e.g., 5 MB limit)
+                    const long maxFileSize = 5 * 1024 * 1024; // 5 MB
+                    if (request.AvatarFile.Length > maxFileSize)
+                    {
+                        return new UpdateProfileResponse
+                        {
+                            Success = false,
+                            Message = "Avatar image size must not exceed 5 MB",
+                            StatusCode = UpdateProfileResponseStatusCode.InvalidInput
+                        };
+                    }
+
+                    // Upload image to ImageKit
+                    using (var stream = request.AvatarFile.OpenReadStream())
+                    {
+                        var fileName = $"avatar_{request.UserId}_{DateTime.UtcNow:yyyyMMddHHmmss}{Path.GetExtension(request.AvatarFile.FileName)}";
+                        var imageUrl = await _imageKitService.UploadImageAsync(stream, fileName, "avatars");
+                        if (string.IsNullOrWhiteSpace(imageUrl))
+                        {
+                            return new UpdateProfileResponse
+                            {
+                                Success = false,
+                                Message = "Failed to upload avatar image",
+                                StatusCode = UpdateProfileResponseStatusCode.UnknownError
+                            };
+                        }
+
+                        if (user.AvatarUrl != imageUrl)
+                        {
+                            user.AvatarUrl = imageUrl;
+                            hasChanges = true;
+                        }
+                    }
+                }
+                else if (request.AvatarUrl == "") 
+                {
+                    if (!string.IsNullOrWhiteSpace(user.AvatarUrl))
+                    {
+                        user.AvatarUrl = null;
+                        hasChanges = true;
+                    }
+                }
+                else if (!string.IsNullOrWhiteSpace(request.AvatarUrl)) 
+                {
+                    if (!Uri.TryCreate(request.AvatarUrl, UriKind.Absolute, out var uri) ||
+                        (uri.Scheme != Uri.UriSchemeHttps && uri.Scheme != Uri.UriSchemeHttp))
+                    {
+                        return new UpdateProfileResponse
+                        {
+                            Success = false,
+                            Message = "AvatarUrl must be a valid HTTP or HTTPS URL",
+                            StatusCode = UpdateProfileResponseStatusCode.InvalidInput
+                        };
+                    }
+
+                    if (user.AvatarUrl != request.AvatarUrl)
+                    {
+                        user.AvatarUrl = request.AvatarUrl;
+                        hasChanges = true;
+                    }
                 }
 
                 if (!hasChanges)
@@ -102,11 +152,11 @@ namespace FDAAPI.App.FeatG15
                     };
                 }
 
-                // 6. Update audit fields
+                // Update audit fields
                 user.UpdatedBy = request.UserId;
                 user.UpdatedAt = DateTime.UtcNow;
 
-                // 7. Save changes
+                // Save changes
                 var updateResult = await _userRepository.UpdateAsync(user, ct);
                 if (!updateResult)
                 {
@@ -118,7 +168,7 @@ namespace FDAAPI.App.FeatG15
                     };
                 }
 
-                // 8. Reload user with roles to get updated data
+                // Reload user with roles to get updated data
                 var updatedUser = await _userRepository.GetUserWithRolesAsync(request.UserId, ct);
                 var profile = updatedUser != null ? _profileMapper.MapToProfileDto(updatedUser) : null;
 
@@ -142,4 +192,3 @@ namespace FDAAPI.App.FeatG15
         }
     }
 }
-
