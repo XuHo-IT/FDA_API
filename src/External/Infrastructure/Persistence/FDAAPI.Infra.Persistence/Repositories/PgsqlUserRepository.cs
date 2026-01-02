@@ -64,5 +64,23 @@ namespace FDAAPI.Infra.Persistence.Repositories
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Id == userId, ct);
         }
+        public async Task<string?> GetUserFullNameAsync(Guid userId, CancellationToken ct = default)
+        {
+            return await _context.Users
+                .AsNoTracking()
+                .Where(u => u.Id == userId)
+                .Select(u => u.FullName)
+                .FirstOrDefaultAsync(ct);
+        }
+
+        public async Task<string?> GetAvatarUrlAsync(Guid userId, CancellationToken ct = default)
+        {
+            return await _context.Users
+                .AsNoTracking()
+                .Where(u => u.Id == userId)
+                .Select(u => u.AvatarUrl)
+                .FirstOrDefaultAsync(ct);
+        }
+
     }
 }

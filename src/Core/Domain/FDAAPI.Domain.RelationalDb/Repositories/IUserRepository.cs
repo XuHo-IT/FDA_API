@@ -44,5 +44,8 @@ namespace FDAAPI.Domain.RelationalDb.Repositories
         /// Uses EF Core Include to eager load UserRoles and Roles
         /// </summary>
         Task<User?> GetUserWithRolesAsync(Guid userId, CancellationToken ct = default);
+        Task<string?> GetUserFullNameAsync(Guid userId, CancellationToken ct = default);
+        Task<string?> GetAvatarUrlAsync(Guid userId, CancellationToken ct = default);
+
     }
 }
