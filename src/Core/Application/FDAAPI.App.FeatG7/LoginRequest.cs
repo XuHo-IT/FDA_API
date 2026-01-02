@@ -10,6 +10,9 @@ namespace FDAAPI.App.FeatG7
     /// </summary>
     public class LoginRequest : IFeatureRequest<LoginResponse>
     {
+        // Unified identifier (can be phone or email)
+        public string? Identifier { get; set; }
+
         // For Phone + OTP Login
         public string? PhoneNumber { get; set; }
         public string? OtpCode { get; set; }
