@@ -2,6 +2,7 @@
 using FDAAPI.App.Common.Features;
 using FDAAPI.App.FeatG13;
 using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat13.DTOs;
+using Microsoft.Extensions.Configuration;
 
 namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat13
 {
@@ -12,10 +13,14 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat13
     public class GoogleOAuthCallbackEndpoint : Endpoint<GoogleOAuthCallbackRequestDto, GoogleOAuthCallbackResponseDto>
     {
         private readonly IFeatureHandler<GoogleOAuthCallbackRequest, GoogleOAuthCallbackResponse> _handler;
+        private readonly IConfiguration _configuration;
 
-        public GoogleOAuthCallbackEndpoint(IFeatureHandler<GoogleOAuthCallbackRequest, GoogleOAuthCallbackResponse> handler)
+        public GoogleOAuthCallbackEndpoint(
+            IFeatureHandler<GoogleOAuthCallbackRequest, GoogleOAuthCallbackResponse> handler,
+            IConfiguration configuration)
         {
             _handler = handler;
+            _configuration = configuration;
         }
 
         public override void Configure()
@@ -95,14 +100,33 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat13
                     } : null
                 };
 
+                // if (result.Success)
+                // {
+                //     await SendAsync(responseDto, 200, ct);
+                // }
+                // else
+                // {
+                //     // 400 Bad Request for invalid state/code
+                //     await SendAsync(responseDto, 400, ct);
+                // }
+
                 if (result.Success)
                 {
-                    await SendAsync(responseDto, 200, ct);
+                    // Get frontend URL from configuration
+                    var frontendBaseUrl = _configuration["OAuth:FrontendUrl"] ?? "http://localhost:3000";
+                    var returnPath = result.ReturnUrl ?? "/dashboard";
+
+                    // Build redirect URL with tokens in fragment (#)
+                    // Fragment (#) ensures tokens are not sent to server in subsequent requests
+                    var redirectUrl = $"{frontendBaseUrl}/auth/callback#{Uri.EscapeDataString($"access_token={result.AccessToken}&refresh_token={result.RefreshToken}&return_url={returnPath}")}";
+
+                    await SendRedirectAsync(redirectUrl);
                 }
                 else
                 {
-                    // 400 Bad Request for invalid state/code
-                    await SendAsync(responseDto, 400, ct);
+                    // Redirect to login page with error message
+                    var frontendBaseUrl = _configuration["OAuth:FrontendUrl"] ?? "http://localhost:3000";
+                    await SendRedirectAsync($"{frontendBaseUrl}/login?error={Uri.EscapeDataString(result.Message)}");
                 }
             }
             catch (Exception ex)
