@@ -84,6 +84,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat13
                     AccessToken = result.AccessToken,
                     RefreshToken = result.RefreshToken,
                     ExpiresAt = result.ExpiresAt,
+                    ReturnUrl = result.ReturnUrl,
                     User = result.User != null ? new UserDto
                     {
                         Id = result.User.Id,

@@ -227,6 +227,7 @@ namespace FDAAPI.App.FeatG13
                     AccessToken = accessToken,
                     RefreshToken = refreshToken,
                     ExpiresAt = DateTime.UtcNow.AddMinutes(60), // Access token expiry
+                    ReturnUrl = cachedReturnUrl,
                     User = new UserInfo
                     {
                         Id = user.Id,

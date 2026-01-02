@@ -15,6 +15,7 @@ namespace FDAAPI.App.FeatG13
         public string RefreshToken { get; set; } = string.Empty;
         public DateTime ExpiresAt { get; set; }
         public UserInfo? User { get; set; }
+        public string? ReturnUrl { get; set; }
     }
 
     public class UserInfo
