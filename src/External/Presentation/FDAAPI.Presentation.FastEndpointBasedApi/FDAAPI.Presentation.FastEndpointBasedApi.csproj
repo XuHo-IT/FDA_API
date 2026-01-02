@@ -23,6 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG14\FDAAPI.App.FeatG14.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG15\FDAAPI.App.FeatG15.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.Common\FDAAPI.App.Common.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG10\FDAAPI.App.FeatG10.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG11\FDAAPI.App.FeatG11.csproj" />

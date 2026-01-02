@@ -1,34 +1,37 @@
-using Microsoft.Extensions.DependencyInjection;
 using FDAAPI.App.Common.Features;
+using FDAAPI.App.Common.Services;
+using FDAAPI.App.Common.Services.Mapping;
 using FDAAPI.App.Feat1;
 using FDAAPI.App.Feat2;
 using FDAAPI.App.Feat3;
 using FDAAPI.App.Feat4;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+using FDAAPI.App.Feat5;
+using FDAAPI.App.FeatG10;
+using FDAAPI.App.FeatG11;
+using FDAAPI.App.FeatG12;
+using FDAAPI.App.FeatG13;
+using FDAAPI.App.FeatG14;
+using FDAAPI.App.FeatG15;
+using FDAAPI.App.FeatG16;
+using FDAAPI.App.FeatG17;
+using FDAAPI.App.FeatG6;
+using FDAAPI.App.FeatG7;
+using FDAAPI.App.FeatG8;
+using FDAAPI.App.FeatG9;
 using FDAAPI.Domain.RelationalDb.RealationalDB;
 using FDAAPI.Domain.RelationalDb.Repositories;
 using FDAAPI.Infra.Persistence.Repositories;
-using System.Reflection;
-using Microsoft.Extensions.Hosting;
-using FDAAPI.App.Feat5;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using FDAAPI.App.FeatG6;
-using FDAAPI.App.FeatG9;
-using FDAAPI.App.FeatG8;
-using FDAAPI.App.FeatG7;
-using FDAAPI.App.Common.Services;
 using FDAAPI.Infra.Services.Auth;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using FDAAPI.App.FeatG10;
-using FDAAPI.App.FeatG11;
 using FDAAPI.Infra.Services.Cache;
 using FDAAPI.Infra.Services.OAuth;
-using FDAAPI.App.FeatG12;
-using FDAAPI.App.FeatG13;
-using FDAAPI.App.FeatG16;
-using FDAAPI.App.FeatG17;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
+using System.Reflection;
+using System.Text;
 
 namespace FDAAPI.Infra.Configuration
 {
@@ -86,7 +89,7 @@ namespace FDAAPI.Infra.Configuration
 
             // Google OAuth Service
             services.AddScoped<IGoogleOAuthService, GoogleOAuthService>();
-
+            services.AddScoped<IUserProfileMapper, UserProfileMapper>();
             return services;
         }
 
@@ -108,12 +111,16 @@ namespace FDAAPI.Infra.Configuration
 
             services.AddTransient<IFeatureHandler<ChangePasswordRequest, ChangePasswordResponse>, ChangePasswordHandler>();
             services.AddTransient<IFeatureHandler<SetPasswordRequest, SetPasswordResponse>, SetPasswordHandler>();
+            services.AddHttpClient<IImageStorageService, ImageKitService>();
 
+            // Image upload policy
+            services.AddScoped<IImageUploadPolicy, ImageUploadPolicy>();
             // Google OAuth handlers
             services.AddTransient<IFeatureHandler<GoogleLoginInitiateRequest, GoogleLoginInitiateResponse>, GoogleLoginInitiateHandler>();
             services.AddTransient<IFeatureHandler<GoogleOAuthCallbackRequest, GoogleOAuthCallbackResponse>, GoogleOAuthCallbackHandler>();
             services.AddTransient<IFeatureHandler<GoogleMobileLoginRequest, GoogleMobileLoginResponse>, GoogleMobileLoginHandler>();
-
+            services.AddTransient<IFeatureHandler<GetProfileRequest, GetProfileResponse>, GetProfileHandler>();
+            services.AddTransient<IFeatureHandler<UpdateProfileRequest, UpdateProfileResponse>, UpdateProfileHandler>();
             services.AddTransient<IFeatureHandler<CheckIdentifierRequest, CheckIdentifierResponse>, CheckIdentifierHandler>();
             return services;
         }
@@ -162,7 +169,11 @@ namespace FDAAPI.Infra.Configuration
                         ValidIssuer = jwtIssuer,
                         ValidAudience = jwtAudience,
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
-                        ClockSkew = TimeSpan.Zero // Strict expiration validation
+                        ClockSkew = TimeSpan.Zero, // Strict expiration validation
+                        NameClaimType = "sub",
+                        RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+
+
                     };
 
                     // Optional: Event handlers for debugging

@@ -41,6 +41,23 @@ builder.Services
             s.Title = "FDA API";
             s.Version = "v1";
             s.Description = "Flood Detection & Alert API - Authentication & Water Level Monitoring";
+            s.AddSecurity("JWTBearerAuth", new NSwag.OpenApiSecurityScheme
+            {
+                Type = NSwag.OpenApiSecuritySchemeType.Http,
+                Scheme = "Bearer",
+                BearerFormat = "JWT",
+                In = NSwag.OpenApiSecurityApiKeyLocation.Header,
+                Description = "Enter your JWT Access Token"
+            });
+
+            // Global Security Requirement using PostProcess
+            s.PostProcess = doc =>
+            {
+                doc.Security.Add(new NSwag.OpenApiSecurityRequirement
+                {
+                    { "JWTBearerAuth", Array.Empty<string>() }
+                });
+            };
         };
     });
 
