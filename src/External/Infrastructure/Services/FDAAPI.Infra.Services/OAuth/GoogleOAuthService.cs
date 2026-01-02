@@ -18,6 +18,24 @@ namespace FDAAPI.Infra.Services.OAuth
         private string ClientSecret => _configuration["OAuth:Google:ClientSecret"] ?? throw new InvalidOperationException("Google ClientSecret not configured");
         private string RedirectUri => _configuration["OAuth:Google:RedirectUri"] ?? "https://localhost:7097/api/v1/auth/google/callback";
 
+        // Get all allowed client IDs (Web + Mobile)
+        private List<string> AllowedClientIds
+        {
+            get
+            {
+                var clientIds = new List<string> { ClientId };
+
+                // Add mobile client IDs if configured
+                var mobileClientIds = _configuration.GetSection("OAuth:Google:MobileClientIds").Get<string[]>();
+                if (mobileClientIds != null && mobileClientIds.Length > 0)
+                {
+                    clientIds.AddRange(mobileClientIds);
+                }
+
+                return clientIds;
+            }
+        }
+
         public GoogleOAuthService(IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _httpClientFactory = httpClientFactory;
@@ -91,10 +109,14 @@ namespace FDAAPI.Infra.Services.OAuth
                 throw new InvalidOperationException("Invalid token info response from Google");
             }
 
-            // Verify audience matches our client ID
-            if (tokenInfo.Audience != ClientId)
+            // Verify audience matches one of our allowed client IDs (Web + Mobile)
+            var allowedIds = AllowedClientIds;
+            if (!allowedIds.Contains(tokenInfo.Audience))
             {
-                throw new InvalidOperationException("Token audience does not match client ID");
+                throw new InvalidOperationException(
+                    $"Token audience '{tokenInfo.Audience}' does not match any allowed client IDs. " +
+                    $"Allowed: {string.Join(", ", allowedIds)}"
+                );
             }
 
             // Map to GoogleUserInfo
