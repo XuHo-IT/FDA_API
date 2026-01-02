@@ -140,7 +140,7 @@ namespace FDAAPI.App.FeatG7
                         {
                             Id = Guid.NewGuid(),
                             Email = identifier,
-                            PhoneNumber = string.Empty, // Will be set later if needed
+                            PhoneNumber = null, // No phone number yet (avoid unique constraint violation)
                             Provider = "local",
                             Status = "active",
                             EmailVerifiedAt = DateTime.UtcNow,
