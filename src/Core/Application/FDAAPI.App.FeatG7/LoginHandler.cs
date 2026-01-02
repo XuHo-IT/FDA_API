@@ -102,7 +102,7 @@ namespace FDAAPI.App.FeatG7
                 var identifierType = isEmail ? "email" : "phone";
 
                 // Step 2: Verify OTP from database
-                var otp = await _otpRepository.GetLatestValidOtpAsync(identifier, ct);
+                var otp = await _otpRepository.GetLatestValidOtpByIdentifierAsync(identifier, ct);
 
                 if (otp == null || otp.IsUsed || otp.ExpiresAt < DateTime.UtcNow)
                 {
