@@ -118,15 +118,18 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat13
 
                     // Build redirect URL with tokens in fragment (#)
                     // Fragment (#) ensures tokens are not sent to server in subsequent requests
-                    var redirectUrl = $"{frontendBaseUrl}/auth/callback#{Uri.EscapeDataString($"access_token={result.AccessToken}&refresh_token={result.RefreshToken}&return_url={returnPath}")}";
+                    var redirectUrl = $"{frontendBaseUrl}/auth/callback#access_token={Uri.EscapeDataString(result.AccessToken)}&refresh_token={Uri.EscapeDataString(result.RefreshToken)}&return_url={Uri.EscapeDataString(returnPath)}";
 
-                    await SendRedirectAsync(redirectUrl);
+                    // Use HttpContext.Response.Redirect for external URLs
+                    HttpContext.Response.Redirect(redirectUrl, permanent: false);
                 }
                 else
                 {
                     // Redirect to login page with error message
                     var frontendBaseUrl = _configuration["OAuth:FrontendUrl"] ?? "http://localhost:3000";
-                    await SendRedirectAsync($"{frontendBaseUrl}/login?error={Uri.EscapeDataString(result.Message)}");
+                    var errorUrl = $"{frontendBaseUrl}/login?error={Uri.EscapeDataString(result.Message)}";
+
+                    HttpContext.Response.Redirect(errorUrl, permanent: false);
                 }
             }
             catch (Exception ex)
