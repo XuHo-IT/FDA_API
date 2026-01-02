@@ -27,6 +27,12 @@ namespace FDAAPI.Domain.RelationalDb.Repositories
         Task<OtpCode?> GetLatestValidOtpAsync(string phoneNumber, CancellationToken ct = default);
 
         /// <summary>
+        /// Get latest valid OTP by identifier (email or phone)
+        /// Conditions: not used, not expired, ordered by created_at DESC
+        /// Used in LoginHandler to verify user's OTP input
+        Task<OtpCode?> GetLatestValidOtpByIdentifierAsync(string identifier, CancellationToken ct = default);
+
+        /// <summary>
         /// Mark OTP as used after successful login
         /// Set is_used = true, used_at = NOW()
         /// Prevents OTP reuse

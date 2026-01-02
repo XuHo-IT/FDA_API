@@ -6,9 +6,8 @@
     public class SendOtpRequestDto
     {
         /// <summary>
-        /// Phone number to send OTP to (E.164 format recommended)
-        /// Example: +84901234567
+        /// Phone number or email address
         /// </summary>
-        public string PhoneNumber { get; set; } = string.Empty;
+        public string Identifier { get; set; } = string.Empty;
     }
 }
