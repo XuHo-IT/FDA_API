@@ -7,11 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG14\FDAAPI.App.FeatG14.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG15\FDAAPI.App.FeatG15.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.Common\FDAAPI.App.Common.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG10\FDAAPI.App.FeatG10.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG11\FDAAPI.App.FeatG11.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG12\FDAAPI.App.FeatG12.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG13\FDAAPI.App.FeatG13.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG14\FDAAPI.App.FeatG14.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG15\FDAAPI.App.FeatG15.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG16\FDAAPI.App.FeatG16.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG17\FDAAPI.App.FeatG17.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG1\FDAAPI.App.FeatG1.csproj" />
