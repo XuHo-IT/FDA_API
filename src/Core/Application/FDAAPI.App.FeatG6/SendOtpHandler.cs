@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using FDAAPI.App.Common.Features;
 using FDAAPI.Domain.RelationalDb.Entities;
@@ -25,23 +26,35 @@ namespace FDAAPI.App.FeatG6
 
         public async Task<SendOtpResponse> ExecuteAsync(SendOtpRequest request, CancellationToken ct)
         {
-            // Validation: Phone number is required
-            if (string.IsNullOrWhiteSpace(request.PhoneNumber))
+            // Validation: Identifier is required
+            if (string.IsNullOrWhiteSpace(request.Identifier))
             {
                 return new SendOtpResponse
                 {
                     Success = false,
-                    Message = "Phone number is required"
+                    Message = "Phone number or email is required"
                 };
             }
 
-            // Basic phone validation (simple check)
-            if (request.PhoneNumber.Length < 10)
+            // Determine identifier type
+            var identifierType = IsEmail(request.Identifier) ? "email" : "phone";
+
+            // Basic validation
+            if (identifierType == "phone" && request.Identifier.Length < 10)
             {
                 return new SendOtpResponse
                 {
                     Success = false,
                     Message = "Invalid phone number format"
+                };
+            }
+
+            if (identifierType == "email" && !IsEmail(request.Identifier))
+            {
+                return new SendOtpResponse
+                {
+                    Success = false,
+                    Message = "Invalid email format"
                 };
             }
 
@@ -55,7 +68,9 @@ namespace FDAAPI.App.FeatG6
                 var otp = new OtpCode
                 {
                     Id = Guid.NewGuid(),
-                    PhoneNumber = request.PhoneNumber,
+                    Identifier = request.Identifier,
+                    IdentifierType = identifierType,
+                    PhoneNumber = identifierType == "phone" ? request.Identifier : string.Empty, // Backward compatibility
                     Code = otpCode,
                     ExpiresAt = expiresAt,
                     CreatedAt = DateTime.UtcNow,
@@ -67,14 +82,22 @@ namespace FDAAPI.App.FeatG6
                 await _otpRepository.CreateAsync(otp, ct);
 
                 // TODO: Production - Send OTP via SMS service
-                // await _smsService.SendOtpAsync(request.PhoneNumber, otpCode);
+                if (identifierType == "phone")
+                {
+                    // await _smsService.SendOtpAsync(request.Identifier, otpCode);
+                }
+                else
+                {
+                    // await _emailService.SendOtpAsync(request.Identifier, otpCode);
+                }
 
                 return new SendOtpResponse
                 {
                     Success = true,
-                    Message = "OTP sent successfully",
+                    Message = $"OTP sent successfully to your {identifierType}",
                     OtpCode = otpCode, // Remove in production
-                    ExpiresAt = expiresAt
+                    ExpiresAt = expiresAt,
+                    IdentifierType = identifierType
                 };
             }
             catch (Exception ex)
@@ -98,6 +121,15 @@ namespace FDAAPI.App.FeatG6
 
             // For production: uncomment below
             // return Random.Shared.Next(100000, 999999).ToString();
+        }
+
+        /// <summary>
+        /// Simple email validation using regex
+        /// </summary>
+        private bool IsEmail(string identifier)
+        {
+            var emailPattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
+            return Regex.IsMatch(identifier, emailPattern);
         }
     }
 }

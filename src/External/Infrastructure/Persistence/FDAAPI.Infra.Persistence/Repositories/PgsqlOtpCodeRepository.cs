@@ -41,6 +41,20 @@ namespace FDAAPI.Infra.Persistence.Repositories
                 .FirstOrDefaultAsync(ct);
         }
 
+        public async Task<OtpCode?> GetLatestValidOtpByIdentifierAsync(string identifier, CancellationToken ct = default)
+        {
+            return await _context.OtpCodes
+                .AsNoTracking()
+                .Where(o =>
+                    (o.Identifier == identifier || o.PhoneNumber == identifier) && // Support both old and new
+                    !o.IsUsed &&
+                    o.ExpiresAt > DateTime.UtcNow
+                )
+                .OrderByDescending(o => o.CreatedAt)
+                .FirstOrDefaultAsync(ct);
+        }
+
+
         public async Task<bool> MarkAsUsedAsync(Guid otpId, CancellationToken ct = default)
         {
             var otp = await _context.OtpCodes.FindAsync(new object[] { otpId }, ct);

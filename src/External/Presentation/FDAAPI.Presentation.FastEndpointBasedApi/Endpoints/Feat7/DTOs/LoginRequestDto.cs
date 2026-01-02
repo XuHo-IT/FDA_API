@@ -2,21 +2,32 @@
 {
     /// <summary>
     /// Data Transfer Object for Login request
-    /// Supports two authentication methods:
-    /// 1. Phone + OTP (for Citizens)
-    /// 2. Email + Password (for Admin/Gov)
+    /// Supports 4 authentication methods:
+    /// 1. Phone + OTP (for registration/login)
+    /// 2. Phone + Password (for login with password)
+    /// 3. Email + OTP (for registration/login/forgot password)
+    /// 4. Email + Password (for login with password)
     /// </summary>
     public class LoginRequestDto
     {
-        // Phone + OTP Login (Citizen)
-        public string? PhoneNumber { get; set; }
+        /// <summary>
+        /// Phone number or email address
+        /// </summary>
+        public string? Identifier { get; set; }
+
+        /// <summary>
+        /// OTP code (for OTP-based authentication)
+        /// </summary>
         public string? OtpCode { get; set; }
 
-        // Email + Password Login (Admin/Gov)
-        public string? Email { get; set; }
+        /// <summary>
+        /// Password (for password-based authentication)
+        /// </summary>
         public string? Password { get; set; }
 
-        // Device tracking (optional)
+        /// <summary>
+        /// Device information (optional, for tracking)
+        /// </summary>
         public string? DeviceInfo { get; set; }
     }
 }

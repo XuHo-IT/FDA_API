@@ -1,11 +1,11 @@
 ﻿using FDAAPI.App.Common.Features;
 
-namespace FDAAPI.App.FeatG6
+namespace FDAAPI.App.FeatG17
 {
     /// <summary>
-    /// Request to send OTP to phone number
+    /// Request to check if an identifier (phone/email) exists and requires password or OTP
     /// </summary>
-    public class SendOtpRequest : IFeatureRequest<SendOtpResponse>
+    public class CheckIdentifierRequest : IFeatureRequest<CheckIdentifierResponse>
     {
         /// <summary>
         /// Phone number or email address

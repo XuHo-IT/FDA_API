@@ -42,7 +42,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat6
                                "In production, OTP is sent via SMS.";
                 s.ExampleRequest = new SendOtpRequestDto
                 {
-                    PhoneNumber = "+84901234567"
+                    Identifier = "+84901234567 or user@email.com"
                 };
                 s.ResponseExamples[200] = new SendOtpResponseDto
                 {
@@ -63,7 +63,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat6
                 // Step 1: Map DTO to application request
                 var appRequest = new SendOtpRequest
                 {
-                    PhoneNumber = req.PhoneNumber
+                    Identifier = req.Identifier
                 };
 
                 // Step 2: Execute handler
@@ -75,7 +75,8 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat6
                     Success = result.Success,
                     Message = result.Message,
                     OtpCode = result.OtpCode, // Dev only - remove in production
-                    ExpiresAt = result.ExpiresAt
+                    ExpiresAt = result.ExpiresAt,
+                    IdentifierType = result.IdentifierType
                 };
 
                 // Step 4: Send response

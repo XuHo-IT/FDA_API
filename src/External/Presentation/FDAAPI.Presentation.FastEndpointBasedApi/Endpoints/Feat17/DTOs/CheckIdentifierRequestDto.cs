@@ -1,11 +1,9 @@
-﻿using FDAAPI.App.Common.Features;
-
-namespace FDAAPI.App.FeatG6
+﻿namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat17.DTOs
 {
     /// <summary>
-    /// Request to send OTP to phone number
+    /// DTO for check identifier request
     /// </summary>
-    public class SendOtpRequest : IFeatureRequest<SendOtpResponse>
+    public class CheckIdentifierRequestDto
     {
         /// <summary>
         /// Phone number or email address

@@ -17,5 +17,7 @@
         /// OTP expiration timestamp
         /// </summary>
         public DateTime? ExpiresAt { get; set; }
+
+        public string? IdentifierType { get; set; }
     }
 }

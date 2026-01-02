@@ -18,5 +18,7 @@ namespace FDAAPI.App.FeatG6
         // For development/testing only - remove in production
         public string? OtpCode { get; set; }
         public DateTime? ExpiresAt { get; set; }
+
+        public string? IdentifierType { get; set; } // "phone" or "email"
     }
 }

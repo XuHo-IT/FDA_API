@@ -44,7 +44,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat7
                 // Example 1: Phone + OTP Login
                 s.ExampleRequest = new LoginRequestDto
                 {
-                    PhoneNumber = "+84901234567",
+                    Identifier = "+84901234567 or email@gmail.com",
                     OtpCode = "123456"
                 };
 
@@ -75,15 +75,9 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat7
                 // Step 1: Map DTO to application request
                 var appRequest = new LoginRequest
                 {
-                    // Phone + OTP
-                    PhoneNumber = req.PhoneNumber,
+                    Identifier = req.Identifier,
                     OtpCode = req.OtpCode,
-
-                    // Email + Password
-                    Email = req.Email,
                     Password = req.Password,
-
-                    // Device tracking
                     DeviceInfo = req.DeviceInfo,
                     IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString()
                 };
@@ -117,7 +111,6 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat7
                 }
                 else
                 {
-                    // 401 Unauthorized for invalid credentials
                     await SendAsync(responseDto, 401, ct);
                 }
             }
