@@ -100,48 +100,54 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat13
                     } : null
                 };
 
-                // if (result.Success)
-                // {
-                //     await SendAsync(responseDto, 200, ct);
-                // }
-                // else
-                // {
-                //     // 400 Bad Request for invalid state/code
-                //     await SendAsync(responseDto, 400, ct);
-                // }
-
                 if (result.Success)
                 {
-                    // Get frontend URL from configuration
-                    var frontendBaseUrl = _configuration["OAuth:FrontendUrl"] ?? "http://localhost:3000";
-                    var returnPath = result.ReturnUrl ?? "/dashboard";
-
-                    // Build redirect URL with tokens in fragment (#)
-                    // Fragment (#) ensures tokens are not sent to server in subsequent requests
-                    var redirectUrl = $"{frontendBaseUrl}/auth/callback#access_token={Uri.EscapeDataString(result.AccessToken)}&refresh_token={Uri.EscapeDataString(result.RefreshToken)}&return_url={Uri.EscapeDataString(returnPath)}";
-
-                    // DEBUG: Log redirect URL
-                    Console.WriteLine($"[OAuth Callback] Redirecting to: {redirectUrl}");
-
-                    // Use HttpContext.Response.Redirect for external URLs
-                    HttpContext.Response.Redirect(redirectUrl, permanent: false);
+                    await SendAsync(responseDto, 200, ct);
                 }
                 else
                 {
-                    // Redirect to login page with error message
-                    var frontendBaseUrl = _configuration["OAuth:FrontendUrl"] ?? "http://localhost:3000";
-                    var errorUrl = $"{frontendBaseUrl}/login?error={Uri.EscapeDataString(result.Message)}";
-
-                    HttpContext.Response.Redirect(errorUrl, permanent: false);
+                    // 400 Bad Request for invalid state/code
+                    await SendAsync(responseDto, 400, ct);
                 }
+
+                // if (result.Success)
+                // {
+                //     // Get frontend URL from configuration
+                //     var frontendBaseUrl = _configuration["OAuth:FrontendUrl"] ?? "http://localhost:3000";
+                //     var returnPath = result.ReturnUrl ?? "/dashboard";
+
+                //     // Build redirect URL with tokens in fragment (#)
+                //     // Fragment (#) ensures tokens are not sent to server in subsequent requests
+                //     var redirectUrl = $"{frontendBaseUrl}/auth/callback#access_token={Uri.EscapeDataString(result.AccessToken)}&refresh_token={Uri.EscapeDataString(result.RefreshToken)}&return_url={Uri.EscapeDataString(returnPath)}";
+
+                //     // DEBUG: Log redirect URL
+                //     Console.WriteLine($"[OAuth Callback] Redirecting to: {redirectUrl}");
+
+                //     // Use HttpContext.Response.Redirect for external URLs
+                //     HttpContext.Response.Redirect(redirectUrl, permanent: false);
+                // }
+                // else
+                // {
+                //     // Redirect to login page with error message
+                //     var frontendBaseUrl = _configuration["OAuth:FrontendUrl"] ?? "http://localhost:3000";
+                //     var errorUrl = $"{frontendBaseUrl}/login?error={Uri.EscapeDataString(result.Message)}";
+
+                //     HttpContext.Response.Redirect(errorUrl, permanent: false);
+                // }
             }
             catch (Exception ex)
             {
-                // Redirect to login page with error even when exception occurs
-                var frontendBaseUrl = _configuration["OAuth:FrontendUrl"] ?? "http://localhost:3000";
-                var errorUrl = $"{frontendBaseUrl}/login?error={Uri.EscapeDataString($"System error: {ex.Message}")}";
+                // // Redirect to login page with error even when exception occurs
+                // var frontendBaseUrl = _configuration["OAuth:FrontendUrl"] ?? "http://localhost:3000";
+                // var errorUrl = $"{frontendBaseUrl}/login?error={Uri.EscapeDataString($"System error: {ex.Message}")}";
 
-                HttpContext.Response.Redirect(errorUrl, permanent: false);
+                // HttpContext.Response.Redirect(errorUrl, permanent: false);
+                var errorDto = new GoogleOAuthCallbackResponseDto
+                {
+                    Success = false,
+                    Message = $"OAuth callback error: {ex.Message}"
+                };
+                await SendAsync(errorDto, 500, ct);
             }
         }
     }
