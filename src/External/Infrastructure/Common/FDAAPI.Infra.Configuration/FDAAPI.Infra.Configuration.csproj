@@ -18,6 +18,7 @@
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG15\FDAAPI.App.FeatG15.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG16\FDAAPI.App.FeatG16.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG17\FDAAPI.App.FeatG17.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG19\FDAAPI.App.FeatG19.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG1\FDAAPI.App.FeatG1.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG2\FDAAPI.App.FeatG2.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG3\FDAAPI.App.FeatG3.csproj" />
