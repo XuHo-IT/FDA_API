@@ -50,8 +50,8 @@ namespace FDAAPI.Infra.Services.OAuth
             queryParams["response_type"] = "code";
             queryParams["scope"] = "openid email profile";
             queryParams["state"] = state;
-            queryParams["access_type"] = "online";
-            queryParams["prompt"] = "select_account";
+            queryParams["access_type"] = "offline"; // Changed to offline to get refresh token
+            // Remove prompt parameter to allow Google to auto-proceed after account selection
 
             return $"https://accounts.google.com/o/oauth2/v2/auth?{queryParams}";
         }
