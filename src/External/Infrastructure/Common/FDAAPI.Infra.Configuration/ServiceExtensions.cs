@@ -14,6 +14,7 @@ using FDAAPI.App.FeatG14;
 using FDAAPI.App.FeatG15;
 using FDAAPI.App.FeatG16;
 using FDAAPI.App.FeatG17;
+using FDAAPI.App.FeatG19;
 using FDAAPI.App.FeatG6;
 using FDAAPI.App.FeatG7;
 using FDAAPI.App.FeatG8;
@@ -121,6 +122,7 @@ namespace FDAAPI.Infra.Configuration
             services.AddTransient<IFeatureHandler<GoogleMobileLoginRequest, GoogleMobileLoginResponse>, GoogleMobileLoginHandler>();
             services.AddTransient<IFeatureHandler<GetProfileRequest, GetProfileResponse>, GetProfileHandler>();
             services.AddTransient<IFeatureHandler<UpdateProfileRequest, UpdateProfileResponse>, UpdateProfileHandler>();
+            services.AddTransient<IFeatureHandler<VerifyAndUpdatePhoneRequest, UpdateProfileResponse>, VerifyAndUpdatePhoneHandler>();
             services.AddTransient<IFeatureHandler<CheckIdentifierRequest, CheckIdentifierResponse>, CheckIdentifierHandler>();
             return services;
         }
