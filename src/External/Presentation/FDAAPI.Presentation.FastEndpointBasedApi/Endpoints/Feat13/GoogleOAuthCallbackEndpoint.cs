@@ -120,6 +120,9 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat13
                     // Fragment (#) ensures tokens are not sent to server in subsequent requests
                     var redirectUrl = $"{frontendBaseUrl}/auth/callback#access_token={Uri.EscapeDataString(result.AccessToken)}&refresh_token={Uri.EscapeDataString(result.RefreshToken)}&return_url={Uri.EscapeDataString(returnPath)}";
 
+                    // DEBUG: Log redirect URL
+                    Console.WriteLine($"[OAuth Callback] Redirecting to: {redirectUrl}");
+
                     // Use HttpContext.Response.Redirect for external URLs
                     HttpContext.Response.Redirect(redirectUrl, permanent: false);
                 }
@@ -134,12 +137,11 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat13
             }
             catch (Exception ex)
             {
-                var errorDto = new GoogleOAuthCallbackResponseDto
-                {
-                    Success = false,
-                    Message = $"OAuth callback error: {ex.Message}"
-                };
-                await SendAsync(errorDto, 500, ct);
+                // Redirect to login page with error even when exception occurs
+                var frontendBaseUrl = _configuration["OAuth:FrontendUrl"] ?? "http://localhost:3000";
+                var errorUrl = $"{frontendBaseUrl}/login?error={Uri.EscapeDataString($"System error: {ex.Message}")}";
+
+                HttpContext.Response.Redirect(errorUrl, permanent: false);
             }
         }
     }
