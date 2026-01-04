@@ -3,6 +3,7 @@ using FDAAPI.App.Common.Features;
 using FDAAPI.App.FeatG10;
 using FDAAPI.Domain.RelationalDb.Entities;
 using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat10.DTOs;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Reflection.Metadata;
 using System.Security.Claims;
@@ -11,12 +12,9 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat10
 {
     public class ChangePasswordEndpoint : Endpoint<ChangePasswordRequestDto, ChangePasswordResponseDto>
     {
-        private readonly IFeatureHandler<ChangePasswordRequest, ChangePasswordResponse> _handler;
+        private readonly IMediator _mediator;
 
-        public ChangePasswordEndpoint(IFeatureHandler<ChangePasswordRequest, ChangePasswordResponse> handler)
-        {
-            _handler = handler;
-        }
+        public ChangePasswordEndpoint(IMediator mediator) => _mediator = mediator;
 
         public override void Configure()
         {
@@ -38,7 +36,6 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat10
 
         public override async Task HandleAsync(ChangePasswordRequestDto req, CancellationToken ct)
         {
-            // Extract user ID from JWT claims
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
             {
@@ -50,26 +47,16 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat10
                 return;
             }
 
-            // Map DTO to Request
-            var appRequest = new ChangePasswordRequest
-            {
-                UserId = userId,
-                CurrentPassword = req.CurrentPassword,
-                NewPassword = req.NewPassword,
-                ConfirmPassword = req.ConfirmPassword
-            };
+            var command = new ChangePasswordRequest(userId, req.CurrentPassword, req.NewPassword, req.ConfirmPassword);
 
-            // Execute handler
-            var result = await _handler.ExecuteAsync(appRequest, ct);
+            var result = await _mediator.Send(command, ct);
 
-            // Map Response to DTO
             var response = new ChangePasswordResponseDto
             {
                 Success = result.Success,
                 Message = result.Message
             };
 
-            // Send response with appropriate status code
             var statusCode = result.StatusCode switch
             {
                 ChangePasswordResponseStatusCode.Success => 200,

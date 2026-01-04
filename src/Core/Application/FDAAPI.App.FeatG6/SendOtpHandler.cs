@@ -1,12 +1,13 @@
-﻿using System;
+﻿using FDAAPI.App.Common.Features;
+using FDAAPI.Domain.RelationalDb.Entities;
+using FDAAPI.Domain.RelationalDb.Repositories;
+using MediatR;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using FDAAPI.App.Common.Features;
-using FDAAPI.Domain.RelationalDb.Entities;
-using FDAAPI.Domain.RelationalDb.Repositories;
 
 namespace FDAAPI.App.FeatG6
 {
@@ -15,7 +16,7 @@ namespace FDAAPI.App.FeatG6
     /// Generates mock OTP for development (returns in response)
     /// Production: Should integrate with SMS provider (Twilio, AWS SNS)
     /// </summary>
-    public class SendOtpHandler : IFeatureHandler<SendOtpRequest, SendOtpResponse>
+    public class SendOtpHandler : IRequestHandler<SendOtpRequest, SendOtpResponse>
     {
         private readonly IOtpCodeRepository _otpRepository;
 
@@ -24,7 +25,7 @@ namespace FDAAPI.App.FeatG6
             _otpRepository = otpRepository;
         }
 
-        public async Task<SendOtpResponse> ExecuteAsync(SendOtpRequest request, CancellationToken ct)
+        public async Task<SendOtpResponse> Handle(SendOtpRequest request, CancellationToken ct)
         {
             // Validation: Identifier is required
             if (string.IsNullOrWhiteSpace(request.Identifier))

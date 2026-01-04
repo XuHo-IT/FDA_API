@@ -2,6 +2,7 @@
 using FDAAPI.App.Common.Features;
 using FDAAPI.App.FeatG13;
 using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat13.DTOs;
+using MediatR;
 using Microsoft.Extensions.Configuration;
 
 namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat13
@@ -12,22 +13,14 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat13
     /// </summary>
     public class GoogleOAuthCallbackEndpoint : Endpoint<GoogleOAuthCallbackRequestDto, GoogleOAuthCallbackResponseDto>
     {
-        private readonly IFeatureHandler<GoogleOAuthCallbackRequest, GoogleOAuthCallbackResponse> _handler;
-        private readonly IConfiguration _configuration;
+        private readonly IMediator _mediator;
 
-        public GoogleOAuthCallbackEndpoint(
-            IFeatureHandler<GoogleOAuthCallbackRequest, GoogleOAuthCallbackResponse> handler,
-            IConfiguration configuration)
-        {
-            _handler = handler;
-            _configuration = configuration;
-        }
+        public GoogleOAuthCallbackEndpoint(IMediator mediator) => _mediator = mediator;
 
         public override void Configure()
         {
             Get("/api/v1/auth/google/callback");
             AllowAnonymous();
-
             Summary(s =>
             {
                 s.Summary = "Google OAuth callback handler";
@@ -64,7 +57,6 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat13
                     Message = "Invalid or expired state token"
                 };
             });
-
             Tags("Authentication", "Google OAuth");
         }
 
@@ -72,16 +64,10 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat13
         {
             try
             {
-                // Map query params to application request
-                var appRequest = new GoogleOAuthCallbackRequest
-                {
-                    Code = req.Code,
-                    State = req.State
-                };
+                var request = new GoogleOAuthCallbackRequest(req.Code, req.State);
 
-                var result = await _handler.ExecuteAsync(appRequest, ct);
+                var result = await _mediator.Send(request, ct);
 
-                // Map to response DTO
                 var responseDto = new GoogleOAuthCallbackResponseDto
                 {
                     Success = result.Success,

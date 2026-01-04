@@ -1,18 +1,19 @@
-﻿using System;
+﻿using FDAAPI.App.Common.Features;
+using FDAAPI.Domain.RelationalDb.Repositories;
+using MediatR;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using FDAAPI.App.Common.Features;
-using FDAAPI.Domain.RelationalDb.Repositories;
 
 namespace FDAAPI.App.FeatG17
 {
     /// <summary>
     /// Handler to check identifier and determine authentication method
     /// </summary>
-    public class CheckIdentifierHandler : IFeatureHandler<CheckIdentifierRequest, CheckIdentifierResponse>
+    public class CheckIdentifierHandler : IRequestHandler<CheckIdentifierRequest, CheckIdentifierResponse>
     {
         private readonly IUserRepository _userRepository;
 
@@ -21,7 +22,7 @@ namespace FDAAPI.App.FeatG17
             _userRepository = userRepository;
         }
 
-        public async Task<CheckIdentifierResponse> ExecuteAsync(
+        public async Task<CheckIdentifierResponse> Handle(
             CheckIdentifierRequest request,
             CancellationToken ct = default)
         {

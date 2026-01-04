@@ -2,6 +2,7 @@
 using FDAAPI.App.Common.Features;
 using FDAAPI.App.FeatG9;
 using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat9.DTOs;
+using MediatR;
 
 namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat9
 {
@@ -16,24 +17,14 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat9
     /// </summary>
     public class LogoutEndpoint : Endpoint<LogoutRequestDto, LogoutResponseDto>
     {
-        private readonly IFeatureHandler<LogoutRequest, LogoutResponse> _handler;
+        private readonly IMediator _mediator;
 
-        public LogoutEndpoint(IFeatureHandler<LogoutRequest, LogoutResponse> handler)
-        {
-            _handler = handler;
-        }
+        public LogoutEndpoint(IMediator mediator) => _mediator = mediator;
 
         public override void Configure()
         {
-            // Define HTTP method and route
             Post("/api/v1/auth/logout");
-
-            // Ideally require authentication, but allow anonymous for now
-            // TODO: Uncomment when auth middleware is configured
-            // Policies("User");
             AllowAnonymous();
-
-            // API documentation
             Summary(s =>
             {
                 s.Summary = "User logout";
@@ -51,7 +42,6 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat9
                     TokensRevoked = 1
                 };
             });
-
             Tags("Authentication", "Logout");
         }
 
@@ -59,17 +49,10 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat9
         {
             try
             {
-                // Step 1: Map DTO to application request
-                var appRequest = new LogoutRequest
-                {
-                    RefreshToken = req.RefreshToken,
-                    RevokeAllTokens = req.RevokeAllTokens
-                };
+                var command = new LogoutRequest(req.RefreshToken, req.RevokeAllTokens);
 
-                // Step 2: Execute handler
-                var result = await _handler.ExecuteAsync(appRequest, ct);
+                var result = await _mediator.Send(command, ct);
 
-                // Step 3: Map to response DTO
                 var responseDto = new LogoutResponseDto
                 {
                     Success = result.Success,
@@ -77,7 +60,6 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat9
                     TokensRevoked = result.TokensRevoked
                 };
 
-                // Step 4: Send response
                 await SendAsync(responseDto, 200, ct);
             }
             catch (Exception ex)

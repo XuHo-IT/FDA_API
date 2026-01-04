@@ -4,6 +4,7 @@ using FDAAPI.App.Common.Features;
 using FDAAPI.App.FeatG15;
 using FDAAPI.Domain.RelationalDb.Entities;
 using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat15.DTOs;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Security.Claims;
 
@@ -11,12 +12,9 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat15
 {
     public class UpdateProfileEndpoint : Endpoint<UpdateProfileRequestDto, UpdateProfileResponseDto>
     {
-        private readonly IFeatureHandler<UpdateProfileRequest, UpdateProfileResponse> _handler;
+        private readonly IMediator _mediator;
 
-        public UpdateProfileEndpoint(IFeatureHandler<UpdateProfileRequest, UpdateProfileResponse> handler)
-        {
-            _handler = handler;
-        }
+        public UpdateProfileEndpoint(IMediator mediator) => _mediator = mediator;
 
         public override void Configure()
         {
@@ -58,7 +56,6 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat15
         {
             try
             {
-                // Extract user ID from JWT claims
                 var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
                 {
@@ -70,27 +67,17 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat15
                     return;
                 }
 
-                // Map DTO to Request
-                var appRequest = new UpdateProfileRequest
-                {
-                    UserId = userId,
-                    FullName = req.FullName,
-                    AvatarFile = req.AvatarFile,
-                    AvatarUrl = req.AvatarUrl
-                };
+                var command = new UpdateProfileRequest(userId, req.FullName, req.AvatarFile, req.AvatarUrl);
 
-                // Execute handler
-                var result = await _handler.ExecuteAsync(appRequest, ct);
+                var result = await _mediator.Send(command, ct);
 
-                // Map Response to DTO
                 var response = new UpdateProfileResponseDto
                 {
                     Success = result.Success,
                     Message = result.Message,
-                    Profile = result.Profile 
+                    Profile = result.Profile
                 };
 
-                // Send response with appropriate status code
                 var statusCode = result.StatusCode switch
                 {
                     UpdateProfileResponseStatusCode.Success => 200,

@@ -2,6 +2,7 @@
 using FDAAPI.App.Common.Features;
 using FDAAPI.App.FeatG6;
 using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat6.DTOs;
+using MediatR;
 
 namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat6
 {
@@ -17,22 +18,14 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat6
     /// </summary>
     public class SendOtpEndpoint : Endpoint<SendOtpRequestDto, SendOtpResponseDto>
     {
-        private readonly IFeatureHandler<SendOtpRequest, SendOtpResponse> _handler;
+        private readonly IMediator _mediator;
 
-        public SendOtpEndpoint(IFeatureHandler<SendOtpRequest, SendOtpResponse> handler)
-        {
-            _handler = handler;
-        }
+        public SendOtpEndpoint(IMediator mediator) => _mediator = mediator;
 
         public override void Configure()
         {
-            // Define HTTP method and route
             Post("/api/v1/auth/send-otp");
-
-            // Allow anonymous access (no authentication required)
             AllowAnonymous();
-
-            // API documentation
             Summary(s =>
             {
                 s.Summary = "Send OTP to phone number";
@@ -52,7 +45,6 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat6
                     ExpiresAt = DateTime.UtcNow.AddMinutes(5)
                 };
             });
-
             Tags("Authentication", "OTP");
         }
 
@@ -60,26 +52,19 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat6
         {
             try
             {
-                // Step 1: Map DTO to application request
-                var appRequest = new SendOtpRequest
-                {
-                    Identifier = req.Identifier
-                };
+                var command = new SendOtpRequest(req.Identifier);
 
-                // Step 2: Execute handler
-                var result = await _handler.ExecuteAsync(appRequest, ct);
+                var result = await _mediator.Send(command, ct);
 
-                // Step 3: Map to response DTO
                 var responseDto = new SendOtpResponseDto
                 {
                     Success = result.Success,
                     Message = result.Message,
-                    OtpCode = result.OtpCode, // Dev only - remove in production
+                    OtpCode = result.OtpCode,
                     ExpiresAt = result.ExpiresAt,
                     IdentifierType = result.IdentifierType
                 };
 
-                // Step 4: Send response
                 if (result.Success)
                 {
                     await SendAsync(responseDto, 200, ct);

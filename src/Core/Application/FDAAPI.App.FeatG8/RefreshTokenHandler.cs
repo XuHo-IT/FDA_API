@@ -1,12 +1,13 @@
-﻿using System;
+﻿using FDAAPI.App.Common.Features;
+using FDAAPI.App.Common.Services;
+using FDAAPI.Domain.RelationalDb.Entities;
+using FDAAPI.Domain.RelationalDb.Repositories;
+using MediatR;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using FDAAPI.App.Common.Features;
-using FDAAPI.App.Common.Services;
-using FDAAPI.Domain.RelationalDb.Entities;
-using FDAAPI.Domain.RelationalDb.Repositories;
 
 namespace FDAAPI.App.FeatG8
 {
@@ -15,7 +16,7 @@ namespace FDAAPI.App.FeatG8
     /// Implements token rotation: old token is revoked, new token is issued
     /// Security: Prevents refresh token reuse attacks
     /// </summary>
-    public class RefreshTokenHandler : IFeatureHandler<RefreshTokenRequest, RefreshTokenResponse>
+    public class RefreshTokenHandler : IRequestHandler<RefreshTokenRequest, RefreshTokenResponse>
     {
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IUserRepository _userRepository;
@@ -34,7 +35,7 @@ namespace FDAAPI.App.FeatG8
             _jwtTokenService = jwtTokenService;
         }
 
-        public async Task<RefreshTokenResponse> ExecuteAsync(
+        public async Task<RefreshTokenResponse> Handle(
             RefreshTokenRequest request,
             CancellationToken ct)
         {

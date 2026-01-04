@@ -2,12 +2,13 @@
 using FDAAPI.App.Common.Services;
 using FDAAPI.App.Common.Services.Mapping;
 using FDAAPI.Domain.RelationalDb.Repositories;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using System.IO;
 
 namespace FDAAPI.App.FeatG15
 {
-    public class UpdateProfileHandler : IFeatureHandler<UpdateProfileRequest, UpdateProfileResponse>
+    public class UpdateProfileHandler : IRequestHandler<UpdateProfileRequest, UpdateProfileResponse>
     {
         private readonly IUserRepository _userRepository;
         private readonly IUserProfileMapper _profileMapper;
@@ -23,7 +24,7 @@ namespace FDAAPI.App.FeatG15
             _imageKitService = imageKitService;
         }
 
-        public async Task<UpdateProfileResponse> ExecuteAsync(UpdateProfileRequest request, CancellationToken ct)
+        public async Task<UpdateProfileResponse> Handle(UpdateProfileRequest request, CancellationToken ct)
         {
             try
             {

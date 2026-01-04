@@ -1,15 +1,16 @@
-﻿using System;
+﻿using FDAAPI.App.Common.Features;
+using FDAAPI.Infra.Services.Cache;
+using FDAAPI.Infra.Services.OAuth;
+using MediatR;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using FDAAPI.App.Common.Features;
-using FDAAPI.Infra.Services.Cache;
-using FDAAPI.Infra.Services.OAuth;
 
 namespace FDAAPI.App.FeatG12
 {
-    public class GoogleLoginInitiateHandler : IFeatureHandler<GoogleLoginInitiateRequest, GoogleLoginInitiateResponse>
+    public class GoogleLoginInitiateHandler : IRequestHandler<GoogleLoginInitiateRequest, GoogleLoginInitiateResponse>
     {
         private readonly IGoogleOAuthService _googleOAuthService;
         private readonly IStateCache _stateCache;
@@ -22,7 +23,7 @@ namespace FDAAPI.App.FeatG12
             _stateCache = stateCache;
         }
 
-        public async Task<GoogleLoginInitiateResponse> ExecuteAsync(
+        public async Task<GoogleLoginInitiateResponse> Handle(
             GoogleLoginInitiateRequest request,
             CancellationToken ct = default)
         {

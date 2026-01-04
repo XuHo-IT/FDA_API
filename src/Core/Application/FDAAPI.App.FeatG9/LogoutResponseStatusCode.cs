@@ -9,7 +9,7 @@ namespace FDAAPI.App.FeatG9
     /// <summary>
     /// Response status codes for Logout feature
     /// </summary>
-    public static class Feat9ResponseStatusCode
+    public static class LogoutResponseStatusCode
     {
         public const string Success = "FEAT9_SUCCESS";
         public const string SuccessAllDevices = "FEAT9_SUCCESS_ALL_DEVICES";

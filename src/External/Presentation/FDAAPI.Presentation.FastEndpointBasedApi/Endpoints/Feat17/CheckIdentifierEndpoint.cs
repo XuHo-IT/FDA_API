@@ -2,6 +2,7 @@
 using FDAAPI.App.Common.Features;
 using FDAAPI.App.FeatG17;
 using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat17.DTOs;
+using MediatR;
 
 namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat17
 {
@@ -11,18 +12,14 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat17
     /// </summary>
     public class CheckIdentifierEndpoint : Endpoint<CheckIdentifierRequestDto, CheckIdentifierResponseDto>
     {
-        private readonly IFeatureHandler<CheckIdentifierRequest, CheckIdentifierResponse> _handler;
+        private readonly IMediator _mediator;
 
-        public CheckIdentifierEndpoint(IFeatureHandler<CheckIdentifierRequest, CheckIdentifierResponse> handler)
-        {
-            _handler = handler;
-        }
+        public CheckIdentifierEndpoint(IMediator mediator) => _mediator = mediator;
 
         public override void Configure()
         {
             Post("/api/v1/auth/check-identifier");
             AllowAnonymous();
-            Tags("Authentication", "Progressive Login");
             Summary(s =>
             {
                 s.Summary = "Check identifier and get required authentication method";
@@ -32,16 +29,14 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat17
                     Identifier = "user@email.com"
                 };
             });
+            Tags("Authentication", "Progressive Login");
         }
 
         public override async Task HandleAsync(CheckIdentifierRequestDto req, CancellationToken ct)
         {
-            var appRequest = new CheckIdentifierRequest
-            {
-                Identifier = req.Identifier
-            };
+            var command = new CheckIdentifierRequest(req.Identifier);
 
-            var result = await _handler.ExecuteAsync(appRequest, ct);
+            var result = await _mediator.Send(command, ct);
 
             var response = new CheckIdentifierResponseDto
             {

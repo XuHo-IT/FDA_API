@@ -2,6 +2,7 @@
 using FDAAPI.App.Common.Features;
 using FDAAPI.App.FeatG16;
 using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat16.DTOs;
+using MediatR;
 
 namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat16
 {
@@ -11,18 +12,14 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat16
     /// </summary>
     public class GoogleMobileLoginEndpoint : Endpoint<GoogleMobileLoginRequestDto, GoogleMobileLoginResponseDto>
     {
-        private readonly IFeatureHandler<GoogleMobileLoginRequest, GoogleMobileLoginResponse> _handler;
+        private readonly IMediator _mediator;
 
-        public GoogleMobileLoginEndpoint(IFeatureHandler<GoogleMobileLoginRequest, GoogleMobileLoginResponse> handler)
-        {
-            _handler = handler;
-        }
+        public GoogleMobileLoginEndpoint(IMediator mediator) => _mediator = mediator;
 
         public override void Configure()
         {
             Post("/api/v1/auth/google/mobile");
             AllowAnonymous();
-            Tags("Authentication", "Google OAuth", "Mobile");
             Summary(s =>
             {
                 s.Summary = "Google OAuth login for mobile apps";
@@ -32,16 +29,14 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat16
                     IdToken = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjE4MmU0NTBhMzVhMjA4MWZhYTFkOWFlMjkwZjE1ZGM1NjJiMGY1ZDMiLCJ0eXAiOiJKV1QifQ..."
                 };
             });
+            Tags("Authentication", "Google OAuth", "Mobile");
         }
 
         public override async Task HandleAsync(GoogleMobileLoginRequestDto req, CancellationToken ct)
         {
-            var appRequest = new GoogleMobileLoginRequest
-            {
-                IdToken = req.IdToken
-            };
+            var command = new GoogleMobileLoginRequest(req.IdToken);
 
-            var result = await _handler.ExecuteAsync(appRequest, ct);
+            var result = await _mediator.Send(command, ct);
 
             var response = new GoogleMobileLoginResponseDto
             {

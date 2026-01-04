@@ -1,16 +1,17 @@
-﻿using System;
+﻿using FDAAPI.App.Common.Features;
+using FDAAPI.App.Common.Services;
+using FDAAPI.Domain.RelationalDb.Repositories;
+using MediatR;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using FDAAPI.App.Common.Features;
-using FDAAPI.App.Common.Services;
-using FDAAPI.Domain.RelationalDb.Repositories;
 
 namespace FDAAPI.App.FeatG11
 {
-    public class SetPasswordHandler : IFeatureHandler<SetPasswordRequest, SetPasswordResponse>
+    public class SetPasswordHandler : IRequestHandler<SetPasswordRequest, SetPasswordResponse>
     {
         private readonly IUserRepository _userRepository;
         private readonly IPasswordHasher _passwordHasher;
@@ -23,7 +24,7 @@ namespace FDAAPI.App.FeatG11
             _passwordHasher = passwordHasher;
         }
 
-        public async Task<SetPasswordResponse> ExecuteAsync(
+        public async Task<SetPasswordResponse> Handle(
             SetPasswordRequest request,
             CancellationToken ct)
         {

@@ -1,12 +1,13 @@
-﻿using System;
+﻿using FDAAPI.App.Common.Features;
+using FDAAPI.App.Common.Services;
+using FDAAPI.Domain.RelationalDb.Entities;
+using FDAAPI.Domain.RelationalDb.Repositories;
+using MediatR;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using FDAAPI.App.Common.Features;
-using FDAAPI.App.Common.Services;
-using FDAAPI.Domain.RelationalDb.Entities;
-using FDAAPI.Domain.RelationalDb.Repositories;
 
 namespace FDAAPI.App.FeatG7
 {
@@ -16,7 +17,7 @@ namespace FDAAPI.App.FeatG7
     /// 1. Phone + OTP (auto-register if not exists)
     /// 2. Email + Password (must exist)
     /// </summary>
-    public class LoginHandler : IFeatureHandler<LoginRequest, LoginResponse>
+    public class LoginHandler : IRequestHandler<LoginRequest, LoginResponse>
     {
         private readonly IUserRepository _userRepository;
         private readonly IOtpCodeRepository _otpRepository;
@@ -44,7 +45,7 @@ namespace FDAAPI.App.FeatG7
             _jwtTokenService = jwtTokenService;
         }
 
-        public async Task<LoginResponse> ExecuteAsync(LoginRequest request, CancellationToken ct)
+        public async Task<LoginResponse> Handle(LoginRequest request, CancellationToken ct)
         {
             // Normalize identifier (priority: Identifier > PhoneNumber/Email)
             var identifier = request.Identifier

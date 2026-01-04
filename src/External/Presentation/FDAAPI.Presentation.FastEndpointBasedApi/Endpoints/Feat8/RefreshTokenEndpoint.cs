@@ -2,6 +2,7 @@
 using FDAAPI.App.Common.Features;
 using FDAAPI.App.FeatG8;
 using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat8.DTOs;
+using MediatR;
 
 namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat8
 {
@@ -18,22 +19,14 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat8
     /// </summary>
     public class RefreshTokenEndpoint : Endpoint<RefreshTokenRequestDto, RefreshTokenResponseDto>
     {
-        private readonly IFeatureHandler<RefreshTokenRequest, RefreshTokenResponse> _handler;
+        private readonly IMediator _mediator;
 
-        public RefreshTokenEndpoint(IFeatureHandler<RefreshTokenRequest, RefreshTokenResponse> handler)
-        {
-            _handler = handler;
-        }
+        public RefreshTokenEndpoint(IMediator mediator) => _mediator = mediator;
 
         public override void Configure()
         {
-            // Define HTTP method and route
             Post("/api/v1/auth/refresh-token");
-
-            // Allow anonymous (refresh token itself is the credential)
             AllowAnonymous();
-
-            // API documentation
             Summary(s =>
             {
                 s.Summary = "Refresh access token";
@@ -52,7 +45,6 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat8
                     ExpiresAt = DateTime.UtcNow.AddMinutes(60)
                 };
             });
-
             Tags("Authentication", "Token");
         }
 
@@ -60,16 +52,10 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat8
         {
             try
             {
-                // Step 1: Map DTO to application request
-                var appRequest = new RefreshTokenRequest
-                {
-                    RefreshToken = req.RefreshToken
-                };
+                var command = new RefreshTokenRequest(req.RefreshToken);
 
-                // Step 2: Execute handler
-                var result = await _handler.ExecuteAsync(appRequest, ct);
+                var result = await _mediator.Send(command, ct);
 
-                // Step 3: Map to response DTO
                 var responseDto = new RefreshTokenResponseDto
                 {
                     Success = result.Success,
@@ -79,14 +65,12 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat8
                     ExpiresAt = result.ExpiresAt
                 };
 
-                // Step 4: Send response
                 if (result.Success)
                 {
                     await SendAsync(responseDto, 200, ct);
                 }
                 else
                 {
-                    // 401 Unauthorized for invalid/expired token
                     await SendAsync(responseDto, 401, ct);
                 }
             }

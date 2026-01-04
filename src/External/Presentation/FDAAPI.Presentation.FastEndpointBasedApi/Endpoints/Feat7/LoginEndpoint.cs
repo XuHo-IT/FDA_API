@@ -2,6 +2,7 @@
 using FDAAPI.App.Common.Features;
 using FDAAPI.App.FeatG7;
 using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat7.DTOs;
+using MediatR;
 using UserDto = FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat7.DTOs.UserDto;
 
 namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat7
@@ -18,22 +19,14 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat7
     /// </summary>
     public class LoginEndpoint : Endpoint<LoginRequestDto, LoginResponseDto>
     {
-        private readonly IFeatureHandler<LoginRequest, LoginResponse> _handler;
+        private readonly IMediator _mediator;
 
-        public LoginEndpoint(IFeatureHandler<LoginRequest, LoginResponse> handler)
-        {
-            _handler = handler;
-        }
+        public LoginEndpoint(IMediator mediator) => _mediator = mediator;
 
         public override void Configure()
         {
-            // Define HTTP method and route
             Post("/api/v1/auth/login");
-
-            // Allow anonymous access (login doesn't require auth)
             AllowAnonymous();
-
-            // API documentation
             Summary(s =>
             {
                 s.Summary = "User login";
@@ -41,7 +34,6 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat7
                                "Phone login auto-registers new users with USER role. " +
                                "Email login requires existing account (Admin/Gov).";
 
-                // Example 1: Phone + OTP Login
                 s.ExampleRequest = new LoginRequestDto
                 {
                     Identifier = "+84901234567 or email@gmail.com",
@@ -72,20 +64,10 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat7
         {
             try
             {
-                // Step 1: Map DTO to application request
-                var appRequest = new LoginRequest
-                {
-                    Identifier = req.Identifier,
-                    OtpCode = req.OtpCode,
-                    Password = req.Password,
-                    DeviceInfo = req.DeviceInfo,
-                    IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString()
-                };
+                var command = new LoginRequest(req.Identifier, null, req.OtpCode, null, req.Password, req.DeviceInfo, HttpContext.Connection.RemoteIpAddress?.ToString());
 
-                // Step 2: Execute handler
-                var result = await _handler.ExecuteAsync(appRequest, ct);
+                var result = await _mediator.Send(command, ct);
 
-                // Step 3: Map to response DTO
                 var responseDto = new LoginResponseDto
                 {
                     Success = result.Success,

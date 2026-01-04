@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 
 namespace FDAAPI.App.FeatG14
 {
-    public class GetProfileRequest : IFeatureRequest<GetProfileResponse>
-    {
-        public Guid UserId { get; set; }  // From JWT claims
-    }
+    public sealed record GetProfileRequest(Guid UserId) : IFeatureRequest<GetProfileResponse>;
+
 }

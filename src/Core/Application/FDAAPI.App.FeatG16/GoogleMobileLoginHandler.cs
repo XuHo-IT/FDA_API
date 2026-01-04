@@ -1,14 +1,15 @@
-﻿using System;
+﻿using FDAAPI.App.Common.Features;
+using FDAAPI.App.Common.Services;
+using FDAAPI.App.FeatG16;
+using FDAAPI.Domain.RelationalDb.Entities;
+using FDAAPI.Domain.RelationalDb.Repositories;
+using FDAAPI.Infra.Services.OAuth;
+using MediatR;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using FDAAPI.App.Common.Features;
-using FDAAPI.App.Common.Services;
-using FDAAPI.Domain.RelationalDb.Entities;
-using FDAAPI.Domain.RelationalDb.Repositories;
-using FDAAPI.Infra.Services.OAuth;
-using FDAAPI.App.FeatG16;
 
 namespace FDAAPI.App.FeatG16
 {
@@ -16,7 +17,7 @@ namespace FDAAPI.App.FeatG16
     /// Handler for Google OAuth login from mobile apps (React Native)
     /// Accepts idToken from Google SDK and returns FDA API JWT tokens
     /// </summary>
-    public class GoogleMobileLoginHandler : IFeatureHandler<GoogleMobileLoginRequest, GoogleMobileLoginResponse>
+    public class GoogleMobileLoginHandler : IRequestHandler<GoogleMobileLoginRequest, GoogleMobileLoginResponse>
     {
         // Dependencies (NO IStateCache needed for mobile)
         private readonly IGoogleOAuthService _googleOAuthService;
@@ -45,7 +46,7 @@ namespace FDAAPI.App.FeatG16
             _jwtTokenService = jwtTokenService;
         }
 
-        public async Task<GoogleMobileLoginResponse> ExecuteAsync(
+        public async Task<GoogleMobileLoginResponse> Handle(
             GoogleMobileLoginRequest request,
             CancellationToken ct = default)
         {

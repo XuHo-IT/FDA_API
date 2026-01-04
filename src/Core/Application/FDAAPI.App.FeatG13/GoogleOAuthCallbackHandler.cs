@@ -1,18 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FDAAPI.App.Common.Features;
+﻿using FDAAPI.App.Common.Features;
 using FDAAPI.App.Common.Services;
 using FDAAPI.Domain.RelationalDb.Entities;
 using FDAAPI.Domain.RelationalDb.Repositories;
 using FDAAPI.Infra.Services.Cache;
 using FDAAPI.Infra.Services.OAuth;
+using MediatR;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace FDAAPI.App.FeatG13
 {
-    public class GoogleOAuthCallbackHandler : IFeatureHandler<GoogleOAuthCallbackRequest, GoogleOAuthCallbackResponse>
+    public class GoogleOAuthCallbackHandler : IRequestHandler<GoogleOAuthCallbackRequest, GoogleOAuthCallbackResponse>
     {
         private readonly IGoogleOAuthService _googleOAuthService;
         private readonly IStateCache _stateCache;
@@ -43,7 +44,7 @@ namespace FDAAPI.App.FeatG13
             _jwtTokenService = jwtTokenService;
         }
 
-        public async Task<GoogleOAuthCallbackResponse> ExecuteAsync(
+        public async Task<GoogleOAuthCallbackResponse> Handle(
             GoogleOAuthCallbackRequest request,
             CancellationToken ct = default)
         {

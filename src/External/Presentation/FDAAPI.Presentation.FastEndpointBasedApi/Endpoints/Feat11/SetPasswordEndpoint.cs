@@ -3,6 +3,7 @@ using FDAAPI.App.Common.Features;
 using FDAAPI.App.FeatG11;
 using FDAAPI.Domain.RelationalDb.Entities;
 using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat11.DTOs;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity.Data;
 using System.Security.Claims;
@@ -11,12 +12,9 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat11
 {
     public class SetPasswordEndpoint : Endpoint<SetPasswordRequestDto, SetPasswordResponseDto>
     {
-        private readonly IFeatureHandler<SetPasswordRequest, SetPasswordResponse> _handler;
+        private readonly IMediator _mediator;
 
-        public SetPasswordEndpoint(IFeatureHandler<SetPasswordRequest, SetPasswordResponse> handler)
-        {
-            _handler = handler;
-        }
+        public SetPasswordEndpoint(IMediator mediator) => _mediator = mediator;
 
         public override void Configure()
         {
@@ -38,7 +36,6 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat11
 
         public override async Task HandleAsync(SetPasswordRequestDto req, CancellationToken ct)
         {
-            // Extract user ID from JWT claims
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
             {
@@ -50,26 +47,16 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat11
                 return;
             }
 
-            // Map DTO to Request
-            var appRequest = new SetPasswordRequest
-            {
-                UserId = userId,
-                Email = req.Email,
-                NewPassword = req.NewPassword,
-                ConfirmPassword = req.ConfirmPassword
-            };
+            var command = new SetPasswordRequest(userId, req.Email, req.NewPassword, req.ConfirmPassword);
 
-            // Execute handler
-            var result = await _handler.ExecuteAsync(appRequest, ct);
+            var result = await _mediator.Send(command, ct);
 
-            // Map Response to DTO
             var response = new SetPasswordResponseDto
             {
                 Success = result.Success,
                 Message = result.Message
             };
 
-            // Send response with appropriate status code
             var statusCode = result.StatusCode switch
             {
                 SetPasswordResponseStatusCode.Success => 200,

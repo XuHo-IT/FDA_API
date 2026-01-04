@@ -9,7 +9,7 @@ namespace FDAAPI.App.FeatG8
     /// <summary>
     /// Response status codes for Refresh Token feature
     /// </summary>
-    public static class Feat8ResponseStatusCode
+    public static class RefreshTokenResponseStatusCode
     {
         public const string Success = "FEAT8_SUCCESS";
         public const string InvalidToken = "FEAT8_INVALID_TOKEN";
