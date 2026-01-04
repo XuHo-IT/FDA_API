@@ -2,6 +2,7 @@
 using FDAAPI.App.Common.Features;
 using FDAAPI.App.FeatG12;
 using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat12.DTOs;
+using MediatR;
 
 namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat12
 {
@@ -11,18 +12,14 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat12
     /// </summary>
     public class GoogleLoginInitiateEndpoint : Endpoint<GoogleLoginInitiateRequestDto, GoogleLoginInitiateResponseDto>
     {
-        private readonly IFeatureHandler<GoogleLoginInitiateRequest, GoogleLoginInitiateResponse> _handler;
+        private readonly IMediator _mediator;
 
-        public GoogleLoginInitiateEndpoint(IFeatureHandler<GoogleLoginInitiateRequest, GoogleLoginInitiateResponse> handler)
-        {
-            _handler = handler;
-        }
+        public GoogleLoginInitiateEndpoint(IMediator mediator) => _mediator = mediator;
 
         public override void Configure()
         {
             Get("/api/v1/auth/google");
             AllowAnonymous();
-
             Summary(s =>
             {
                 s.Summary = "Initiate Google OAuth login";
@@ -42,7 +39,6 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat12
                     State = "base64_state_token"
                 };
             });
-
             Tags("Authentication", "Google OAuth");
         }
 
@@ -50,12 +46,9 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat12
         {
             try
             {
-                var appRequest = new GoogleLoginInitiateRequest
-                {
-                    ReturnUrl = req.ReturnUrl
-                };
+                var request = new GoogleLoginInitiateRequest(req.ReturnUrl);
 
-                var result = await _handler.ExecuteAsync(appRequest, ct);
+                var result = await _mediator.Send(request, ct);
 
                 var responseDto = new GoogleLoginInitiateResponseDto
                 {

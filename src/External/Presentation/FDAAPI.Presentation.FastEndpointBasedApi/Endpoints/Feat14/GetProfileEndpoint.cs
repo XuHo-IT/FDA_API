@@ -4,6 +4,7 @@ using FDAAPI.App.Common.Features;
 using FDAAPI.App.FeatG14;
 using FDAAPI.Domain.RelationalDb.Entities;
 using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat14.DTOs;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Security.Claims;
 
@@ -11,12 +12,9 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat14
 {
     public class GetProfileEndpoint : EndpointWithoutRequest<GetProfileResponseDto>
     {
-        private readonly IFeatureHandler<GetProfileRequest, GetProfileResponse> _handler;
+        private readonly IMediator _mediator;
 
-        public GetProfileEndpoint(IFeatureHandler<GetProfileRequest, GetProfileResponse> handler)
-        {
-            _handler = handler;
-        }
+        public GetProfileEndpoint(IMediator mediator) => _mediator = mediator;
 
         public override void Configure()
         {
@@ -52,7 +50,6 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat14
         {
             try
             {
-                // Extract user ID from JWT claims
                 var userIdClaim = User.FindFirst("sub")?.Value ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
                 {
@@ -64,24 +61,17 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat14
                     return;
                 }
 
-                // Map to Request
-                var appRequest = new GetProfileRequest
-                {
-                    UserId = userId
-                };
+                var request = new GetProfileRequest(userId);
 
-                // Execute handler
-                var result = await _handler.ExecuteAsync(appRequest, ct);
+                var result = await _mediator.Send(request, ct);
 
-                // Map Response to DTO
                 var response = new GetProfileResponseDto
                 {
                     Success = result.Success,
                     Message = result.Message,
-                    Profile = result.Profile 
+                    Profile = result.Profile
                 };
 
-                // Send response with appropriate status code
                 var statusCode = result.StatusCode switch
                 {
                     GetProfileResponseStatusCode.Success => 200,

@@ -1,5 +1,6 @@
 ﻿using FDAAPI.App.Common.Features;
 using FDAAPI.App.Common.Services;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace FDAAPI.App.FeatG18
 {
-    public class UploadImageHandler : IFeatureHandler<UploadImageRequest, UploadImageResponse>
+    public class UploadImageHandler : IRequestHandler<UploadImageRequest, UploadImageResponse>
     {
         private readonly IImageStorageService _storage;
         private readonly IImageUploadPolicy? _policy;
@@ -19,11 +20,11 @@ namespace FDAAPI.App.FeatG18
             _policy = policy;
         }
 
-        public async Task<UploadImageResponse> ExecuteAsync(UploadImageRequest request, CancellationToken ct)
+        public async Task<UploadImageResponse> Handle(UploadImageRequest request, CancellationToken ct)
         {
             try
             {
-                if (_policy != null && !_policy.IsAllowed(request.UserId, request.FileName, request.ImageData?.LongLength ?? 0))
+                if (_policy != null && !_policy.IsAllowed(request.UserId?.ToString(), request.FileName, request.ImageData?.LongLength ?? 0))
                 {
                     return new UploadImageResponse { Success = false, Message = "Upload not allowed by policy" };
                 }

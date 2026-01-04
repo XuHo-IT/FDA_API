@@ -96,34 +96,43 @@ namespace FDAAPI.Infra.Configuration
 
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
+            services.AddMediatR(cfg =>
+            {
+                cfg.RegisterServicesFromAssembly(typeof(VerifyAndUpdatePhoneRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(SendOtpRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(LoginRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(LogoutRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(RefreshTokenRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(ChangePasswordRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(GoogleLoginInitiateRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(GoogleOAuthCallbackRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(GoogleMobileLoginRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(GetProfileRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(SetPasswordRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(CheckIdentifierRequest).Assembly);
+            });
             services.AddTransient<IFeatureHandler<CreateWaterLevelRequest, CreateWaterLevelResponse>, CreateWaterLevelHandler>();
-
             services.AddTransient<IFeatureHandler<UpdateWaterLevelRequest, UpdateWaterLevelResponse>, UpdateWaterLevelHandler>();
-
             services.AddTransient<IFeatureHandler<GetWaterLevelRequest, GetWaterLevelResponse>, GetWaterLevelHandler>();
-
             services.AddTransient<IFeatureHandler<DeleteWaterLevelRequest, DeleteWaterLevelResponse>, DeleteWaterLevelHandler>();
             services.AddTransient<IFeatureHandler<GetStaticDataRequest, GetStaticDataResponse>, GetStaticDataHandler>();
 
-            services.AddTransient<IFeatureHandler<SendOtpRequest, SendOtpResponse>, SendOtpHandler>();
-            services.AddTransient<IFeatureHandler<LoginRequest, LoginResponse>, LoginHandler>();
-            services.AddTransient<IFeatureHandler<LogoutRequest, LogoutResponse>, LogoutHandler>();
-            services.AddTransient<IFeatureHandler<RefreshTokenRequest, RefreshTokenResponse>, RefreshTokenHandler>();
+            //services.AddTransient<IFeatureHandler<SendOtpRequest, SendOtpResponse>, SendOtpHandler>();
+            //services.AddTransient<IFeatureHandler<LoginRequest, LoginResponse>, LoginHandler>();
+            //services.AddTransient<IFeatureHandler<LogoutRequest, LogoutResponse>, LogoutHandler>();
+            //services.AddTransient<IFeatureHandler<RefreshTokenRequest, RefreshTokenResponse>, RefreshTokenHandler>();
+            //services.AddTransient<IFeatureHandler<ChangePasswordRequest, ChangePasswordResponse>, ChangePasswordHandler>();
+            //services.AddTransient<IFeatureHandler<SetPasswordRequest, SetPasswordResponse>, SetPasswordHandler>();
+            //services.AddTransient<IFeatureHandler<GoogleLoginInitiateRequest, GoogleLoginInitiateResponse>, GoogleLoginInitiateHandler>();
+            //services.AddTransient<IFeatureHandler<GoogleOAuthCallbackRequest, GoogleOAuthCallbackResponse>, GoogleOAuthCallbackHandler>();
+            //services.AddTransient<IFeatureHandler<GoogleMobileLoginRequest, GoogleMobileLoginResponse>, GoogleMobileLoginHandler>();
+            //services.AddTransient<IFeatureHandler<GetProfileRequest, GetProfileResponse>, GetProfileHandler>();
+            //services.AddTransient<IFeatureHandler<UpdateProfileRequest, UpdateProfileResponse>, UpdateProfileHandler>();
+            //services.AddTransient<IFeatureHandler<VerifyAndUpdatePhoneRequest, UpdateProfileResponse>, VerifyAndUpdatePhoneHandler>();
+            //services.AddTransient<IFeatureHandler<CheckIdentifierRequest, CheckIdentifierResponse>, CheckIdentifierHandler>();
 
-            services.AddTransient<IFeatureHandler<ChangePasswordRequest, ChangePasswordResponse>, ChangePasswordHandler>();
-            services.AddTransient<IFeatureHandler<SetPasswordRequest, SetPasswordResponse>, SetPasswordHandler>();
             services.AddHttpClient<IImageStorageService, ImageKitService>();
-
-            // Image upload policy
             services.AddScoped<IImageUploadPolicy, ImageUploadPolicy>();
-            // Google OAuth handlers
-            services.AddTransient<IFeatureHandler<GoogleLoginInitiateRequest, GoogleLoginInitiateResponse>, GoogleLoginInitiateHandler>();
-            services.AddTransient<IFeatureHandler<GoogleOAuthCallbackRequest, GoogleOAuthCallbackResponse>, GoogleOAuthCallbackHandler>();
-            services.AddTransient<IFeatureHandler<GoogleMobileLoginRequest, GoogleMobileLoginResponse>, GoogleMobileLoginHandler>();
-            services.AddTransient<IFeatureHandler<GetProfileRequest, GetProfileResponse>, GetProfileHandler>();
-            services.AddTransient<IFeatureHandler<UpdateProfileRequest, UpdateProfileResponse>, UpdateProfileHandler>();
-            services.AddTransient<IFeatureHandler<VerifyAndUpdatePhoneRequest, UpdateProfileResponse>, VerifyAndUpdatePhoneHandler>();
-            services.AddTransient<IFeatureHandler<CheckIdentifierRequest, CheckIdentifierResponse>, CheckIdentifierHandler>();
             return services;
         }
         public static IServiceCollection AddPersistenceServices(this IServiceCollection services, IConfiguration configuration)

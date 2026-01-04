@@ -8,12 +8,5 @@ using System.Threading.Tasks;
 
 namespace FDAAPI.App.FeatG15
 {
-    public class UpdateProfileRequest : IFeatureRequest<UpdateProfileResponse>
-    {
-        public Guid UserId { get; set; }  // From JWT claims
-        public string? FullName { get; set; }
-
-        public IFormFile? AvatarFile { get; set; }
-        public string? AvatarUrl { get; set; }
-    }
+    public sealed record UpdateProfileRequest(Guid UserId, string? FullName, IFormFile? AvatarFile, string? AvatarUrl) : IFeatureRequest<UpdateProfileResponse>;
 }

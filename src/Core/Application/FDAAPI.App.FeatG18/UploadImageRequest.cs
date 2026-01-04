@@ -7,11 +7,5 @@ using System.Threading.Tasks;
 
 namespace FDAAPI.App.FeatG18
 {
-    public class UploadImageRequest : IFeatureRequest<UploadImageResponse>
-    {
-        public byte[] ImageData { get; set; } = Array.Empty<byte>();
-        public string FileName { get; set; } = string.Empty;
-        public string Folder { get; set; } = "products";
-        public string? UserId { get; set; }
-    }
+    public sealed record UploadImageRequest(byte[] ImageData, string FileName, string Folder, Guid? UserId) : IFeatureRequest<UploadImageResponse>;
 }

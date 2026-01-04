@@ -2,6 +2,7 @@
 using FDAAPI.App.Common.Features;
 using FDAAPI.App.Common.Services.Mapping;
 using FDAAPI.Domain.RelationalDb.Repositories;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace FDAAPI.App.FeatG14
     /// <summary>
     /// Handler for getting user profile
     /// </summary>
-    public class GetProfileHandler : IFeatureHandler<GetProfileRequest, GetProfileResponse>
+    public class GetProfileHandler : IRequestHandler<GetProfileRequest, GetProfileResponse>
     {
         private readonly IUserRepository _userRepository;
         private readonly IUserProfileMapper _profileMapper;
@@ -26,7 +27,7 @@ namespace FDAAPI.App.FeatG14
             _profileMapper = profileMapper;
         }
 
-        public async Task<GetProfileResponse> ExecuteAsync(
+        public async Task<GetProfileResponse> Handle(
             GetProfileRequest request,
             CancellationToken ct)
         {

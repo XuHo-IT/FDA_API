@@ -5,11 +5,6 @@ namespace FDAAPI.App.FeatG6
     /// <summary>
     /// Request to send OTP to phone number
     /// </summary>
-    public class SendOtpRequest : IFeatureRequest<SendOtpResponse>
-    {
-        /// <summary>
-        /// Phone number or email address
-        /// </summary>
-        public string Identifier { get; set; } = string.Empty;
-    }
+    public sealed record SendOtpRequest(string Identifier) : IFeatureRequest<SendOtpResponse>;
+
 }

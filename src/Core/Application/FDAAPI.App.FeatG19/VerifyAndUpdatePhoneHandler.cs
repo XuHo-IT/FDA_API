@@ -2,6 +2,7 @@
 using FDAAPI.App.Common.Services.Mapping;
 using FDAAPI.App.FeatG15;
 using FDAAPI.Domain.RelationalDb.Repositories;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace FDAAPI.App.FeatG19
 {
-    public class VerifyAndUpdatePhoneHandler : IFeatureHandler<VerifyAndUpdatePhoneRequest, UpdateProfileResponse>
+    public class VerifyAndUpdatePhoneHandler :  IRequestHandler<VerifyAndUpdatePhoneRequest, UpdateProfileResponse>
     {
         private readonly IUserRepository _userRepository;
         private readonly IOtpCodeRepository _otpRepository;
@@ -25,8 +26,7 @@ namespace FDAAPI.App.FeatG19
             _otpRepository = otpRepository;
             _profileMapper = profileMapper;
         }
-
-        public async Task<UpdateProfileResponse> ExecuteAsync(VerifyAndUpdatePhoneRequest request, CancellationToken ct)
+        public async Task<UpdateProfileResponse> Handle(VerifyAndUpdatePhoneRequest request,CancellationToken ct) 
         {
             // Check otp code
             var otp = await _otpRepository.GetLatestValidOtpByIdentifierAsync(request.NewPhoneNumber, ct);

@@ -1,10 +1,11 @@
-﻿using System;
+﻿using FDAAPI.App.Common.Features;
+using FDAAPI.Domain.RelationalDb.Repositories;
+using MediatR;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using FDAAPI.App.Common.Features;
-using FDAAPI.Domain.RelationalDb.Repositories;
 
 namespace FDAAPI.App.FeatG9
 {
@@ -14,7 +15,7 @@ namespace FDAAPI.App.FeatG9
     /// 1. Single device logout (revoke specific refresh token)
     /// 2. All devices logout (revoke all user's refresh tokens)
     /// </summary>
-    public class LogoutHandler : IFeatureHandler<LogoutRequest, LogoutResponse>
+    public class LogoutHandler : IRequestHandler<LogoutRequest, LogoutResponse>
     {
         private readonly IRefreshTokenRepository _refreshTokenRepository;
 
@@ -23,7 +24,7 @@ namespace FDAAPI.App.FeatG9
             _refreshTokenRepository = refreshTokenRepository;
         }
 
-        public async Task<LogoutResponse> ExecuteAsync(LogoutRequest request, CancellationToken ct)
+        public async Task<LogoutResponse> Handle(LogoutRequest request, CancellationToken ct)
         {
             // Validation: Refresh token is required
             if (string.IsNullOrWhiteSpace(request.RefreshToken))

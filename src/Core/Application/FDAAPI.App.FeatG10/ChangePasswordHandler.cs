@@ -1,16 +1,17 @@
-﻿using System;
+﻿using FDAAPI.App.Common.Features;
+using FDAAPI.App.Common.Services;
+using FDAAPI.Domain.RelationalDb.Repositories;
+using MediatR;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using FDAAPI.App.Common.Features;
-using FDAAPI.App.Common.Services;
-using FDAAPI.Domain.RelationalDb.Repositories;
 
 namespace FDAAPI.App.FeatG10
 {
-    public class ChangePasswordHandler : IFeatureHandler<ChangePasswordRequest, ChangePasswordResponse>
+    public class ChangePasswordHandler : IRequestHandler<ChangePasswordRequest, ChangePasswordResponse>
     {
         private readonly IUserRepository _userRepository;
         private readonly IPasswordHasher _passwordHasher;
@@ -26,7 +27,7 @@ namespace FDAAPI.App.FeatG10
             _refreshTokenRepository = refreshTokenRepository;
         }
 
-        public async Task<ChangePasswordResponse> ExecuteAsync(
+        public async Task<ChangePasswordResponse> Handle(
             ChangePasswordRequest request,
             CancellationToken ct)
         {
