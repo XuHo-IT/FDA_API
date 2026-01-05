@@ -23,7 +23,7 @@ jobs:
             matrix:
                 include:
                     - language: csharp
-                      build-mode: autobuild
+                      build-mode: manual
         steps:
             - name: 📥 Checkout repository
               uses: actions/checkout@v4
@@ -55,7 +55,7 @@ jobs:
             - name: ⚙️ Setup dotnet installation
               uses: actions/setup-dotnet@v4
               with:
-                 dotnet-version: '9.0.x'
+                 dotnet-version: '8.0.x'
                  include-prerelease: true
 
             - name: 📦 Restore dependencies
