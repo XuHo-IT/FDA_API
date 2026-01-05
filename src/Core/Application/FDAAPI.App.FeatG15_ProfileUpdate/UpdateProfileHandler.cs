@@ -15,9 +15,9 @@ namespace FDAAPI.App.FeatG15_ProfileUpdate
         private readonly IImageStorageService _imageKitService;
 
         public UpdateProfileHandler(
-          IUserRepository userRepository,
-          IUserProfileMapper profileMapper,
-          IImageStorageService imageKitService)
+            IUserRepository userRepository,
+            IUserProfileMapper profileMapper,
+            IImageStorageService imageKitService)
         {
             _userRepository = userRepository;
             _profileMapper = profileMapper;
@@ -28,8 +28,7 @@ namespace FDAAPI.App.FeatG15_ProfileUpdate
         {
             try
             {
-                // Get user
-                var user = await _userRepository.GetUserWithRolesAsync(request.UserId, ct);
+                var user = await _userRepository.GetUserWithRolesAsync(request.UserId, ct);
                 if (user == null)
                 {
                     return new UpdateProfileResponse { Success = false, Message = "User not found", StatusCode = UpdateProfileResponseStatusCode.UserNotFound };
@@ -37,24 +36,24 @@ namespace FDAAPI.App.FeatG15_ProfileUpdate
 
                 bool hasChanges = false;
 
-                // handle full name update
-                if (request.FullName != null && user.FullName != request.FullName)
+                // Handle full name update
+                if (request.FullName != null && user.FullName != request.FullName)
                 {
                     user.FullName = request.FullName;
                     hasChanges = true;
                 }
-                if (request.FullName == string.Empty)
+                else if (request.FullName == string.Empty)
                 {
                     var fullName = await _userRepository.GetUserFullNameAsync(request.UserId, ct);
                     user.FullName = fullName;
                     hasChanges = true;
                 }
 
-                // Update avatar logic
-                if (request.AvatarFile != null)
+                // Update avatar logic
+                if (request.AvatarFile != null)
                 {
-                    const long maxFileSize = 5 * 1024 * 1024; // 5 MB
-                    if (request.AvatarFile.Length > maxFileSize)
+                    const long maxFileSize = 5 * 1024 * 1024;
+                    if (request.AvatarFile.Length > maxFileSize)
                     {
                         return new UpdateProfileResponse { Success = false, Message = "Avatar image size must not exceed 5 MB", StatusCode = UpdateProfileResponseStatusCode.InvalidInput };
                     }
@@ -69,7 +68,6 @@ namespace FDAAPI.App.FeatG15_ProfileUpdate
                         hasChanges = true;
                     }
                 }
-                // bind to existing URL
                 else if (request.AvatarUrl == string.Empty && request.AvatarFile == null)
                 {
                     if (user.AvatarUrl != request.AvatarUrl)
@@ -79,9 +77,7 @@ namespace FDAAPI.App.FeatG15_ProfileUpdate
                         hasChanges = true;
                     }
                 }
-
-                // delete existing avatar
-                else if (request.AvatarUrl == string.Empty)
+                else if (request.AvatarUrl == string.Empty)
                 {
                     if (user.AvatarUrl != null)
                     {
@@ -107,7 +103,7 @@ namespace FDAAPI.App.FeatG15_ProfileUpdate
                 var updateResult = await _userRepository.UpdateAsync(user, ct);
                 if (!updateResult)
                 {
-                    return new UpdateProfileResponse { Success = false, Message = "Failed to update profile in database", StatusCode = UpdateProfileResponseStatusCode.UnknownError };
+                    return new UpdateProfileResponse { Success = false, Message = "Failed to update profile", StatusCode = UpdateProfileResponseStatusCode.UnknownError };
                 }
 
                 return new UpdateProfileResponse
@@ -125,9 +121,3 @@ namespace FDAAPI.App.FeatG15_ProfileUpdate
         }
     }
 }
-
-
-
-
-
-
