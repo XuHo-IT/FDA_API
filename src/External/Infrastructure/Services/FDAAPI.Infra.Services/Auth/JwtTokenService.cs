@@ -1,4 +1,4 @@
-﻿using FDAAPI.App.Common.Services;
+using FDAAPI.App.Common.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -119,3 +119,9 @@ namespace FDAAPI.Infra.Services.Auth
         }
     }
 }
+
+
+
+
+
+

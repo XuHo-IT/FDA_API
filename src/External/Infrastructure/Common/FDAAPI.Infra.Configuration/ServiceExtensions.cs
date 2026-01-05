@@ -1,24 +1,26 @@
 using FDAAPI.App.Common.Features;
 using FDAAPI.App.Common.Services;
 using FDAAPI.App.Common.Services.Mapping;
-using FDAAPI.App.Feat1;
-using FDAAPI.App.Feat2;
-using FDAAPI.App.Feat3;
-using FDAAPI.App.Feat4;
-using FDAAPI.App.Feat5;
-using FDAAPI.App.FeatG10;
-using FDAAPI.App.FeatG11;
-using FDAAPI.App.FeatG12;
-using FDAAPI.App.FeatG13;
-using FDAAPI.App.FeatG14;
-using FDAAPI.App.FeatG15;
-using FDAAPI.App.FeatG16;
-using FDAAPI.App.FeatG17;
-using FDAAPI.App.FeatG19;
-using FDAAPI.App.FeatG6;
-using FDAAPI.App.FeatG7;
-using FDAAPI.App.FeatG8;
-using FDAAPI.App.FeatG9;
+using FDAAPI.App.FeatG1_WaterLevelCreate;
+using FDAAPI.App.FeatG2_WaterLevelUpdate;
+using FDAAPI.App.FeatG3_WaterLevelGet;
+using FDAAPI.App.FeatG4_WaterLevelDelete;
+using FDAAPI.App.FeatG6_AuthSendOtp;
+using FDAAPI.App.FeatG7_AuthLogin;
+using FDAAPI.App.FeatG8_AuthRefreshToken;
+using FDAAPI.App.FeatG9_AuthLogout;
+using FDAAPI.App.FeatG10_AuthChangePassword;
+using FDAAPI.App.FeatG11_AuthSetPassword;
+using FDAAPI.App.FeatG12_AuthGoogleLoginInitiate;
+using FDAAPI.App.FeatG13_AuthGoogleOAuthCallback;
+using FDAAPI.App.FeatG14_ProfileGet;
+using FDAAPI.App.FeatG15_ProfileUpdate;
+using FDAAPI.App.FeatG16_AuthGoogleMobileLogin;
+using FDAAPI.App.FeatG17_AuthCheckIdentifier;
+using FDAAPI.App.FeatG19_ProfileVerifyUpdatePhone;
+using FDAAPI.App.FeatG20_AdminManagement.Features.Users.Create;
+using FDAAPI.App.FeatG20_AdminManagement.Features.Users.List;
+using FDAAPI.App.FeatG20_AdminManagement.Features.Users.Update;
 using FDAAPI.Domain.RelationalDb.RealationalDB;
 using FDAAPI.Domain.RelationalDb.Repositories;
 using FDAAPI.Infra.Persistence.Repositories;
@@ -110,12 +112,14 @@ namespace FDAAPI.Infra.Configuration
                 cfg.RegisterServicesFromAssembly(typeof(GetProfileRequest).Assembly);
                 cfg.RegisterServicesFromAssembly(typeof(SetPasswordRequest).Assembly);
                 cfg.RegisterServicesFromAssembly(typeof(CheckIdentifierRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(GetUsersRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(UpdateProfileRequest).Assembly);
+
             });
             services.AddTransient<IFeatureHandler<CreateWaterLevelRequest, CreateWaterLevelResponse>, CreateWaterLevelHandler>();
             services.AddTransient<IFeatureHandler<UpdateWaterLevelRequest, UpdateWaterLevelResponse>, UpdateWaterLevelHandler>();
             services.AddTransient<IFeatureHandler<GetWaterLevelRequest, GetWaterLevelResponse>, GetWaterLevelHandler>();
             services.AddTransient<IFeatureHandler<DeleteWaterLevelRequest, DeleteWaterLevelResponse>, DeleteWaterLevelHandler>();
-            services.AddTransient<IFeatureHandler<GetStaticDataRequest, GetStaticDataResponse>, GetStaticDataHandler>();
 
             //services.AddTransient<IFeatureHandler<SendOtpRequest, SendOtpResponse>, SendOtpHandler>();
             //services.AddTransient<IFeatureHandler<LoginRequest, LoginResponse>, LoginHandler>();
@@ -204,9 +208,10 @@ namespace FDAAPI.Infra.Configuration
             // Authorization Policies
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("Admin", policy => policy.RequireRole("ADMIN"));
-                options.AddPolicy("Moderator", policy => policy.RequireRole("MODERATOR"));
-                options.AddPolicy("User", policy => policy.RequireRole("USER", "ADMIN", "MODERATOR"));
+                options.AddPolicy("SuperAdmin", policy => policy.RequireRole("SUPERADMIN"));
+                options.AddPolicy("Admin", policy => policy.RequireRole("ADMIN", "SUPERADMIN"));
+                options.AddPolicy("Authority", policy => policy.RequireRole("AUTHORITY", "ADMIN", "SUPERADMIN"));
+                options.AddPolicy("User", policy => policy.RequireRole("USER", "AUTHORITY", "ADMIN", "SUPERADMIN"));
             });
 
             return services;
@@ -241,3 +246,4 @@ namespace FDAAPI.Infra.Configuration
 
     }
 }
+

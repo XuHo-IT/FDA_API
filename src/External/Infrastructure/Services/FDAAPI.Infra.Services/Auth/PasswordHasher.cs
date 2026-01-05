@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
@@ -25,7 +25,7 @@ namespace FDAAPI.Infra.Services.Auth
 
         /// <summary>
         /// Hash password with random salt using PBKDF2-SHA256
-        /// Format: [version_byte][salt_16_bytes][hash_32_bytes] → Base64
+        /// Format: [version_byte][salt_16_bytes][hash_32_bytes] ? Base64
         /// </summary>
         public string HashPassword(string password)
         {
@@ -121,3 +121,9 @@ namespace FDAAPI.Infra.Services.Auth
         }
     }
 }
+
+
+
+
+
+

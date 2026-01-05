@@ -10,3 +10,9 @@ namespace FDAAPI.Domain.RelationalDb.Repositories
         Task<IEnumerable<WaterLevel>> ListAsync(int skip = 0, int take = 50);
     }
 }
+
+
+
+
+
+

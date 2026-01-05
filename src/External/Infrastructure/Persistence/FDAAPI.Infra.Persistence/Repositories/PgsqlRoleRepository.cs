@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -29,6 +29,13 @@ namespace FDAAPI.Infra.Persistence.Repositories
                 .FirstOrDefaultAsync(r => r.Code == code, ct);
         }
 
+        public async Task<Role?> GetByNameAsync(string name, CancellationToken ct = default)
+        {
+            return await _context.Roles
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.Name == name, ct);
+        }
+
         public async Task<IEnumerable<Role>> GetAllAsync(CancellationToken ct = default)
         {
             return await _context.Roles
@@ -37,3 +44,9 @@ namespace FDAAPI.Infra.Persistence.Repositories
         }
     }
 }
+
+
+
+
+
+

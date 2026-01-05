@@ -1,4 +1,4 @@
-﻿using FDAAPI.App.Common.Services;
+using FDAAPI.App.Common.Services;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -147,3 +147,9 @@ namespace FDAAPI.Infra.Services.Auth
         }
     }
 }
+
+
+
+
+
+

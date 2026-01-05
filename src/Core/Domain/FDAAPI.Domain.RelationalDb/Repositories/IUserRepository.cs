@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -47,5 +47,22 @@ namespace FDAAPI.Domain.RelationalDb.Repositories
         Task<string?> GetUserFullNameAsync(Guid userId, CancellationToken ct = default);
         Task<string?> GetAvatarUrlAsync(Guid userId, CancellationToken ct = default);
 
+        /// <summary>
+        /// Get list of users with filtering and pagination
+        /// </summary>
+        Task<(IEnumerable<User> Users, int TotalCount)> GetUsersAsync(
+            string? searchTerm,
+            string? role,
+            string? status,
+            int pageNumber,
+            int pageSize,
+            CancellationToken ct = default);
+
     }
 }
+
+
+
+
+
+

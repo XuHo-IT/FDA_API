@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
 	  <TargetFramework>net8.0</TargetFramework>
@@ -7,30 +7,28 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG14\FDAAPI.App.FeatG14.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG15\FDAAPI.App.FeatG15.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG14_ProfileGet\FDAAPI.App.FeatG14_ProfileGet.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG15_ProfileUpdate\FDAAPI.App.FeatG15_ProfileUpdate.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.Common\FDAAPI.App.Common.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG10\FDAAPI.App.FeatG10.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG11\FDAAPI.App.FeatG11.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG12\FDAAPI.App.FeatG12.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG13\FDAAPI.App.FeatG13.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG14\FDAAPI.App.FeatG14.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG15\FDAAPI.App.FeatG15.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG16\FDAAPI.App.FeatG16.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG17\FDAAPI.App.FeatG17.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG19\FDAAPI.App.FeatG19.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG1\FDAAPI.App.FeatG1.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG2\FDAAPI.App.FeatG2.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG3\FDAAPI.App.FeatG3.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG4\FDAAPI.App.FeatG4.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG5\FDAAPI.App.FeatG5.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG6\FDAAPI.App.FeatG6.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG7\FDAAPI.App.FeatG7.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG8\FDAAPI.App.FeatG8.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG9\FDAAPI.App.FeatG9.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG10_AuthChangePassword\FDAAPI.App.FeatG10_AuthChangePassword.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG11_AuthSetPassword\FDAAPI.App.FeatG11_AuthSetPassword.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG12_AuthGoogleLoginInitiate\FDAAPI.App.FeatG12_AuthGoogleLoginInitiate.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG13_AuthGoogleOAuthCallback\FDAAPI.App.FeatG13_AuthGoogleOAuthCallback.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG16_AuthGoogleMobileLogin\FDAAPI.App.FeatG16_AuthGoogleMobileLogin.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG17_AuthCheckIdentifier\FDAAPI.App.FeatG17_AuthCheckIdentifier.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG19_ProfileVerifyUpdatePhone\FDAAPI.App.FeatG19_ProfileVerifyUpdatePhone.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG1_WaterLevelCreate\FDAAPI.App.FeatG1_WaterLevelCreate.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG2_WaterLevelUpdate\FDAAPI.App.FeatG2_WaterLevelUpdate.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG3_WaterLevelGet\FDAAPI.App.FeatG3_WaterLevelGet.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG4_WaterLevelDelete\FDAAPI.App.FeatG4_WaterLevelDelete.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG6_AuthSendOtp\FDAAPI.App.FeatG6_AuthSendOtp.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG7_AuthLogin\FDAAPI.App.FeatG7_AuthLogin.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG8_AuthRefreshToken\FDAAPI.App.FeatG8_AuthRefreshToken.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG9_AuthLogout\FDAAPI.App.FeatG9_AuthLogout.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Domain\FDAAPI.Domain.RelationalDb\FDAAPI.Domain.RelationalDb.csproj" />
     <ProjectReference Include="..\..\Persistence\FDAAPI.Infra.Persistence\FDAAPI.Infra.Persistence.csproj" />
     <ProjectReference Include="..\..\Services\FDAAPI.Infra.Services\FDAAPI.Infra.Services.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG20_AdminManagement\FDAAPI.App.FeatG20_AdminManagement.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,3 +39,4 @@
   </ItemGroup>
 
 </Project>
+

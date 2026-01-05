@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -27,3 +27,9 @@ namespace FDAAPI.App.Common.Services
         bool VerifyPassword(string password, string passwordHash);
     }
 }
+
+
+
+
+
+
