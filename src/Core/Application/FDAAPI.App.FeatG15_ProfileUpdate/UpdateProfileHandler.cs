@@ -51,7 +51,6 @@ namespace FDAAPI.App.FeatG15_ProfileUpdate
                 }
 
                 // Update avatar logic
-                // CASE 1: upload new image file
                 if (request.AvatarFile != null)
                 {
                     const long maxFileSize = 5 * 1024 * 1024; // 5 MB
@@ -70,7 +69,7 @@ namespace FDAAPI.App.FeatG15_ProfileUpdate
                         hasChanges = true;
                     }
                 }
-                // CASE 2: bind to existing URL
+                // bind to existing URL
                 else if (request.AvatarUrl == string.Empty && request.AvatarFile == null)
                 {
                     if (user.AvatarUrl != request.AvatarUrl)
@@ -81,7 +80,7 @@ namespace FDAAPI.App.FeatG15_ProfileUpdate
                     }
                 }
 
-                // CASE 3: delete existing avatar
+                // delete existing avatar
                 else if (request.AvatarUrl == string.Empty)
                 {
                     if (user.AvatarUrl != null)
