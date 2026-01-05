@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -82,5 +82,55 @@ namespace FDAAPI.Infra.Persistence.Repositories
                 .FirstOrDefaultAsync(ct);
         }
 
+        public async Task<(IEnumerable<User> Users, int TotalCount)> GetUsersAsync(
+            string? searchTerm,
+            string? role,
+            string? status,
+            int pageNumber,
+            int pageSize,
+            CancellationToken ct = default)
+        {
+            var query = _context.Users
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                .AsNoTracking()
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                searchTerm = searchTerm.ToLower();
+                query = query.Where(u =>
+                    (u.FullName != null && u.FullName.ToLower().Contains(searchTerm)) ||
+                    u.Email.ToLower().Contains(searchTerm) ||
+                    (u.PhoneNumber != null && u.PhoneNumber.Contains(searchTerm)));
+            }
+
+            if (!string.IsNullOrWhiteSpace(role))
+            {
+                query = query.Where(u => u.UserRoles.Any(ur => ur.Role.Code == role));
+            }
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                query = query.Where(u => u.Status == status);
+            }
+
+            var totalCount = await query.CountAsync(ct);
+
+            var users = await query
+                .OrderByDescending(u => u.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(ct);
+
+            return (users, totalCount);
+        }
+
     }
 }
+
+
+
+
+
+

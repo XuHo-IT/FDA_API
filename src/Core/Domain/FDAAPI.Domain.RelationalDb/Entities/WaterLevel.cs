@@ -17,3 +17,9 @@ namespace FDAAPI.Domain.RelationalDb
         public DateTime? DeletedAt { get; set; }
     }
 }
+
+
+
+
+
+

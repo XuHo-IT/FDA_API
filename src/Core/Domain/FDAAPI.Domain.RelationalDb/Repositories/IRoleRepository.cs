@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,8 +20,19 @@ namespace FDAAPI.Domain.RelationalDb.Repositories
         Task<Role?> GetByCodeAsync(string code, CancellationToken ct = default);
 
         /// <summary>
+        /// Get role by name (Administrator, Citizen User, etc.)
+        /// </summary>
+        Task<Role?> GetByNameAsync(string name, CancellationToken ct = default);
+
+        /// <summary>
         /// Get all available roles (for admin UI)
         /// </summary>
         Task<IEnumerable<Role>> GetAllAsync(CancellationToken ct = default);
     }
 }
+
+
+
+
+
+

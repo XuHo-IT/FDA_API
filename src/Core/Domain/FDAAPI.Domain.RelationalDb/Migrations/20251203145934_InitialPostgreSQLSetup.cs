@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -40,3 +40,9 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
         }
     }
 }
+
+
+
+
+
+

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,3 +23,9 @@ namespace FDAAPI.App.Common.DTOs
         public DateTime UpdatedAt { get; set; }
     }
 }
+
+
+
+
+
+

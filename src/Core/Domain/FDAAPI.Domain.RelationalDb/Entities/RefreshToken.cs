@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,3 +24,9 @@ namespace FDAAPI.Domain.RelationalDb.Entities
         public virtual User User { get; set; } = null!;
     }
 }
+
+
+
+
+
+
