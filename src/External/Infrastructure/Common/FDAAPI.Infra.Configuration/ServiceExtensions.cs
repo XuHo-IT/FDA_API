@@ -18,9 +18,6 @@ using FDAAPI.App.FeatG15_ProfileUpdate;
 using FDAAPI.App.FeatG16_AuthGoogleMobileLogin;
 using FDAAPI.App.FeatG17_AuthCheckIdentifier;
 using FDAAPI.App.FeatG19_ProfileVerifyUpdatePhone;
-using FDAAPI.App.FeatG20_AdminManagement.Features.Users.Create;
-using FDAAPI.App.FeatG20_AdminManagement.Features.Users.List;
-using FDAAPI.App.FeatG20_AdminManagement.Features.Users.Update;
 using FDAAPI.Domain.RelationalDb.RealationalDB;
 using FDAAPI.Domain.RelationalDb.Repositories;
 using FDAAPI.Infra.Persistence.Repositories;
@@ -35,6 +32,13 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
 using System.Text;
+using FDAAPI.App.FeatG23_StationCreate;
+using FDAAPI.App.FeatG25_StationUpdate;
+using FDAAPI.App.FeatG24_StationGet;
+using FDAAPI.App.FeatG26_StationDelete;
+using FDAAPI.App.FeatG21_UserList;
+using FDAAPI.App.FeatG25_StationList;
+using FDAAPI.App.FeatG22_UserUpdate;
 
 namespace FDAAPI.Infra.Configuration
 {
@@ -114,26 +118,18 @@ namespace FDAAPI.Infra.Configuration
                 cfg.RegisterServicesFromAssembly(typeof(CheckIdentifierRequest).Assembly);
                 cfg.RegisterServicesFromAssembly(typeof(GetUsersRequest).Assembly);
                 cfg.RegisterServicesFromAssembly(typeof(UpdateProfileRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(CreateStationRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(UpdateStationRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(GetStationRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(GetStationsRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(DeleteStationRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(UpdateUserRequest).Assembly);
 
             });
             services.AddTransient<IFeatureHandler<CreateWaterLevelRequest, CreateWaterLevelResponse>, CreateWaterLevelHandler>();
             services.AddTransient<IFeatureHandler<UpdateWaterLevelRequest, UpdateWaterLevelResponse>, UpdateWaterLevelHandler>();
             services.AddTransient<IFeatureHandler<GetWaterLevelRequest, GetWaterLevelResponse>, GetWaterLevelHandler>();
             services.AddTransient<IFeatureHandler<DeleteWaterLevelRequest, DeleteWaterLevelResponse>, DeleteWaterLevelHandler>();
-
-            //services.AddTransient<IFeatureHandler<SendOtpRequest, SendOtpResponse>, SendOtpHandler>();
-            //services.AddTransient<IFeatureHandler<LoginRequest, LoginResponse>, LoginHandler>();
-            //services.AddTransient<IFeatureHandler<LogoutRequest, LogoutResponse>, LogoutHandler>();
-            //services.AddTransient<IFeatureHandler<RefreshTokenRequest, RefreshTokenResponse>, RefreshTokenHandler>();
-            //services.AddTransient<IFeatureHandler<ChangePasswordRequest, ChangePasswordResponse>, ChangePasswordHandler>();
-            //services.AddTransient<IFeatureHandler<SetPasswordRequest, SetPasswordResponse>, SetPasswordHandler>();
-            //services.AddTransient<IFeatureHandler<GoogleLoginInitiateRequest, GoogleLoginInitiateResponse>, GoogleLoginInitiateHandler>();
-            //services.AddTransient<IFeatureHandler<GoogleOAuthCallbackRequest, GoogleOAuthCallbackResponse>, GoogleOAuthCallbackHandler>();
-            //services.AddTransient<IFeatureHandler<GoogleMobileLoginRequest, GoogleMobileLoginResponse>, GoogleMobileLoginHandler>();
-            //services.AddTransient<IFeatureHandler<GetProfileRequest, GetProfileResponse>, GetProfileHandler>();
-            //services.AddTransient<IFeatureHandler<UpdateProfileRequest, UpdateProfileResponse>, UpdateProfileHandler>();
-            //services.AddTransient<IFeatureHandler<VerifyAndUpdatePhoneRequest, UpdateProfileResponse>, VerifyAndUpdatePhoneHandler>();
-            //services.AddTransient<IFeatureHandler<CheckIdentifierRequest, CheckIdentifierResponse>, CheckIdentifierHandler>();
 
             services.AddHttpClient<IImageStorageService, ImageKitService>();
             services.AddScoped<IImageUploadPolicy, ImageUploadPolicy>();
@@ -148,6 +144,7 @@ namespace FDAAPI.Infra.Configuration
                 options.UseNpgsql(connectionString));
 
             services.AddScoped<IWaterLevelRepository, PgsqlWaterLevelRepository>();
+            services.AddScoped<IStationRepository, PgslStationRepository>();
             services.AddScoped<IUserRepository, PgsqlUserRepository>();
             services.AddScoped<IRoleRepository, PgsqlRoleRepository>();
             services.AddScoped<IUserRoleRepository, PgsqlUserRoleRepository>();

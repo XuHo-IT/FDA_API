@@ -23,6 +23,7 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB
         public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
         public DbSet<OtpCode> OtpCodes { get; set; } = null!;
         public DbSet<UserOAuthProvider> UserOAuthProviders { get; set; } = null!;
+        public DbSet<Station> Stations { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -149,8 +150,8 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB
                 entity.Property(e => e.ProfilePictureUrl).HasMaxLength(500);
             });
 
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         }
-
     }
 }
 

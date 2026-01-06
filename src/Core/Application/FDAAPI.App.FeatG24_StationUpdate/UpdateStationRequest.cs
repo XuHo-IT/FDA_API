@@ -1,0 +1,22 @@
+using FDAAPI.App.Common.Features;
+using MediatR;
+using System;
+
+namespace FDAAPI.App.FeatG25_StationUpdate
+{
+    public record UpdateStationRequest(
+        Guid Id,
+        string Code,
+        string Name,
+        string LocationDesc,
+        decimal? Latitude,
+        decimal? Longitude,
+        string RoadName,
+        string Direction,
+        string Status,
+        DateTimeOffset? InstalledAt,
+        DateTimeOffset? LastSeenAt,
+        Guid AdminId
+    ) : IFeatureRequest<UpdateStationResponse>;
+}
+
