@@ -39,6 +39,7 @@ using FDAAPI.App.FeatG26_StationDelete;
 using FDAAPI.App.FeatG21_UserList;
 using FDAAPI.App.FeatG25_StationList;
 using FDAAPI.App.FeatG22_UserUpdate;
+using FDAAPI.App.FeatG20_UserCreate;
 
 namespace FDAAPI.Infra.Configuration
 {
@@ -124,6 +125,7 @@ namespace FDAAPI.Infra.Configuration
                 cfg.RegisterServicesFromAssembly(typeof(GetStationsRequest).Assembly);
                 cfg.RegisterServicesFromAssembly(typeof(DeleteStationRequest).Assembly);
                 cfg.RegisterServicesFromAssembly(typeof(UpdateUserRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(CreateUserRequest).Assembly);
 
             });
             services.AddTransient<IFeatureHandler<CreateWaterLevelRequest, CreateWaterLevelResponse>, CreateWaterLevelHandler>();
