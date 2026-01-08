@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FDAAPI.App.FeatG25_StationUpdate
+namespace FDAAPI.App.FeatG24_StationUpdate
 {
     public class UpdateStationRequestValidator : AbstractValidator<UpdateStationRequest>
     {

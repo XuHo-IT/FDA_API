@@ -35,6 +35,7 @@
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG19_ProfileVerifyUpdatePhone\FDAAPI.App.FeatG19_ProfileVerifyUpdatePhone.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG1_WaterLevelCreate\FDAAPI.App.FeatG1_WaterLevelCreate.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG20_UserCreate\FDAAPI.App.FeatG20_UserCreate.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG21_UserList\FDAAPI.App.FeatG21_UserList.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG22_UserUpdate\FDAAPI.App.FeatG22_UserUpdate.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG23_StationCreate\FDAAPI.App.FeatG23_StationCreate.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG24_StationUpdate\FDAAPI.App.FeatG24_StationUpdate.csproj" />

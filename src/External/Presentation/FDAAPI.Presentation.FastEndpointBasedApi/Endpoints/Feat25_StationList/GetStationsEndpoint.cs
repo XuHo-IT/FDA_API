@@ -17,7 +17,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat25_StationList
         public override void Configure()
         {
             Get("/api/v1/list-stations");
-            Policies("Admin");
+            AllowAnonymous();
             Summary(s => {
                 s.Summary = "Get list of monitoring stations.";
                 s.Description = "Retrieve a paginated list of stations with optional filtering.";

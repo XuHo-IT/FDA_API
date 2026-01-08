@@ -33,13 +33,14 @@ using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
 using System.Text;
 using FDAAPI.App.FeatG23_StationCreate;
-using FDAAPI.App.FeatG25_StationUpdate;
-using FDAAPI.App.FeatG24_StationGet;
-using FDAAPI.App.FeatG26_StationDelete;
+
 using FDAAPI.App.FeatG21_UserList;
 using FDAAPI.App.FeatG25_StationList;
 using FDAAPI.App.FeatG22_UserUpdate;
 using FDAAPI.App.FeatG20_UserCreate;
+using FDAAPI.App.FeatG24_StationUpdate;
+using FDAAPI.App.FeatG26_StationGet;
+using FDAAPI.App.FeatG27_StationDelete;
 
 namespace FDAAPI.Infra.Configuration
 {
@@ -117,16 +118,15 @@ namespace FDAAPI.Infra.Configuration
                 cfg.RegisterServicesFromAssembly(typeof(GetProfileRequest).Assembly);
                 cfg.RegisterServicesFromAssembly(typeof(SetPasswordRequest).Assembly);
                 cfg.RegisterServicesFromAssembly(typeof(CheckIdentifierRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(CreateUserRequest).Assembly);
                 cfg.RegisterServicesFromAssembly(typeof(GetUsersRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(UpdateUserRequest).Assembly);
                 cfg.RegisterServicesFromAssembly(typeof(UpdateProfileRequest).Assembly);
                 cfg.RegisterServicesFromAssembly(typeof(CreateStationRequest).Assembly);
                 cfg.RegisterServicesFromAssembly(typeof(UpdateStationRequest).Assembly);
                 cfg.RegisterServicesFromAssembly(typeof(GetStationRequest).Assembly);
                 cfg.RegisterServicesFromAssembly(typeof(GetStationsRequest).Assembly);
                 cfg.RegisterServicesFromAssembly(typeof(DeleteStationRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(UpdateUserRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(CreateUserRequest).Assembly);
-
             });
             services.AddTransient<IFeatureHandler<CreateWaterLevelRequest, CreateWaterLevelResponse>, CreateWaterLevelHandler>();
             services.AddTransient<IFeatureHandler<UpdateWaterLevelRequest, UpdateWaterLevelResponse>, UpdateWaterLevelHandler>();

@@ -1,6 +1,6 @@
 using FastEndpoints;
 using FDAAPI.App.Common.Features;
-using FDAAPI.App.FeatG24_StationGet;
+using FDAAPI.App.FeatG26_StationGet;
 using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat23_StationGet.DTOs;
 using MediatR;
 using Microsoft.AspNetCore.Components.Forms;
@@ -22,7 +22,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat23_StationGet
         public override void Configure()
         {
             Get("/api/v1/get-station/{id}");
-            Policies("Admin");
+            AllowAnonymous();
             Summary(s => {
                 s.Summary = "Get monitoring station details.";
                 s.Description = "Retrieve station information by its unique identifier.";

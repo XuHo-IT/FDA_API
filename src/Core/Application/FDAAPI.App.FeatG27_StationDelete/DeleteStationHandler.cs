@@ -6,7 +6,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace FDAAPI.App.FeatG26_StationDelete
+namespace FDAAPI.App.FeatG27_StationDelete
 {
     public class DeleteStationHandler : IRequestHandler<DeleteStationRequest, DeleteStationResponse>
     {
