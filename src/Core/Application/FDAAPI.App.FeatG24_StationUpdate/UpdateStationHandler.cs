@@ -7,7 +7,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace FDAAPI.App.FeatG25_StationUpdate
+namespace FDAAPI.App.FeatG24_StationUpdate
 {
     public class UpdateStationHandler : IRequestHandler<UpdateStationRequest, UpdateStationResponse>
     {

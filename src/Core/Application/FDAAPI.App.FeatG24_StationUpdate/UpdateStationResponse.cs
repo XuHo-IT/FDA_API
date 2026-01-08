@@ -1,7 +1,7 @@
 using FDAAPI.App.Common.Features;
 using FDAAPI.App.Common.Models.Stations;
 
-namespace FDAAPI.App.FeatG25_StationUpdate
+namespace FDAAPI.App.FeatG24_StationUpdate
 {
     public class UpdateStationResponse : IFeatureResponse
     {

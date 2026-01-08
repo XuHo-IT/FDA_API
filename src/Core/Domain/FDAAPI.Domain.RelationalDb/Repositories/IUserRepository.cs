@@ -43,6 +43,8 @@ namespace FDAAPI.Domain.RelationalDb.Repositories
         /// Get user with loaded role relationships (for generating JWT claims)
         /// Uses EF Core Include to eager load UserRoles and Roles
         /// </summary>
+        /// 
+        Task<IEnumerable<User>> GetUsersWithRolesByIdsAsync(IEnumerable<Guid> userIds, CancellationToken ct = default);
         Task<User?> GetUserWithRolesAsync(Guid userId, CancellationToken ct = default);
         Task<string?> GetUserFullNameAsync(Guid userId, CancellationToken ct = default);
         Task<string?> GetAvatarUrlAsync(Guid userId, CancellationToken ct = default);

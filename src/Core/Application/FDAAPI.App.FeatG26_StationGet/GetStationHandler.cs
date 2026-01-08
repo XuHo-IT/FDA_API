@@ -6,7 +6,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace FDAAPI.App.FeatG24_StationGet
+namespace FDAAPI.App.FeatG26_StationGet
 {
     public class GetStationHandler : IRequestHandler<GetStationRequest, GetStationResponse>
     {

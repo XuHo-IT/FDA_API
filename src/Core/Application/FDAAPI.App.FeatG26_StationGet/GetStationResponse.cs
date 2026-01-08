@@ -2,7 +2,7 @@ using FDAAPI.App.Common.Features;
 using FDAAPI.App.Common.Models.Stations;
 using FDAAPI.Domain.RelationalDb.Entities;
 
-namespace FDAAPI.App.FeatG24_StationGet
+namespace FDAAPI.App.FeatG26_StationGet
 {
     public class GetStationResponse : IFeatureResponse
     {

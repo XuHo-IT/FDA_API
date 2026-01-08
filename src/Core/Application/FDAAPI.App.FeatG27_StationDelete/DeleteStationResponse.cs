@@ -1,7 +1,7 @@
 using FDAAPI.App.Common.Features;
 using FDAAPI.App.Common.Models.Stations;
 
-namespace FDAAPI.App.FeatG26_StationDelete
+namespace FDAAPI.App.FeatG27_StationDelete
 {
     public class DeleteStationResponse : IFeatureResponse
     {

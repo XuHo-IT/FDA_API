@@ -55,7 +55,18 @@ namespace FDAAPI.Infra.Persistence.Repositories
             await _context.SaveChangesAsync(ct);
             return true;
         }
+        public async Task<IEnumerable<User>> GetUsersWithRolesByIdsAsync(IEnumerable<Guid> userIds, CancellationToken ct = default)
+        {
+            if (userIds == null || !userIds.Any())
+                return Enumerable.Empty<User>();
 
+            return await _context.Users
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                .Where(u => userIds.Contains(u.Id))
+                .AsNoTracking()
+                .ToListAsync(ct);
+        }
         public async Task<User?> GetUserWithRolesAsync(Guid userId, CancellationToken ct = default)
         {
             return await _context.Users
