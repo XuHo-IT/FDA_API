@@ -3,6 +3,7 @@ using System;
 using FDAAPI.Domain.RelationalDb.RealationalDB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FDAAPI.Domain.RelationalDb.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260104095542_AddWaterLevelProperties")]
+    partial class AddWaterLevelProperties
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -145,97 +148,15 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         new
                         {
                             Id = new Guid("22222222-2222-2222-2222-222222222222"),
-                            Code = "AUTHORITY",
-                            Name = "Authority Officer"
+                            Code = "MODERATOR",
+                            Name = "Moderator Government Officer"
                         },
                         new
                         {
                             Id = new Guid("33333333-3333-3333-3333-333333333333"),
                             Code = "USER",
                             Name = "Citizen User"
-                        },
-                        new
-                        {
-                            Id = new Guid("44444444-4444-4444-4444-444444444444"),
-                            Code = "SUPERADMIN",
-                            Name = "Super Administrator"
                         });
-                });
-
-            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.Station", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("CreatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Direction")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<DateTimeOffset?>("InstalledAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTimeOffset?>("LastSeenAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<decimal?>("Latitude")
-                        .HasPrecision(10, 6)
-                        .HasColumnType("numeric(10,6)");
-
-                    b.Property<string>("LocationDesc")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<decimal?>("Longitude")
-                        .HasPrecision(10, 6)
-                        .HasColumnType("numeric(10,6)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<string>("RoadName")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UpdatedBy")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Code")
-                        .IsUnique()
-                        .HasDatabaseName("ux_station_code");
-
-                    b.HasIndex("Status")
-                        .HasDatabaseName("ix_station_status");
-
-                    b.HasIndex("Latitude", "Longitude")
-                        .HasDatabaseName("ix_station_geo");
-
-                    b.ToTable("stations", (string)null);
                 });
 
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.User", b =>
