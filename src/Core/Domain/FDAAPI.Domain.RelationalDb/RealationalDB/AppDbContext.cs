@@ -155,8 +155,6 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB
             // UserPreference configuration
             modelBuilder.Entity<UserPreference>(entity =>
             {
-                entity.ToTable("user_preferences");
-
                 entity.HasKey(e => e.Id);
 
                 entity.Property(e => e.UserId)
