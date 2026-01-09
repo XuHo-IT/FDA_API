@@ -36,7 +36,8 @@ namespace FDAAPI.Domain.RelationalDb.Entities
         public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
         [JsonIgnore]
         public virtual ICollection<UserOAuthProvider> OAuthProviders { get; set; } = new List<UserOAuthProvider>();
-
+        [JsonIgnore]
+        public virtual ICollection<UserPreference> UserPreferences { get; set; } = new List<UserPreference>();
 
     }
 }

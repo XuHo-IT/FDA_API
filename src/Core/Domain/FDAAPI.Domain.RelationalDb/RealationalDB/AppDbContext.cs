@@ -24,6 +24,8 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB
         public DbSet<OtpCode> OtpCodes { get; set; } = null!;
         public DbSet<UserOAuthProvider> UserOAuthProviders { get; set; } = null!;
         public DbSet<Station> Stations { get; set; } = null!;
+        public DbSet<UserPreference> UserPreferences { get; set; } = null!;
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -149,6 +151,50 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB
                 entity.Property(e => e.DisplayName).HasMaxLength(255);
                 entity.Property(e => e.ProfilePictureUrl).HasMaxLength(500);
             });
+
+            // UserPreference configuration
+            modelBuilder.Entity<UserPreference>(entity =>
+            {
+                entity.ToTable("user_preferences");
+
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.UserId)
+                    .IsRequired();
+
+                entity.Property(e => e.PreferenceKey)
+                    .HasMaxLength(100)
+                    .IsRequired();
+
+                entity.Property(e => e.PreferenceValue)
+                    .HasColumnType("jsonb")
+                    .IsRequired();
+
+                entity.Property(e => e.CreatedAt)
+                    .IsRequired();
+
+                entity.Property(e => e.UpdatedAt)
+                    .IsRequired();
+
+                // Unique constraint: one preference per user per key
+                entity.HasIndex(e => new { e.UserId, e.PreferenceKey })
+                    .IsUnique()
+                    .HasDatabaseName("uq_user_preference");
+
+                // Indexes for performance
+                entity.HasIndex(e => e.UserId)
+                    .HasDatabaseName("ix_user_preferences_user");
+
+                entity.HasIndex(e => e.PreferenceKey)
+                    .HasDatabaseName("ix_user_preferences_key");
+
+                // Foreign key relationship
+                entity.HasOne(e => e.User)
+                    .WithMany(u => u.UserPreferences)
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
 
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         }

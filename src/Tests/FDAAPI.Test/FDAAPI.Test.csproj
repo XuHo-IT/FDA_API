@@ -29,7 +29,6 @@
     <ProjectReference Include="..\..\Core\Application\FDAAPI.App.Common\FDAAPI.App.Common.csproj" />
     <ProjectReference Include="..\..\Core\Domain\FDAAPI.Domain.RelationalDb\FDAAPI.Domain.RelationalDb.csproj" />
     <ProjectReference Include="..\..\External\Presentation\FDAAPI.Presentation.FastEndpointBasedApi\FDAAPI.Presentation.FastEndpointBasedApi.csproj" />
-    <ProjectReference Include="..\..\src\External\Presentation\FDAAPI.Presentation.FastEndpointBasedApi\FDAAPI.Presentation.FastEndpointBasedApi.csproj" />
   </ItemGroup>
 
 </Project>
