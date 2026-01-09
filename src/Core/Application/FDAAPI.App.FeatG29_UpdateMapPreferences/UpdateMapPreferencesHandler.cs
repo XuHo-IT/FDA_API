@@ -109,7 +109,7 @@ namespace FDAAPI.App.FeatG29_UpdateMapPreferences
         private string? ValidateSettings(MapLayerSettings settings)
         {
             // Validate baseMap
-            if (settings.BaseMap != "standard" && settings.BaseMap != "satellite")
+            if (settings.BaseMap != "standard" && settings.BaseMap != "satellite" && settings.BaseMap != "hybrid")
                 return "BaseMap must be 'standard' or 'satellite'";
 
             // Validate opacity ranges (0-100)
