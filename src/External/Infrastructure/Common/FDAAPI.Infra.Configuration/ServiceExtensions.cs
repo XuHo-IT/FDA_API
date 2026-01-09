@@ -41,6 +41,9 @@ using FDAAPI.App.FeatG20_UserCreate;
 using FDAAPI.App.FeatG24_StationUpdate;
 using FDAAPI.App.FeatG26_StationGet;
 using FDAAPI.App.FeatG27_StationDelete;
+using FDAAPI.App.FeatG28_GetMapPreferences;
+using FDAAPI.App.FeatG29_UpdateMapPreferences;
+using FDAAPI.App.FeatG30_GetFloodSeverityLayer;
 
 namespace FDAAPI.Infra.Configuration
 {
@@ -127,6 +130,10 @@ namespace FDAAPI.Infra.Configuration
                 cfg.RegisterServicesFromAssembly(typeof(GetStationRequest).Assembly);
                 cfg.RegisterServicesFromAssembly(typeof(GetStationsRequest).Assembly);
                 cfg.RegisterServicesFromAssembly(typeof(DeleteStationRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(CreateWaterLevelRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(GetMapPreferencesRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(UpdateMapPreferencesRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(GetFloodSeverityLayerRequest).Assembly);
             });
             services.AddTransient<IFeatureHandler<CreateWaterLevelRequest, CreateWaterLevelResponse>, CreateWaterLevelHandler>();
             services.AddTransient<IFeatureHandler<UpdateWaterLevelRequest, UpdateWaterLevelResponse>, UpdateWaterLevelHandler>();
@@ -155,6 +162,8 @@ namespace FDAAPI.Infra.Configuration
 
             // OAuth provider repository
             services.AddScoped<IUserOAuthProviderRepository, PgsqlUserOAuthProviderRepository>();
+
+            services.AddScoped<IUserPreferenceRepository, PgsqlUserPreferenceRepository>();
 
             return services;
         }
