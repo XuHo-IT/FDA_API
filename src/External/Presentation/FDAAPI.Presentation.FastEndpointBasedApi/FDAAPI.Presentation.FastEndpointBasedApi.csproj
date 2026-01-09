@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
 	  <TargetFramework>net8.0</TargetFramework>
@@ -42,7 +42,10 @@
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG25_StationList\FDAAPI.App.FeatG25_StationList.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG26_StationGet\FDAAPI.App.FeatG26_StationGet.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG27_StationDelete\FDAAPI.App.FeatG27_StationDelete.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG28_GetMapPreferences\FDAAPI.App.FeatG28_GetMapPreferences.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG29_UpdateMapPreferences\FDAAPI.App.FeatG29_UpdateMapPreferences.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG2_WaterLevelUpdate\FDAAPI.App.FeatG2_WaterLevelUpdate.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG30_GetFloodSeverityLayer\FDAAPI.App.FeatG30_GetFloodSeverityLayer.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG3_WaterLevelGet\FDAAPI.App.FeatG3_WaterLevelGet.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG4_WaterLevelDelete\FDAAPI.App.FeatG4_WaterLevelDelete.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG6_AuthSendOtp\FDAAPI.App.FeatG6_AuthSendOtp.csproj" />
