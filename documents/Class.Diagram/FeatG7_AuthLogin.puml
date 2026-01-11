@@ -17,8 +17,8 @@ title FeatG7_AuthLogin - Class Diagram\n(Domain-Centric Architecture + CQRS Patt
 package "PRESENTATION LAYER" #E1D5E7 {
   
   class LoginEndpoint <<Endpoint>> {
-    - _mediator: IMediator
-    --
+    ' - _mediator: IMediator
+    ' --
     + Configure(): void
     + HandleAsync(req: LoginRequestDto, ct: CancellationToken): Task
   }
@@ -87,22 +87,22 @@ package "APPLICATION LAYER" #D5E8D4 {
   }
   
   class LoginHandler <<Handler>> {
-    - _userRepository: IUserRepository
-    - _otpRepository: IOtpCodeRepository
-    - _userRoleRepository: IUserRoleRepository
-    - _roleRepository: IRoleRepository
-    - _refreshTokenRepository: IRefreshTokenRepository
-    - _passwordHasher: IPasswordHasher
-    - _jwtTokenService: IJwtTokenService
-    --
+    ' - _userRepository: IUserRepository
+    ' - _otpRepository: IOtpCodeRepository
+    ' - _userRoleRepository: IUserRoleRepository
+    ' - _roleRepository: IRoleRepository
+    ' - _refreshTokenRepository: IRefreshTokenRepository
+    ' - _passwordHasher: IPasswordHasher
+    ' - _jwtTokenService: IJwtTokenService
+    ' --
     + Handle(request: LoginRequest, ct): Task<LoginResponse>
     - HandleOtpLoginAsync(identifier, otpCode, request, ct): Task<LoginResponse>
     - HandlePasswordLoginAsync(identifier, password, request, ct): Task<LoginResponse>
     - GenerateTokenResponseAsync(user, request, ct): Task<LoginResponse>
   }
   
-  LoginHandler ..> LoginRequest : handles
-  LoginHandler ..> LoginResponse : returns
+  LoginHandler --> LoginRequest : handles
+  LoginHandler --> LoginResponse : returns
   LoginResponse *-- UserDto_App : contains
   
   interface "IRequestHandler<LoginRequest, LoginResponse>" as IRequestHandler
@@ -271,52 +271,52 @@ LoginHandler ..> RefreshToken : creates
 ' ============================================
 ' NOTES
 ' ============================================
-note top of LoginHandler
-  **AUTHENTICATION FLOWS**
+' note top of LoginHandler
+'   **AUTHENTICATION FLOWS**
   
-  1. **OTP Login** (Auto-register):
-     • Identifier + OtpCode
-     • Verify OTP → Create/Update User
-     • Assign USER role (if new)
-     • Generate JWT tokens
+'   1. **OTP Login** (Auto-register):
+'      • Identifier + OtpCode
+'      • Verify OTP → Create/Update User
+'      • Assign USER role (if new)
+'      • Generate JWT tokens
   
-  2. **Password Login** (Existing users):
-     • Identifier + Password
-     • Verify Password → Check Status
-     • Generate JWT tokens
+'   2. **Password Login** (Existing users):
+'      • Identifier + Password
+'      • Verify Password → Check Status
+'      • Generate JWT tokens
   
-  **Supported Identifiers:**
-  • Phone: +84901234567
-  • Email: user@example.com
-end note
+'   **Supported Identifiers:**
+'   • Phone: +84901234567
+'   • Email: user@example.com
+' end note
 
-note bottom of User
-  **User Status Values:**
-  • active: Normal user
-  • inactive: Suspended temporarily
-  • banned: Permanently banned
+' note bottom of User
+'   **User Status Values:**
+'   • active: Normal user
+'   • inactive: Suspended temporarily
+'   • banned: Permanently banned
   
-  **Provider Values:**
-  • local: Email/Phone registration
-  • google: Google OAuth
-  • facebook: Facebook OAuth
-end note
+'   **Provider Values:**
+'   • local: Email/Phone registration
+'   • google: Google OAuth
+'   • facebook: Facebook OAuth
+' end note
 
-note bottom of OtpCode
-  **OTP Validation Rules:**
-  • Expires after 5 minutes
-  • Max 3 verification attempts
-  • Single use only (IsUsed flag)
-  • 6-digit numeric code
-end note
+' note bottom of OtpCode
+'   **OTP Validation Rules:**
+'   • Expires after 5 minutes
+'   • Max 3 verification attempts
+'   • Single use only (IsUsed flag)
+'   • 6-digit numeric code
+' end note
 
-note right of RefreshToken
-  **Token Lifecycle:**
-  • Access Token: 60 minutes
-  • Refresh Token: 7 days
-  • Tracks device & IP
-  • Can be revoked
-end note
+' note right of RefreshToken
+'   **Token Lifecycle:**
+'   • Access Token: 60 minutes
+'   • Refresh Token: 7 days
+'   • Tracks device & IP
+'   • Can be revoked
+' end note
 
 ' ============================================
 ' LEGEND
