@@ -1,10 +1,10 @@
 using FDAAPI.App.Common.Features;
 using FDAAPI.App.Common.Services;
 using FDAAPI.App.Common.Services.Mapping;
-using FDAAPI.App.FeatG1_WaterLevelCreate;
-using FDAAPI.App.FeatG2_WaterLevelUpdate;
-using FDAAPI.App.FeatG3_WaterLevelGet;
-using FDAAPI.App.FeatG4_WaterLevelDelete;
+using FDAAPI.App.FeatG1_SensorReadingCreate;
+using FDAAPI.App.FeatG2_SensorReadingUpdate;
+using FDAAPI.App.FeatG3_SensorReadingGet;
+using FDAAPI.App.FeatG4_SensorReadingDelete;
 using FDAAPI.App.FeatG6_AuthSendOtp;
 using FDAAPI.App.FeatG7_AuthLogin;
 using FDAAPI.App.FeatG8_AuthRefreshToken;
@@ -130,15 +130,14 @@ namespace FDAAPI.Infra.Configuration
                 cfg.RegisterServicesFromAssembly(typeof(GetStationRequest).Assembly);
                 cfg.RegisterServicesFromAssembly(typeof(GetStationsRequest).Assembly);
                 cfg.RegisterServicesFromAssembly(typeof(DeleteStationRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(CreateWaterLevelRequest).Assembly);
                 cfg.RegisterServicesFromAssembly(typeof(GetMapPreferencesRequest).Assembly);
                 cfg.RegisterServicesFromAssembly(typeof(UpdateMapPreferencesRequest).Assembly);
                 cfg.RegisterServicesFromAssembly(typeof(GetFloodSeverityLayerRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(CreateSensorReadingRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(UpdateSensorReadingRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(GetSensorReadingRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(DeleteSensorReadingRequest).Assembly);
             });
-            services.AddTransient<IFeatureHandler<CreateWaterLevelRequest, CreateWaterLevelResponse>, CreateWaterLevelHandler>();
-            services.AddTransient<IFeatureHandler<UpdateWaterLevelRequest, UpdateWaterLevelResponse>, UpdateWaterLevelHandler>();
-            services.AddTransient<IFeatureHandler<GetWaterLevelRequest, GetWaterLevelResponse>, GetWaterLevelHandler>();
-            services.AddTransient<IFeatureHandler<DeleteWaterLevelRequest, DeleteWaterLevelResponse>, DeleteWaterLevelHandler>();
 
             services.AddHttpClient<IImageStorageService, ImageKitService>();
             services.AddScoped<IImageUploadPolicy, ImageUploadPolicy>();
@@ -152,7 +151,7 @@ namespace FDAAPI.Infra.Configuration
             services.AddDbContext<AppDbContext>(options =>
                 options.UseNpgsql(connectionString));
 
-            services.AddScoped<IWaterLevelRepository, PgsqlWaterLevelRepository>();
+            services.AddScoped<ISensorReadingRepository, PgsqlSensorReadingRepository>();
             services.AddScoped<IStationRepository, PgslStationRepository>();
             services.AddScoped<IUserRepository, PgsqlUserRepository>();
             services.AddScoped<IRoleRepository, PgsqlRoleRepository>();
