@@ -33,7 +33,6 @@ using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
 using System.Text;
 using FDAAPI.App.FeatG23_StationCreate;
-
 using FDAAPI.App.FeatG21_UserList;
 using FDAAPI.App.FeatG25_StationList;
 using FDAAPI.App.FeatG22_UserUpdate;
@@ -44,6 +43,7 @@ using FDAAPI.App.FeatG27_StationDelete;
 using FDAAPI.App.FeatG28_GetMapPreferences;
 using FDAAPI.App.FeatG29_UpdateMapPreferences;
 using FDAAPI.App.FeatG30_GetFloodSeverityLayer;
+using FDAAPI.App.FeatG31_GetMapCurrentStatus;
 
 namespace FDAAPI.Infra.Configuration
 {
@@ -137,6 +137,7 @@ namespace FDAAPI.Infra.Configuration
                 cfg.RegisterServicesFromAssembly(typeof(UpdateSensorReadingRequest).Assembly);
                 cfg.RegisterServicesFromAssembly(typeof(GetSensorReadingRequest).Assembly);
                 cfg.RegisterServicesFromAssembly(typeof(DeleteSensorReadingRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(GetMapCurrentStatusRequest).Assembly);
             });
 
             services.AddHttpClient<IImageStorageService, ImageKitService>();
