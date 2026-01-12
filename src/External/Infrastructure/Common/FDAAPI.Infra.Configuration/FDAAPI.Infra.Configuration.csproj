@@ -17,7 +17,7 @@
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG16_AuthGoogleMobileLogin\FDAAPI.App.FeatG16_AuthGoogleMobileLogin.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG17_AuthCheckIdentifier\FDAAPI.App.FeatG17_AuthCheckIdentifier.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG19_ProfileVerifyUpdatePhone\FDAAPI.App.FeatG19_ProfileVerifyUpdatePhone.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG1_WaterLevelCreate\FDAAPI.App.FeatG1_WaterLevelCreate.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG1_WaterLevelCreate\FDAAPI.App.FeatG1_SensorReadingCreate.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG20_UserCreate\FDAAPI.App.FeatG20_UserCreate.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG21_UserList\FDAAPI.App.FeatG21_UserList.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG22_UserUpdate\FDAAPI.App.FeatG22_UserUpdate.csproj" />
@@ -28,14 +28,15 @@
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG27_StationDelete\FDAAPI.App.FeatG27_StationDelete.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG28_GetMapPreferences\FDAAPI.App.FeatG28_GetMapPreferences.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG29_UpdateMapPreferences\FDAAPI.App.FeatG29_UpdateMapPreferences.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG2_WaterLevelUpdate\FDAAPI.App.FeatG2_WaterLevelUpdate.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG2_WaterLevelUpdate\FDAAPI.App.FeatG2_SensorReadingUpdate.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG30_GetFloodSeverityLayer\FDAAPI.App.FeatG30_GetFloodSeverityLayer.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG3_WaterLevelGet\FDAAPI.App.FeatG3_WaterLevelGet.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG4_WaterLevelDelete\FDAAPI.App.FeatG4_WaterLevelDelete.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG3_WaterLevelGet\FDAAPI.App.FeatG3_SensorReadingGet.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG4_WaterLevelDelete\FDAAPI.App.FeatG4_SensorReadingDelete.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG6_AuthSendOtp\FDAAPI.App.FeatG6_AuthSendOtp.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG7_AuthLogin\FDAAPI.App.FeatG7_AuthLogin.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG8_AuthRefreshToken\FDAAPI.App.FeatG8_AuthRefreshToken.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG9_AuthLogout\FDAAPI.App.FeatG9_AuthLogout.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG31_GetMapCurrentStatus\FDAAPI.App.FeatG31_GetMapCurrentStatus.csproj" />  
     <ProjectReference Include="..\..\..\..\Core\Domain\FDAAPI.Domain.RelationalDb\FDAAPI.Domain.RelationalDb.csproj" />
     <ProjectReference Include="..\..\Persistence\FDAAPI.Infra.Persistence\FDAAPI.Infra.Persistence.csproj" />
     <ProjectReference Include="..\..\Services\FDAAPI.Infra.Services\FDAAPI.Infra.Services.csproj" />
