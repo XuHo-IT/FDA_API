@@ -16,7 +16,7 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB
         {
         }
 
-        public DbSet<WaterLevel> WaterLevels { get; set; } = null!;
+        public DbSet<SensorReading> SensorReadings { get; set; } = null!;
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<Role> Roles { get; set; } = null!;
         public DbSet<UserRole> UserRoles { get; set; } = null!;
@@ -26,17 +26,27 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB
         public DbSet<Station> Stations { get; set; } = null!;
         public DbSet<UserPreference> UserPreferences { get; set; } = null!;
 
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<WaterLevel>()
-                .Property(w => w.Id)
-                .ValueGeneratedOnAdd();
-
-            // Existing WaterLevel config
-            modelBuilder.Entity<WaterLevel>()
-                .Property(w => w.Id)
-                .ValueGeneratedOnAdd();
+            // SensorReadings table configuration
+            modelBuilder.Entity<SensorReading>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+                entity.Property(e => e.Unit).HasMaxLength(10).IsRequired();
+                entity.Property(e => e.Value).IsRequired();
+                entity.Property(e => e.MeasuredAt).IsRequired();
+                entity.Property(e => e.CreatedAt).IsRequired();
+                entity.Property(e => e.UpdatedAt).IsRequired();
+                entity.HasIndex(e => e.StationId).HasDatabaseName("ix_sensor_readings_station");
+                entity.HasIndex(e => e.MeasuredAt).HasDatabaseName("ix_sensor_readings_measured_at");
+                entity.HasIndex(e => new { e.StationId, e.MeasuredAt })
+                    .HasDatabaseName("ix_sensor_readings_station_time");
+                entity.HasOne(e => e.Station)
+                    .WithMany()
+                    .HasForeignKey(e => e.StationId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
 
             // Users table configuration
             modelBuilder.Entity<User>(entity =>

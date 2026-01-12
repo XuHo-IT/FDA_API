@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36429.23
+# Visual Studio Version 18
+VisualStudioVersion = 18.1.11312.151 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
@@ -27,7 +27,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{E7F8A9
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FDAAPI.Infra.Configuration", "src\External\Infrastructure\Common\FDAAPI.Infra.Configuration\FDAAPI.Infra.Configuration.csproj", "{23456789-2345-2345-2345-234567890123}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WaterLevel", "WaterLevel", "{A69954E8-6C49-4091-BFF1-EFFCB0C14A99}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SensorReading", "SensorReading", "{A69954E8-6C49-4091-BFF1-EFFCB0C14A99}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Persistence", "Persistence", "{B67BAC26-7232-ADE6-6816-8803F753A1BF}"
 EndProject
@@ -65,13 +65,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FDAAPI.App.FeatG18_MediaUpl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FDAAPI.App.FeatG19_ProfileVerifyUpdatePhone", "src\Core\Application\FDAAPI.App.FeatG19_ProfileVerifyUpdatePhone\FDAAPI.App.FeatG19_ProfileVerifyUpdatePhone.csproj", "{C35A5E69-B174-DF45-6440-992ADD0D6158}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FDAAPI.App.FeatG1_WaterLevelCreate", "src\Core\Application\FDAAPI.App.FeatG1_WaterLevelCreate\FDAAPI.App.FeatG1_WaterLevelCreate.csproj", "{94432B4D-F902-F14C-3D89-13E9A5404992}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FDAAPI.App.FeatG1_SensorReadingCreate", "src\Core\Application\FDAAPI.App.FeatG1_WaterLevelCreate\FDAAPI.App.FeatG1_SensorReadingCreate.csproj", "{94432B4D-F902-F14C-3D89-13E9A5404992}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FDAAPI.App.FeatG2_WaterLevelUpdate", "src\Core\Application\FDAAPI.App.FeatG2_WaterLevelUpdate\FDAAPI.App.FeatG2_WaterLevelUpdate.csproj", "{7FA734AA-A810-F27C-0EC1-8B6F3173553B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FDAAPI.App.FeatG2_SensorReadingUpdate", "src\Core\Application\FDAAPI.App.FeatG2_WaterLevelUpdate\FDAAPI.App.FeatG2_SensorReadingUpdate.csproj", "{7FA734AA-A810-F27C-0EC1-8B6F3173553B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FDAAPI.App.FeatG3_WaterLevelGet", "src\Core\Application\FDAAPI.App.FeatG3_WaterLevelGet\FDAAPI.App.FeatG3_WaterLevelGet.csproj", "{90AB429A-CD7C-CCDB-2875-CF67A5C47B43}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FDAAPI.App.FeatG3_SensorReadingGet", "src\Core\Application\FDAAPI.App.FeatG3_WaterLevelGet\FDAAPI.App.FeatG3_SensorReadingGet.csproj", "{90AB429A-CD7C-CCDB-2875-CF67A5C47B43}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FDAAPI.App.FeatG4_WaterLevelDelete", "src\Core\Application\FDAAPI.App.FeatG4_WaterLevelDelete\FDAAPI.App.FeatG4_WaterLevelDelete.csproj", "{5AFADB3B-2281-23E9-BFAA-23DEF416151F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FDAAPI.App.FeatG4_SensorReadingDelete", "src\Core\Application\FDAAPI.App.FeatG4_WaterLevelDelete\FDAAPI.App.FeatG4_SensorReadingDelete.csproj", "{5AFADB3B-2281-23E9-BFAA-23DEF416151F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FDAAPI.App.FeatG6_AuthSendOtp", "src\Core\Application\FDAAPI.App.FeatG6_AuthSendOtp\FDAAPI.App.FeatG6_AuthSendOtp.csproj", "{2BD46CF1-3DA7-3BA2-1527-1CB585224AF1}"
 EndProject
