@@ -6,32 +6,38 @@ namespace FDAAPI.App.FeatG7_AuthLogin
     {
         public LoginRequestValidator()
         {
-            // At least one authentication method must be provided
+            // Step 1: Identifier is required (can be phone or email)
+            RuleFor(x => x.Identifier)
+                .NotEmpty()
+                .WithMessage("Identifier (phone number or email) is required.")
+                .MaximumLength(255)
+                .WithMessage("Identifier must not exceed 255 characters.");
+
+            // Step 2: At least one authentication method must be provided (OTP or Password)
             RuleFor(x => x)
-                .Must(x => (!string.IsNullOrEmpty(x.PhoneNumber) && !string.IsNullOrEmpty(x.OtpCode)) ||
-                           (!string.IsNullOrEmpty(x.Email) && !string.IsNullOrEmpty(x.Password)))
-                .WithMessage("Either Phone + OTP or Email + Password must be provided.");
+                .Must(x => !string.IsNullOrEmpty(x.OtpCode) || !string.IsNullOrEmpty(x.Password))
+                .WithMessage("Either OTP code or Password must be provided.");
 
-            // Phone validation if provided
-            When(x => !string.IsNullOrEmpty(x.PhoneNumber), () =>
+            // Step 3: OTP validation if provided
+            When(x => !string.IsNullOrEmpty(x.OtpCode), () =>
             {
-                RuleFor(x => x.PhoneNumber)
-                    .MaximumLength(20).WithMessage("Phone number must not exceed 20 characters.");
-
                 RuleFor(x => x.OtpCode)
-                    .NotEmpty().WithMessage("OTP code is required when using phone authentication.")
-                    .Length(6).WithMessage("OTP code must be 6 digits.");
+                    .Length(6).WithMessage("OTP code must be exactly 6 digits.")
+                    .Matches(@"^\d{6}$").WithMessage("OTP code must contain only digits.");
             });
 
-            // Email validation if provided
-            When(x => !string.IsNullOrEmpty(x.Email), () =>
+            // Step 4: Password validation if provided
+            When(x => !string.IsNullOrEmpty(x.Password), () =>
             {
-                RuleFor(x => x.Email)
-                    .EmailAddress().WithMessage("Invalid email format.")
-                    .MaximumLength(255).WithMessage("Email must not exceed 255 characters.");
-
                 RuleFor(x => x.Password)
-                    .NotEmpty().WithMessage("Password is required when using email authentication.");
+                    .MinimumLength(6).WithMessage("Password must be at least 6 characters.");
+            });
+
+            // Step 5: DeviceInfo validation (optional but limited if provided)
+            When(x => !string.IsNullOrEmpty(x.DeviceInfo), () =>
+            {
+                RuleFor(x => x.DeviceInfo)
+                    .MaximumLength(500).WithMessage("Device info must not exceed 500 characters.");
             });
         }
     }
