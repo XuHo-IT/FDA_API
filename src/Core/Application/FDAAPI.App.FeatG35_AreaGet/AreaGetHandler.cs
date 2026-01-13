@@ -10,12 +10,12 @@ using System.Threading.Tasks;
 
 namespace FDAAPI.App.FeatG35_AreaGet
 {
-    public class GetAreaHandler : IRequestHandler<GetAreaRequest, GetAreaResponse>
+    public class AreaGetHandler : IRequestHandler<AreaGetRequest, AreaGetResponse>
     {
         private readonly IAreaRepository _areaRepository;
         private readonly IAreaMapper _areaMapper;
 
-        public GetAreaHandler(
+        public AreaGetHandler(
             IAreaRepository areaRepository, 
             IAreaMapper areaMapper)
         {
@@ -23,13 +23,13 @@ namespace FDAAPI.App.FeatG35_AreaGet
             _areaMapper = areaMapper;
         }
 
-        public async Task<GetAreaResponse> Handle(GetAreaRequest request, CancellationToken ct)
+        public async Task<AreaGetResponse> Handle(AreaGetRequest request, CancellationToken ct)
         {
             var area = await _areaRepository.GetByIdAsync(request.Id, ct);
 
             if (area == null)
             {
-                return new GetAreaResponse
+                return new AreaGetResponse
                 {
                     Success = false,
                     Message = "Area not found",
@@ -37,7 +37,7 @@ namespace FDAAPI.App.FeatG35_AreaGet
                 };
             }
 
-            return new GetAreaResponse
+            return new AreaGetResponse
             {
                 Success = true,
                 Message = "Area retrieved successfully",

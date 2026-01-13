@@ -3,16 +3,17 @@ using FDAAPI.App.FeatG35_AreaGet;
 using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat35_AreaGet.DTOs;
 using MediatR;
 using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat35_AreaGet
 {
-    public class GetAreaEndpoint : EndpointWithoutRequest<GetAreaResponseDto>
+    public class AreaGetEndpoint : EndpointWithoutRequest<GetAreaResponseDto>
     {
         private readonly IMediator _mediator;
 
-        public GetAreaEndpoint(IMediator mediator)
+        public AreaGetEndpoint(IMediator mediator)
         {
             _mediator = mediator;
         }
@@ -23,7 +24,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat35_AreaGet
             Policies("User");
             Summary(s =>
             {
-                s.Summary = "Get a monitored area by ID";
+                s.Summary = "Get monitored area by ID";
                 s.Description = "Retrieve details of a geographic area by its unique identifier";
             });
             Tags("Area");
@@ -32,7 +33,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat35_AreaGet
         public override async Task HandleAsync(CancellationToken ct)
         {
             var id = Route<Guid>("id");
-            var query = new GetAreaRequest(id);
+            var query = new AreaGetRequest(id);
 
             var result = await _mediator.Send(query, ct);
 

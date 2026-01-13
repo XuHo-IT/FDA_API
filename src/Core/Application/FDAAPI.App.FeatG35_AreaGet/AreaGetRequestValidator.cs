@@ -2,9 +2,9 @@ using FluentValidation;
 
 namespace FDAAPI.App.FeatG35_AreaGet
 {
-    public class GetAreaRequestValidator : AbstractValidator<GetAreaRequest>
+    public class AreaGetRequestValidator : AbstractValidator<AreaGetRequest>
     {
-        public GetAreaRequestValidator()
+        public AreaGetRequestValidator()
         {
             RuleFor(x => x.Id)
                 .NotEmpty().WithMessage("Area ID is required.");
