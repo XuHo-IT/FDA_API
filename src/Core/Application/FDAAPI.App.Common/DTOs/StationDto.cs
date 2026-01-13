@@ -13,6 +13,8 @@ namespace FDAAPI.App.Common.DTOs
         public string RoadName { get; set; } = string.Empty;
         public string Direction { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
+        public decimal? ThresholdWarning { get; set; }
+        public decimal? ThresholdCritical { get; set; }
         public DateTimeOffset? InstalledAt { get; set; }
         public DateTimeOffset? LastSeenAt { get; set; }
         public DateTime CreatedAt { get; set; }

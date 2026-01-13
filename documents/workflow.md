@@ -18,10 +18,12 @@ Overall Request Flow
 ┌─────────────────────────────────────────────────────────┐
 │ 2. APPLICATION LAYER (Handler)  
 │ - Receives Application Request  
+│ - Validates Request (FluentValidation)
 │ - Executes Business Logic  
 │ - Uses Unit of Work for Transaction Management  
 │ - Calls Repository Interfaces  
 │ - Uses Infrastructure Services (Cache, File, etc.)  
+│ - Maps Entity → Response DTO (Mappers)
 └──────┬──────────────────────────────────────────────────┘
 │
 ▼
@@ -74,10 +76,11 @@ Step 2: Handler Execution (Application)
 
 **Actions**:
 
-- Validates business rules (e.g., water level ≥ 0)
+- Validates business rules (e.g., water level ≥ 0) using FluentValidation
 - Creates `WaterLevel` entity
 - Calls `IWaterLevelRepository.CreateAsync()`
-- Returns `CreateWaterLevelResponse`
+- Maps `WaterLevel` entity → `WaterLevelDto` using a Mapper
+- Returns `CreateWaterLevelResponse` containing the DTO
 
 Step 3: Repository Call (Domain → Infrastructure)
 // PgsqlWaterLevelRepository.CreateAsync()

@@ -32,6 +32,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
 using System.Text;
+using FluentValidation;
 using FDAAPI.App.FeatG23_StationCreate;
 using FDAAPI.App.FeatG21_UserList;
 using FDAAPI.App.FeatG25_StationList;
@@ -44,6 +45,12 @@ using FDAAPI.App.FeatG28_GetMapPreferences;
 using FDAAPI.App.FeatG29_UpdateMapPreferences;
 using FDAAPI.App.FeatG30_GetFloodSeverityLayer;
 using FDAAPI.App.FeatG31_GetMapCurrentStatus;
+using FDAAPI.App.FeatG32_AreaCreate;
+using FDAAPI.App.FeatG33_AreaList;
+using FDAAPI.App.FeatG34_AreaStatusEvaluate;
+using FDAAPI.App.FeatG35_AreaGet;
+using FDAAPI.App.FeatG36_AreaUpdate;
+using FDAAPI.App.FeatG37_AreaDelete;
 
 namespace FDAAPI.Infra.Configuration
 {
@@ -102,6 +109,9 @@ namespace FDAAPI.Infra.Configuration
             // Google OAuth Service
             services.AddScoped<IGoogleOAuthService, GoogleOAuthService>();
             services.AddScoped<IUserProfileMapper, UserProfileMapper>();
+            services.AddScoped<IAreaMapper, AreaMapper>();
+            services.AddScoped<IStationMapper, StationMapper>();
+
             return services;
         }
 
@@ -138,7 +148,25 @@ namespace FDAAPI.Infra.Configuration
                 cfg.RegisterServicesFromAssembly(typeof(GetSensorReadingRequest).Assembly);
                 cfg.RegisterServicesFromAssembly(typeof(DeleteSensorReadingRequest).Assembly);
                 cfg.RegisterServicesFromAssembly(typeof(GetMapCurrentStatusRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(CreateAreaRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(AreaListRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(AreaStatusEvaluateRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(GetAreaRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(UpdateAreaRequest).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(DeleteAreaRequest).Assembly);
             });
+
+            services.AddScoped<IValidator<CreateStationRequest>, CreateStationRequestValidator>();
+            services.AddScoped<IValidator<UpdateStationRequest>, UpdateStationRequestValidator>();
+            services.AddScoped<IValidator<GetStationsRequest>, GetStationsRequestValidator>();
+            services.AddScoped<IValidator<GetStationRequest>, GetStationRequestValidator>();
+            services.AddScoped<IValidator<DeleteStationRequest>, DeleteStationRequestValidator>();
+            services.AddScoped<IValidator<CreateAreaRequest>, CreateAreaRequestValidator>();
+            services.AddScoped<IValidator<AreaListRequest>, AreaListRequestValidator>();
+            services.AddScoped<IValidator<AreaStatusEvaluateRequest>, AreaStatusEvaluateRequestValidator>();
+            services.AddScoped<IValidator<GetAreaRequest>, GetAreaRequestValidator>();
+            services.AddScoped<IValidator<UpdateAreaRequest>, UpdateAreaRequestValidator>();
+            services.AddScoped<IValidator<DeleteAreaRequest>, DeleteAreaRequestValidator>();
 
             services.AddHttpClient<IImageStorageService, ImageKitService>();
             services.AddScoped<IImageUploadPolicy, ImageUploadPolicy>();
@@ -164,6 +192,8 @@ namespace FDAAPI.Infra.Configuration
             services.AddScoped<IUserOAuthProviderRepository, PgsqlUserOAuthProviderRepository>();
 
             services.AddScoped<IUserPreferenceRepository, PgsqlUserPreferenceRepository>();
+
+            services.AddScoped<IAreaRepository, PgsqlAreaRepository>();
 
             return services;
         }

@@ -1,6 +1,8 @@
 using FDAAPI.App.Common.DTOs;
 using FDAAPI.App.Common.Models.Stations;
+using FDAAPI.App.Common.Services.Mapping;
 using FDAAPI.Domain.RelationalDb.Repositories;
+using FluentValidation;
 using MediatR;
 
 namespace FDAAPI.App.FeatG25_StationList
@@ -8,14 +10,32 @@ namespace FDAAPI.App.FeatG25_StationList
     public class GetStationsHandler : IRequestHandler<GetStationsRequest, GetStationsResponse>
     {
         private readonly IStationRepository _stationRepository;
+        private readonly IValidator<GetStationsRequest> _validator;
+        private readonly IStationMapper _stationMapper;
 
-        public GetStationsHandler(IStationRepository stationRepository)
+        public GetStationsHandler(
+            IStationRepository stationRepository,
+            IValidator<GetStationsRequest> validator,
+            IStationMapper stationMapper)
         {
             _stationRepository = stationRepository;
+            _validator = validator;
+            _stationMapper = stationMapper;
         }
 
         public async Task<GetStationsResponse> Handle(GetStationsRequest request, CancellationToken ct)
         {
+            var validationResult = await _validator.ValidateAsync(request, ct);
+            if (!validationResult.IsValid)
+            {
+                return new GetStationsResponse
+                {
+                    Success = false,
+                    Message = string.Join(", ", validationResult.Errors.Select(x => x.ErrorMessage)),
+                    StatusCode = StationStatusCode.InvalidData
+                };
+            }
+
             try
             {
                 var (stations, totalCount) = await _stationRepository.GetStationsAsync(
@@ -25,29 +45,12 @@ namespace FDAAPI.App.FeatG25_StationList
                     request.PageSize,
                     ct);
 
-                var stationDtos = stations.Select(s => new StationDto
-                {
-                    Id = s.Id,
-                    Code = s.Code,
-                    Name = s.Name,
-                    LocationDesc = s.LocationDesc,
-                    Latitude = s.Latitude,
-                    Longitude = s.Longitude,
-                    RoadName = s.RoadName,
-                    Direction = s.Direction,
-                    Status = s.Status,
-                    InstalledAt = s.InstalledAt,
-                    LastSeenAt = s.LastSeenAt,
-                    CreatedAt = s.CreatedAt,
-                    UpdatedAt = s.UpdatedAt
-                });
-
                 return new GetStationsResponse
                 {
                     Success = true,
                     Message = "Stations retrieved successfully",
                     StatusCode = StationStatusCode.Success,
-                    Stations = stationDtos,
+                    Stations = _stationMapper.MapToDtoList(stations),
                     TotalCount = totalCount
                 };
             }

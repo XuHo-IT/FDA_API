@@ -1,7 +1,9 @@
 ﻿using FDAAPI.App.Common.Models.Stations;
+using FDAAPI.App.Common.Services.Mapping;
 using FDAAPI.App.FeatG23_StationCreate;
 using FDAAPI.Domain.RelationalDb.Entities;
 using FDAAPI.Domain.RelationalDb.Repositories;
+using FluentValidation;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -14,12 +16,32 @@ namespace FDAAPI.App.FeatG23_StationCreate
     public class CreateStationHandler : IRequestHandler<CreateStationRequest, CreateStationResponse>
     {
         private readonly IStationRepository _stationRepository;
-        public CreateStationHandler(IStationRepository stationRepository)
+        private readonly IValidator<CreateStationRequest> _validator;
+        private readonly IStationMapper _stationMapper;
+
+        public CreateStationHandler(
+            IStationRepository stationRepository,
+            IValidator<CreateStationRequest> validator,
+            IStationMapper stationMapper)
         {
             _stationRepository = stationRepository;
+            _validator = validator;
+            _stationMapper = stationMapper;
         }
+
         public async Task<CreateStationResponse> Handle(CreateStationRequest request, CancellationToken cancellationToken)
         {
+            var validationResult = await _validator.ValidateAsync(request, cancellationToken);
+            if (!validationResult.IsValid)
+            {
+                return new CreateStationResponse
+                {
+                    Success = false,
+                    Message = string.Join(", ", validationResult.Errors.Select(x => x.ErrorMessage)),
+                    StatusCode = StationStatusCode.InvalidData
+                };
+            }
+
             try
             {
                 var station = new Station
@@ -33,6 +55,8 @@ namespace FDAAPI.App.FeatG23_StationCreate
                     RoadName = request.RoadName,
                     Direction = request.Direction,
                     Status = request.Status,
+                    ThresholdWarning = request.ThresholdWarning,
+                    ThresholdCritical = request.ThresholdCritical,
                     InstalledAt = request.InstalledAt,
                     CreatedAt = DateTime.UtcNow,
                     CreatedBy = request.AdminId,
@@ -47,7 +71,7 @@ namespace FDAAPI.App.FeatG23_StationCreate
                     Success = true,
                     Message = "Station created successfully",
                     StatusCode = StationStatusCode.Success,
-                    StationId = station.Id
+                    Data = _stationMapper.MapToDto(station)
                 };
             }
             catch (Exception ex)

@@ -13,6 +13,8 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat22_StationUpdat
         public string RoadName { get; set; }
         public string Direction { get; set; }
         public string Status { get; set; }
+        public decimal? ThresholdWarning { get; set; }
+        public decimal? ThresholdCritical { get; set; }
         public DateTimeOffset? InstalledAt { get; set; }
         public DateTimeOffset? LastSeenAt { get; set; }
     }

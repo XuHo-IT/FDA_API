@@ -47,6 +47,9 @@
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG2_WaterLevelUpdate\FDAAPI.App.FeatG2_SensorReadingUpdate.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG30_GetFloodSeverityLayer\FDAAPI.App.FeatG30_GetFloodSeverityLayer.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG31_GetMapCurrentStatus\FDAAPI.App.FeatG31_GetMapCurrentStatus.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG32_AreaCreate\FDAAPI.App.FeatG32_AreaCreate.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG33_AreaList\FDAAPI.App.FeatG33_AreaList.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG34_AreaStatusEvaluate\FDAAPI.App.FeatG34_AreaStatusEvaluate.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG3_WaterLevelGet\FDAAPI.App.FeatG3_SensorReadingGet.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG4_WaterLevelDelete\FDAAPI.App.FeatG4_SensorReadingDelete.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG6_AuthSendOtp\FDAAPI.App.FeatG6_AuthSendOtp.csproj" />
@@ -55,6 +58,9 @@
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG9_AuthLogout\FDAAPI.App.FeatG9_AuthLogout.csproj" />
     <ProjectReference Include="..\..\..\Core\Domain\FDAAPI.Domain.RelationalDb\FDAAPI.Domain.RelationalDb.csproj" />
     <ProjectReference Include="..\..\Infrastructure\Common\FDAAPI.Infra.Configuration\FDAAPI.Infra.Configuration.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG35_AreaGet\FDAAPI.App.FeatG35_AreaGet.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG36_AreaUpdate\FDAAPI.App.FeatG36_AreaUpdate.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG37_AreaDelete\FDAAPI.App.FeatG37_AreaDelete.csproj" />
   </ItemGroup>
 
 </Project>

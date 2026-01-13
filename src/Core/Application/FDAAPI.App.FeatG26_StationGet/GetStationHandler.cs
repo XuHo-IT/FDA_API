@@ -1,8 +1,11 @@
 using FDAAPI.App.Common.Features;
 using FDAAPI.App.Common.Models.Stations;
+using FDAAPI.App.Common.Services.Mapping;
 using FDAAPI.Domain.RelationalDb.Repositories;
+using FluentValidation;
 using MediatR;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,14 +14,32 @@ namespace FDAAPI.App.FeatG26_StationGet
     public class GetStationHandler : IRequestHandler<GetStationRequest, GetStationResponse>
     {
         private readonly IStationRepository _stationRepository;
+        private readonly IValidator<GetStationRequest> _validator;
+        private readonly IStationMapper _stationMapper;
 
-        public GetStationHandler(IStationRepository stationRepository)
+        public GetStationHandler(
+            IStationRepository stationRepository,
+            IValidator<GetStationRequest> validator,
+            IStationMapper stationMapper)
         {
             _stationRepository = stationRepository;
+            _validator = validator;
+            _stationMapper = stationMapper;
         }
 
         public async Task<GetStationResponse> Handle(GetStationRequest request, CancellationToken cancellationToken)
         {
+            var validationResult = await _validator.ValidateAsync(request, cancellationToken);
+            if (!validationResult.IsValid)
+            {
+                return new GetStationResponse
+                {
+                    Success = false,
+                    Message = string.Join(", ", validationResult.Errors.Select(x => x.ErrorMessage)),
+                    StatusCode = StationStatusCode.InvalidData
+                };
+            }
+
             try
             {
                 var station = await _stationRepository.GetByIdAsync(request.Id, cancellationToken);
@@ -37,7 +58,7 @@ namespace FDAAPI.App.FeatG26_StationGet
                     Success = true,
                     Message = "Station retrieved successfully",
                     StatusCode = StationStatusCode.Success,
-                    Station = station
+                    Station = _stationMapper.MapToDto(station)
                 };
             }
             catch (Exception ex)
@@ -52,4 +73,3 @@ namespace FDAAPI.App.FeatG26_StationGet
         }
     }
 }
-

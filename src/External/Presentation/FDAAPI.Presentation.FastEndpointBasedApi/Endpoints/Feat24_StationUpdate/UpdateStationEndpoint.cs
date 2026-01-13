@@ -39,7 +39,8 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat22_StationUpdat
                 await SendAsync(new UpdateStationResponseDto
                 {
                     Success = false,
-                    Message = "Unauthorized: Could not identify admin user"
+                    Message = "Unauthorized: Could not identify admin user",
+                    StatusCode = 401
                 }, 401, ct);
                 return;
             }
@@ -52,21 +53,23 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat22_StationUpdat
                 req.Latitude,
                 req.Longitude,
                 req.RoadName,
-                req.Direction,
-                req.Status,
-                req.InstalledAt,
-                req.LastSeenAt,
-                adminId
-            );
+                    req.Direction,
+                    req.Status,
+                    req.ThresholdWarning,
+                    req.ThresholdCritical,
+                    req.InstalledAt,
+                    req.LastSeenAt,
+                    adminId
+                );
 
             var result = await _mediator.Send(command, ct);
 
             await SendAsync(new UpdateStationResponseDto
             {
                 Success = result.Success,
-                Message = result.Message
-            }, result.Success ? 200 : 400, ct);
+                Message = result.Message,
+                StatusCode = (int)result.StatusCode
+            }, (int)result.StatusCode, ct);
         }
     }
 }
-

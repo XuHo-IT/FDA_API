@@ -1,4 +1,4 @@
-using FDAAPI.Domain.RelationalDb.Entities;
+using FDAAPI.App.Common.DTOs;
 
 namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat23_StationGet.DTOs
 {
@@ -6,7 +6,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat23_StationGet.D
     {
         public bool Success { get; set; }
         public string Message { get; set; } = string.Empty;
-        public Station? Station { get; set; }
+        public int StatusCode { get; set; }
+        public StationDto? Station { get; set; }
     }
 }
-

@@ -25,6 +25,7 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB
         public DbSet<UserOAuthProvider> UserOAuthProviders { get; set; } = null!;
         public DbSet<Station> Stations { get; set; } = null!;
         public DbSet<UserPreference> UserPreferences { get; set; } = null!;
+        public DbSet<Area> Areas { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -199,6 +200,28 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB
                 // Foreign key relationship
                 entity.HasOne(e => e.User)
                     .WithMany(u => u.UserPreferences)
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+
+            // Area configuration
+            modelBuilder.Entity<Area>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.Latitude).HasColumnType("numeric(10,6)").IsRequired();
+                entity.Property(e => e.Longitude).HasColumnType("numeric(10,6)").IsRequired();
+                entity.Property(e => e.RadiusMeters).HasDefaultValue(1000);
+                entity.Property(e => e.CreatedAt).IsRequired();
+                entity.Property(e => e.UpdatedAt).IsRequired();
+
+                entity.HasIndex(e => e.UserId).HasDatabaseName("ix_areas_user");
+                entity.HasIndex(e => new { e.Latitude, e.Longitude }).HasDatabaseName("ix_areas_geo");
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
                     .HasForeignKey(e => e.UserId)
                     .OnDelete(DeleteBehavior.Cascade);
             });

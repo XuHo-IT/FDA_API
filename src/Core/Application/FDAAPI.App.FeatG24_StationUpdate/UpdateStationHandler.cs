@@ -1,9 +1,12 @@
 using FDAAPI.App.Common.Features;
 using FDAAPI.App.Common.Models.Stations;
+using FDAAPI.App.Common.Services.Mapping;
 using FDAAPI.Domain.RelationalDb.Entities;
 using FDAAPI.Domain.RelationalDb.Repositories;
+using FluentValidation;
 using MediatR;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,14 +15,32 @@ namespace FDAAPI.App.FeatG24_StationUpdate
     public class UpdateStationHandler : IRequestHandler<UpdateStationRequest, UpdateStationResponse>
     {
         private readonly IStationRepository _stationRepository;
+        private readonly IValidator<UpdateStationRequest> _validator;
+        private readonly IStationMapper _stationMapper;
 
-        public UpdateStationHandler(IStationRepository stationRepository)
+        public UpdateStationHandler(
+            IStationRepository stationRepository,
+            IValidator<UpdateStationRequest> validator,
+            IStationMapper stationMapper)
         {
             _stationRepository = stationRepository;
+            _validator = validator;
+            _stationMapper = stationMapper;
         }
 
         public async Task<UpdateStationResponse> Handle(UpdateStationRequest request, CancellationToken cancellationToken)
         {
+            var validationResult = await _validator.ValidateAsync(request, cancellationToken);
+            if (!validationResult.IsValid)
+            {
+                return new UpdateStationResponse
+                {
+                    Success = false,
+                    Message = string.Join(", ", validationResult.Errors.Select(x => x.ErrorMessage)),
+                    StatusCode = StationStatusCode.InvalidData
+                };
+            }
+
             try
             {
                 var station = await _stationRepository.GetByIdAsync(request.Id, cancellationToken);
@@ -29,7 +50,7 @@ namespace FDAAPI.App.FeatG24_StationUpdate
                     {
                         Success = false,
                         Message = "Station not found",
-                        StatusCode = StationStatusCode.InvalidData // Or a NotFound status if added to enum
+                        StatusCode = StationStatusCode.InvalidData
                     };
                 }
 
@@ -41,6 +62,8 @@ namespace FDAAPI.App.FeatG24_StationUpdate
                 station.RoadName = request.RoadName;
                 station.Direction = request.Direction;
                 station.Status = request.Status;
+                station.ThresholdWarning = request.ThresholdWarning;
+                station.ThresholdCritical = request.ThresholdCritical;
                 station.InstalledAt = request.InstalledAt;
                 station.LastSeenAt = request.LastSeenAt;
                 station.UpdatedAt = DateTime.UtcNow;
@@ -67,4 +90,3 @@ namespace FDAAPI.App.FeatG24_StationUpdate
         }
     }
 }
-

@@ -14,6 +14,8 @@ namespace FDAAPI.App.FeatG24_StationUpdate
         string RoadName,
         string Direction,
         string Status,
+        decimal? ThresholdWarning,
+        decimal? ThresholdCritical,
         DateTimeOffset? InstalledAt,
         DateTimeOffset? LastSeenAt,
         Guid AdminId

@@ -48,19 +48,22 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat21_StationCreat
           req.Latitude,
           req.Longitude,
           req.RoadName,
-          req.Direction,
-          req.Status,
-          req.InstalledAt,
-          adminId 
-             );
+              req.Direction,
+              req.Status,
+              req.ThresholdWarning,
+              req.ThresholdCritical,
+              req.InstalledAt,
+              adminId 
+                 );
 
             var result = await _mediator.Send(command, ct);
 
             await SendAsync(new CreateStationReponseDto
             {
-                Id = result.StationId,
-                Success = true,
-                Message = "Station created successfully"
+                Success = result.Success,
+                Message = result.Message,
+                StatusCode = (int)result.StatusCode,
+                Data = result.Data
             }, 201, ct);
         }
     }

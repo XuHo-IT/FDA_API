@@ -17,5 +17,9 @@ namespace FDAAPI.Domain.RelationalDb.Repositories
             int pageNumber,
             int pageSize,
             CancellationToken ct = default);
+
+        Task<List<SensorReading>> GetLatestReadingsByStationsAsync(
+            IEnumerable<Guid> stationIds,
+            CancellationToken ct = default);
     }
 }

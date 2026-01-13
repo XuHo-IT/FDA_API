@@ -13,6 +13,8 @@ namespace FDAAPI.App.FeatG23_StationCreate
         string RoadName,
         string Direction,
         string Status,
+        decimal? ThresholdWarning,
+        decimal? ThresholdCritical,
         DateTimeOffset? InstalledAt,
         Guid AdminId
     ) : IFeatureRequest<CreateStationResponse>;

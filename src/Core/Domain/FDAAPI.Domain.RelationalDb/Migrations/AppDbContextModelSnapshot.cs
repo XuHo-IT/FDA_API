@@ -22,6 +22,58 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.Area", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AddressText")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Latitude")
+                        .HasColumnType("numeric(10,6)");
+
+                    b.Property<decimal>("Longitude")
+                        .HasColumnType("numeric(10,6)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<int>("RadiusMeters")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1000);
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_areas_user");
+
+                    b.HasIndex("Latitude", "Longitude")
+                        .HasDatabaseName("ix_areas_geo");
+
+                    b.ToTable("Areas");
+                });
+
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.OtpCode", b =>
                 {
                     b.Property<Guid>("Id")
@@ -216,6 +268,14 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
+
+                    b.Property<decimal?>("ThresholdCritical")
+                        .HasPrecision(14, 4)
+                        .HasColumnType("numeric(14,4)");
+
+                    b.Property<decimal?>("ThresholdWarning")
+                        .HasPrecision(14, 4)
+                        .HasColumnType("numeric(14,4)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -479,6 +539,17 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         .HasDatabaseName("ix_sensor_readings_station_time");
 
                     b.ToTable("SensorReadings");
+                });
+
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.Area", b =>
+                {
+                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.RefreshToken", b =>

@@ -2,6 +2,8 @@ using FastEndpoints;
 using FDAAPI.App.FeatG25_StationList;
 using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat25_StationList.DTOs;
 using MediatR;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat25_StationList
 {
@@ -38,10 +40,10 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat25_StationList
             {
                 Success = result.Success,
                 Message = result.Message,
+                StatusCode = (int)result.StatusCode,
                 Stations = result.Stations,
                 TotalCount = result.TotalCount
-            }, result.Success ? 200 : 400, ct);
+            }, (int)result.StatusCode, ct);
         }
     }
 }
-

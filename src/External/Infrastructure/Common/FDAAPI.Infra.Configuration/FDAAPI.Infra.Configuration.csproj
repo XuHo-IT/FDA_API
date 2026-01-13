@@ -37,12 +37,19 @@
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG8_AuthRefreshToken\FDAAPI.App.FeatG8_AuthRefreshToken.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG9_AuthLogout\FDAAPI.App.FeatG9_AuthLogout.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG31_GetMapCurrentStatus\FDAAPI.App.FeatG31_GetMapCurrentStatus.csproj" />  
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG32_AreaCreate\FDAAPI.App.FeatG32_AreaCreate.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG33_AreaList\FDAAPI.App.FeatG33_AreaList.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG34_AreaStatusEvaluate\FDAAPI.App.FeatG34_AreaStatusEvaluate.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Domain\FDAAPI.Domain.RelationalDb\FDAAPI.Domain.RelationalDb.csproj" />
     <ProjectReference Include="..\..\Persistence\FDAAPI.Infra.Persistence\FDAAPI.Infra.Persistence.csproj" />
     <ProjectReference Include="..\..\Services\FDAAPI.Infra.Services\FDAAPI.Infra.Services.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG35_AreaGet\FDAAPI.App.FeatG35_AreaGet.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG36_AreaUpdate\FDAAPI.App.FeatG36_AreaUpdate.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG37_AreaDelete\FDAAPI.App.FeatG37_AreaDelete.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+	  <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
 	  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
 	  <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.0" />
 	  <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />

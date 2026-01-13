@@ -55,6 +55,12 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB.Configurations
             builder.Property(x => x.Status)
                 .HasMaxLength(20);
 
+            builder.Property(x => x.ThresholdWarning)
+                .HasPrecision(14, 4);
+
+            builder.Property(x => x.ThresholdCritical)
+                .HasPrecision(14, 4);
+
             // Time
             builder.Property(x => x.CreatedAt)
                 .IsRequired();

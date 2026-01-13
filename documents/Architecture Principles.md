@@ -42,10 +42,32 @@
   - **Handlers**: Execute business logic workflows
   - **Requests**: Command (Write) or Query (Read) requests
   - **Responses**: Command or Query responses
+  - **Validators**: Input validation for Application requests (FluentValidation)
+  - **Mappers**: Conversion between Domain Entities and DTOs
 - **Dependencies**: Core.Domain only
 - **Pattern**: CQRS (Command Query Responsibility Segregation)
   - **Commands**: `CreateWaterLevelRequest`, `UpdateWaterLevelRequest`, `DeleteWaterLevelRequest`
   - **Queries**: `GetWaterLevelRequest`, `GetStaticDataRequest`
+
+### Standardized API Response Structure
+
+To ensure consistency across all endpoints, the following structure is followed:
+
+1.  **POST (Create)**:
+    - **Status Code**: 201 Created
+    - **Body**: Contains `Success`, `Message`, `StatusCode`, and `Data` (EntityDTO including the new ID).
+
+2.  **GET (Read)**:
+    - **Status Code**: 200 OK
+    - **Body**: Contains `Success`, `Message`, `StatusCode`, and a specifically named property for the data (e.g., `Area`, `Areas`, `Station`, `Stations`).
+
+3.  **PUT/PATCH (Update) & DELETE**:
+    - **Status Code**: 200 OK or 204 No Content
+    - **Body**: Contains `Success`, `Message`, and `StatusCode`.
+
+4.  **Error Handling**:
+    - **Status Code**: Appropriate 4xx or 5xx code
+    - **Body**: Contains `Success: false`, `Message` (error description), and `StatusCode`.
 
 3.  **External.Infrastructure** - Technical Implementations
 

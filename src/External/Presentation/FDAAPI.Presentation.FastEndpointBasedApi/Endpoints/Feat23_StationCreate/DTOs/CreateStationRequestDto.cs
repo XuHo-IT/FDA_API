@@ -12,6 +12,8 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat21_StationCreat
         public string RoadName { get; set; }
         public string Direction { get; set; }
         public string Status { get; set; }
+        public decimal? ThresholdWarning { get; set; }
+        public decimal? ThresholdCritical { get; set; }
         public DateTimeOffset? InstalledAt { get; set; }
     }
 }
