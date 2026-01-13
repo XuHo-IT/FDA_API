@@ -15,32 +15,18 @@ namespace FDAAPI.App.FeatG24_StationUpdate
     public class UpdateStationHandler : IRequestHandler<UpdateStationRequest, UpdateStationResponse>
     {
         private readonly IStationRepository _stationRepository;
-        private readonly IValidator<UpdateStationRequest> _validator;
         private readonly IStationMapper _stationMapper;
 
         public UpdateStationHandler(
             IStationRepository stationRepository,
-            IValidator<UpdateStationRequest> validator,
             IStationMapper stationMapper)
         {
             _stationRepository = stationRepository;
-            _validator = validator;
             _stationMapper = stationMapper;
         }
 
         public async Task<UpdateStationResponse> Handle(UpdateStationRequest request, CancellationToken cancellationToken)
         {
-            var validationResult = await _validator.ValidateAsync(request, cancellationToken);
-            if (!validationResult.IsValid)
-            {
-                return new UpdateStationResponse
-                {
-                    Success = false,
-                    Message = string.Join(", ", validationResult.Errors.Select(x => x.ErrorMessage)),
-                    StatusCode = StationStatusCode.InvalidData
-                };
-            }
-
             try
             {
                 var station = await _stationRepository.GetByIdAsync(request.Id, cancellationToken);

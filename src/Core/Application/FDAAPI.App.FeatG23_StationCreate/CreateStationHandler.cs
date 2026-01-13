@@ -16,32 +16,18 @@ namespace FDAAPI.App.FeatG23_StationCreate
     public class CreateStationHandler : IRequestHandler<CreateStationRequest, CreateStationResponse>
     {
         private readonly IStationRepository _stationRepository;
-        private readonly IValidator<CreateStationRequest> _validator;
         private readonly IStationMapper _stationMapper;
 
         public CreateStationHandler(
             IStationRepository stationRepository,
-            IValidator<CreateStationRequest> validator,
             IStationMapper stationMapper)
         {
             _stationRepository = stationRepository;
-            _validator = validator;
             _stationMapper = stationMapper;
         }
 
         public async Task<CreateStationResponse> Handle(CreateStationRequest request, CancellationToken cancellationToken)
         {
-            var validationResult = await _validator.ValidateAsync(request, cancellationToken);
-            if (!validationResult.IsValid)
-            {
-                return new CreateStationResponse
-                {
-                    Success = false,
-                    Message = string.Join(", ", validationResult.Errors.Select(x => x.ErrorMessage)),
-                    StatusCode = StationStatusCode.InvalidData
-                };
-            }
-
             try
             {
                 var station = new Station

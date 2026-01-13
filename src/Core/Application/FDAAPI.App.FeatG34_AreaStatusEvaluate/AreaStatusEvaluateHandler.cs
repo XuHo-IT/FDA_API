@@ -21,7 +21,6 @@ namespace FDAAPI.App.FeatG34_AreaStatusEvaluate
         private readonly IStationRepository _stationRepository;
         private readonly ISensorReadingRepository _sensorReadingRepository;
         private readonly IDistributedCache _cache;
-        private readonly IValidator<AreaStatusEvaluateRequest> _validator;
         private readonly IConfiguration _configuration;
 
         private const double EarthRadiusKm = 6371.0;
@@ -31,30 +30,17 @@ namespace FDAAPI.App.FeatG34_AreaStatusEvaluate
             IStationRepository stationRepository,
             ISensorReadingRepository sensorReadingRepository,
             IDistributedCache cache,
-            IValidator<AreaStatusEvaluateRequest> validator,
             IConfiguration configuration)
         {
             _areaRepository = areaRepository;
             _stationRepository = stationRepository;
             _sensorReadingRepository = sensorReadingRepository;
             _cache = cache;
-            _validator = validator;
             _configuration = configuration;
         }
 
         public async Task<AreaStatusEvaluateResponse> Handle(AreaStatusEvaluateRequest request, CancellationToken ct)
         {
-            var validationResult = await _validator.ValidateAsync(request, ct);
-            if (!validationResult.IsValid)
-            {
-                return new AreaStatusEvaluateResponse
-                {
-                    Success = false,
-                    Message = string.Join(", ", validationResult.Errors.Select(x => x.ErrorMessage)),
-                    StatusCode = AreaStatusCode.BadRequest
-                };
-            }
-
             try
             {
                 // 1. Try get from cache

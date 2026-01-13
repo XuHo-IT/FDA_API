@@ -12,32 +12,18 @@ namespace FDAAPI.App.FeatG37_AreaDelete
     public class DeleteAreaHandler : IRequestHandler<DeleteAreaRequest, DeleteAreaResponse>
     {
         private readonly IAreaRepository _areaRepository;
-        private readonly IValidator<DeleteAreaRequest> _validator;
         private readonly IAreaMapper _areaMapper;
 
         public DeleteAreaHandler(
             IAreaRepository areaRepository, 
-            IValidator<DeleteAreaRequest> validator,
             IAreaMapper areaMapper)
         {
             _areaRepository = areaRepository;
-            _validator = validator;
             _areaMapper = areaMapper;
         }
 
         public async Task<DeleteAreaResponse> Handle(DeleteAreaRequest request, CancellationToken ct)
         {
-            var validationResult = await _validator.ValidateAsync(request, ct);
-            if (!validationResult.IsValid)
-            {
-                return new DeleteAreaResponse
-                {
-                    Success = false,
-                    Message = string.Join(", ", validationResult.Errors.Select(x => x.ErrorMessage)),
-                    StatusCode = AreaStatusCode.BadRequest
-                };
-            }
-
             var area = await _areaRepository.GetByIdAsync(request.Id, ct);
 
             if (area == null)

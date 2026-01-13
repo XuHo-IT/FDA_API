@@ -13,32 +13,18 @@ namespace FDAAPI.App.FeatG36_AreaUpdate
     public class UpdateAreaHandler : IRequestHandler<UpdateAreaRequest, UpdateAreaResponse>
     {
         private readonly IAreaRepository _areaRepository;
-        private readonly IValidator<UpdateAreaRequest> _validator;
         private readonly IAreaMapper _areaMapper;
 
         public UpdateAreaHandler(
             IAreaRepository areaRepository, 
-            IValidator<UpdateAreaRequest> validator,
             IAreaMapper areaMapper)
         {
             _areaRepository = areaRepository;
-            _validator = validator;
             _areaMapper = areaMapper;
         }
 
         public async Task<UpdateAreaResponse> Handle(UpdateAreaRequest request, CancellationToken ct)
         {
-            var validationResult = await _validator.ValidateAsync(request, ct);
-            if (!validationResult.IsValid)
-            {
-                return new UpdateAreaResponse
-                {
-                    Success = false,
-                    Message = string.Join(", ", validationResult.Errors.Select(x => x.ErrorMessage)),
-                    StatusCode = AreaStatusCode.BadRequest
-                };
-            }
-
             var area = await _areaRepository.GetByIdAsync(request.Id, ct);
 
             if (area == null)

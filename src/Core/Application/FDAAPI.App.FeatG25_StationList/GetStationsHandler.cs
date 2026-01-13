@@ -23,17 +23,6 @@ namespace FDAAPI.App.FeatG25_StationList
 
         public async Task<GetStationsResponse> Handle(GetStationsRequest request, CancellationToken ct)
         {
-            var validationResult = await _validator.ValidateAsync(request, ct);
-            if (!validationResult.IsValid)
-            {
-                return new GetStationsResponse
-                {
-                    Success = false,
-                    Message = string.Join(", ", validationResult.Errors.Select(x => x.ErrorMessage)),
-                    StatusCode = StationStatusCode.InvalidData
-                };
-            }
-
             try
             {
                 var (stations, totalCount) = await _stationRepository.GetStationsAsync(

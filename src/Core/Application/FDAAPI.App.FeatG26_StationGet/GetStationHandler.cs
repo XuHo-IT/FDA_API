@@ -27,17 +27,6 @@ namespace FDAAPI.App.FeatG26_StationGet
 
         public async Task<GetStationResponse> Handle(GetStationRequest request, CancellationToken cancellationToken)
         {
-            var validationResult = await _validator.ValidateAsync(request, cancellationToken);
-            if (!validationResult.IsValid)
-            {
-                return new GetStationResponse
-                {
-                    Success = false,
-                    Message = string.Join(", ", validationResult.Errors.Select(x => x.ErrorMessage)),
-                    StatusCode = StationStatusCode.InvalidData
-                };
-            }
-
             try
             {
                 var station = await _stationRepository.GetByIdAsync(request.Id, cancellationToken);
@@ -50,9 +39,6 @@ namespace FDAAPI.App.FeatG26_StationGet
                         StatusCode = StationStatusCode.InvalidData
                     };
                 }
-
-                // Use mapper to convert entity to DTO
-                var stationDto = _stationMapper.MapToDto(station);
 
                 return new GetStationResponse
                 {
