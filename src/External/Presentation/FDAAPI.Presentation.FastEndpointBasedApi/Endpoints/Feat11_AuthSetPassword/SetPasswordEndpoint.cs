@@ -8,6 +8,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity.Data;
 using System.Security.Claims;
+using FDAAPI.App.Common.Models.Auth;
 
 namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat11_AuthSetPassword{
     public class SetPasswordEndpoint : Endpoint<SetPasswordRequestDto, SetPasswordResponseDto>

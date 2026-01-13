@@ -5,6 +5,9 @@
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 	<ItemGroup>
+		<PackageReference Include="FluentValidation" Version="11.9.0" />
+	</ItemGroup>
+	<ItemGroup>
 		<ProjectReference Include="..\..\Domain\FDAAPI.Domain.RelationalDb\FDAAPI.Domain.RelationalDb.csproj" />
 		<ProjectReference Include="..\FDAAPI.App.Common\FDAAPI.App.Common.csproj" />
 	</ItemGroup>

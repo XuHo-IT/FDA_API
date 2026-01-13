@@ -1,5 +1,7 @@
+using FDAAPI.App.Common.DTOs;
 using FDAAPI.App.Common.Features;
 using FDAAPI.App.Common.Services;
+using FDAAPI.App.Common.Services.Mapping;
 using FDAAPI.Domain.RelationalDb.Entities;
 using FDAAPI.Domain.RelationalDb.Repositories;
 using MediatR;
@@ -26,6 +28,7 @@ namespace FDAAPI.App.FeatG7_AuthLogin
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IPasswordHasher _passwordHasher;
         private readonly IJwtTokenService _jwtTokenService;
+        private readonly IUserMapper _userMapper;
 
         public LoginHandler(
             IUserRepository userRepository,
@@ -34,7 +37,8 @@ namespace FDAAPI.App.FeatG7_AuthLogin
             IRoleRepository roleRepository,
             IRefreshTokenRepository refreshTokenRepository,
             IPasswordHasher passwordHasher,
-            IJwtTokenService jwtTokenService)
+            IJwtTokenService jwtTokenService,
+            IUserMapper userMapper)
         {
             _userRepository = userRepository;
             _otpRepository = otpRepository;
@@ -43,6 +47,7 @@ namespace FDAAPI.App.FeatG7_AuthLogin
             _refreshTokenRepository = refreshTokenRepository;
             _passwordHasher = passwordHasher;
             _jwtTokenService = jwtTokenService;
+            _userMapper = userMapper;
         }
 
         public async Task<LoginResponse> Handle(LoginRequest request, CancellationToken ct)
@@ -489,6 +494,9 @@ namespace FDAAPI.App.FeatG7_AuthLogin
 
             await _refreshTokenRepository.CreateAsync(refreshToken, ct);
 
+            // Load user with roles for mapping
+            var userWithRoles = await _userRepository.GetUserWithRolesAsync(user.Id, ct);
+
             return new LoginResponse
             {
                 Success = true,
@@ -496,15 +504,7 @@ namespace FDAAPI.App.FeatG7_AuthLogin
                 AccessToken = accessToken,
                 RefreshToken = refreshTokenValue,
                 ExpiresAt = DateTime.UtcNow.AddMinutes(60), // Access token expiry
-                User = new UserDto
-                {
-                    Id = user.Id,
-                    Email = user.Email,
-                    FullName = user.FullName,
-                    PhoneNumber = user.PhoneNumber,
-                    AvatarUrl = user.AvatarUrl,
-                    Roles = roleCodes
-                }
+                User = _userMapper.MapToDto(userWithRoles)
             };
         }
     }

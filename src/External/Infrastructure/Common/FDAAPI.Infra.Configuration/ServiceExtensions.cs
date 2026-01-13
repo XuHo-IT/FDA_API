@@ -1,3 +1,4 @@
+using FDAAPI.App.Common.Behaviors;
 using FDAAPI.App.Common.Features;
 using FDAAPI.App.Common.Services;
 using FDAAPI.App.Common.Services.Mapping;
@@ -17,6 +18,7 @@ using FDAAPI.App.FeatG14_ProfileGet;
 using FDAAPI.App.FeatG15_ProfileUpdate;
 using FDAAPI.App.FeatG16_AuthGoogleMobileLogin;
 using FDAAPI.App.FeatG17_AuthCheckIdentifier;
+using FDAAPI.App.FeatG18_MediaUploadImage;
 using FDAAPI.App.FeatG19_ProfileVerifyUpdatePhone;
 using FDAAPI.Domain.RelationalDb.RealationalDB;
 using FDAAPI.Domain.RelationalDb.Repositories;
@@ -24,6 +26,7 @@ using FDAAPI.Infra.Persistence.Repositories;
 using FDAAPI.Infra.Services.Auth;
 using FDAAPI.Infra.Services.Cache;
 using FDAAPI.Infra.Services.OAuth;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -101,12 +104,19 @@ namespace FDAAPI.Infra.Configuration
 
             // Google OAuth Service
             services.AddScoped<IGoogleOAuthService, GoogleOAuthService>();
+            
+            // Mappers
             services.AddScoped<IUserProfileMapper, UserProfileMapper>();
+            services.AddScoped<IUserMapper, UserMapper>();
+            services.AddScoped<IStationMapper, StationMapper>();
+            services.AddScoped<ISensorReadingMapper, SensorReadingMapper>();
+            
             return services;
         }
 
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
+            // Register MediatR with ValidationBehavior pipeline
             services.AddMediatR(cfg =>
             {
                 cfg.RegisterServicesFromAssembly(typeof(VerifyAndUpdatePhoneRequest).Assembly);
@@ -138,7 +148,42 @@ namespace FDAAPI.Infra.Configuration
                 cfg.RegisterServicesFromAssembly(typeof(GetSensorReadingRequest).Assembly);
                 cfg.RegisterServicesFromAssembly(typeof(DeleteSensorReadingRequest).Assembly);
                 cfg.RegisterServicesFromAssembly(typeof(GetMapCurrentStatusRequest).Assembly);
+
+                // Register ValidationBehavior for automatic request validation
+                cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
             });
+
+            // Register all FluentValidation validators from all feature assemblies
+            services.AddValidatorsFromAssemblyContaining<CreateSensorReadingRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<UpdateSensorReadingRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<GetSensorReadingRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<DeleteSensorReadingRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<SendOtpRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<RefreshTokenRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<LogoutRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<ChangePasswordRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<SetPasswordRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<GoogleLoginInitiateRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<GoogleOAuthCallbackRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<GetProfileRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<UpdateProfileRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<GoogleMobileLoginRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<CheckIdentifierRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<UploadImageRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<VerifyAndUpdatePhoneRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<CreateUserRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<GetUsersRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<UpdateUserRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<CreateStationRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<UpdateStationRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<GetStationsRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<GetStationRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<DeleteStationRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<GetMapPreferencesRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<UpdateMapPreferencesRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<GetFloodSeverityLayerRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<GetMapCurrentStatusRequestValidator>();
 
             services.AddHttpClient<IImageStorageService, ImageKitService>();
             services.AddScoped<IImageUploadPolicy, ImageUploadPolicy>();

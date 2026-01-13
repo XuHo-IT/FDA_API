@@ -1,5 +1,7 @@
+using FDAAPI.App.Common.DTOs;
 using FDAAPI.App.Common.Features;
 using FDAAPI.App.Common.Services;
+using FDAAPI.App.Common.Services.Mapping;
 using FDAAPI.Domain.RelationalDb.Entities;
 using FDAAPI.Domain.RelationalDb.Repositories;
 using FDAAPI.Infra.Services.Cache;
@@ -23,6 +25,7 @@ namespace FDAAPI.App.FeatG13_AuthGoogleOAuthCallback
         private readonly IUserRoleRepository _userRoleRepository;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IJwtTokenService _jwtTokenService;
+        private readonly IUserMapper _userMapper;
 
         public GoogleOAuthCallbackHandler(
             IGoogleOAuthService googleOAuthService,
@@ -32,7 +35,8 @@ namespace FDAAPI.App.FeatG13_AuthGoogleOAuthCallback
             IRoleRepository roleRepository,
             IUserRoleRepository userRoleRepository,
             IRefreshTokenRepository refreshTokenRepository,
-            IJwtTokenService jwtTokenService)
+            IJwtTokenService jwtTokenService,
+            IUserMapper userMapper)
         {
             _googleOAuthService = googleOAuthService;
             _stateCache = stateCache;
@@ -42,6 +46,7 @@ namespace FDAAPI.App.FeatG13_AuthGoogleOAuthCallback
             _userRoleRepository = userRoleRepository;
             _refreshTokenRepository = refreshTokenRepository;
             _jwtTokenService = jwtTokenService;
+            _userMapper = userMapper;
         }
 
         public async Task<GoogleOAuthCallbackResponse> Handle(
@@ -220,7 +225,10 @@ namespace FDAAPI.App.FeatG13_AuthGoogleOAuthCallback
                 user.UpdatedBy = user.Id;
                 await _userRepository.UpdateAsync(user, ct);
 
-                // 9. Return success response
+                // 9. Load user with roles for mapping
+                var userWithRoles = await _userRepository.GetUserWithRolesAsync(user.Id, ct);
+
+                // 10. Return success response
                 return new GoogleOAuthCallbackResponse
                 {
                     Success = true,
@@ -229,14 +237,7 @@ namespace FDAAPI.App.FeatG13_AuthGoogleOAuthCallback
                     RefreshToken = refreshToken,
                     ExpiresAt = DateTime.UtcNow.AddMinutes(60), // Access token expiry
                     ReturnUrl = cachedReturnUrl,
-                    User = new UserInfo
-                    {
-                        Id = user.Id,
-                        Email = user.Email,
-                        FullName = user.FullName,
-                        AvatarUrl = user.AvatarUrl,
-                        Roles = roleCodes
-                    }
+                    User = _userMapper.MapToDto(userWithRoles)
                 };
             }
             catch (Exception ex)

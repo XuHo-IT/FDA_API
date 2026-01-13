@@ -4,6 +4,7 @@ using FDAAPI.App.Common.Features;
 using FDAAPI.App.FeatG16_AuthGoogleMobileLogin;
 using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat16_AuthGoogleMobileLogin;
 using MediatR;
+using FDAAPI.App.Common.DTOs;
 
 namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat16_AuthGoogleMobileLogin{
     /// <summary>
@@ -45,7 +46,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat16_AuthGoogleMo
                 AccessToken = result.AccessToken,
                 RefreshToken = result.RefreshToken,
                 ExpiresAt = result.ExpiresAt,
-                User = result.User != null ? new DTOs.UserDto
+                User = result.User != null ? new UserDto
                 {
                     Id = result.User.Id,
                     Email = result.User.Email,

@@ -1,5 +1,6 @@
 using FDAAPI.App.Common.DTOs;
 using FDAAPI.App.Common.Models.Stations;
+using FDAAPI.App.Common.Services.Mapping;
 using FDAAPI.Domain.RelationalDb.Repositories;
 using MediatR;
 
@@ -8,10 +9,14 @@ namespace FDAAPI.App.FeatG25_StationList
     public class GetStationsHandler : IRequestHandler<GetStationsRequest, GetStationsResponse>
     {
         private readonly IStationRepository _stationRepository;
+        private readonly IStationMapper _stationMapper;
 
-        public GetStationsHandler(IStationRepository stationRepository)
+        public GetStationsHandler(
+            IStationRepository stationRepository,
+            IStationMapper stationMapper)
         {
             _stationRepository = stationRepository;
+            _stationMapper = stationMapper;
         }
 
         public async Task<GetStationsResponse> Handle(GetStationsRequest request, CancellationToken ct)
@@ -25,22 +30,8 @@ namespace FDAAPI.App.FeatG25_StationList
                     request.PageSize,
                     ct);
 
-                var stationDtos = stations.Select(s => new StationDto
-                {
-                    Id = s.Id,
-                    Code = s.Code,
-                    Name = s.Name,
-                    LocationDesc = s.LocationDesc,
-                    Latitude = s.Latitude,
-                    Longitude = s.Longitude,
-                    RoadName = s.RoadName,
-                    Direction = s.Direction,
-                    Status = s.Status,
-                    InstalledAt = s.InstalledAt,
-                    LastSeenAt = s.LastSeenAt,
-                    CreatedAt = s.CreatedAt,
-                    UpdatedAt = s.UpdatedAt
-                });
+                // Use mapper to convert entities to DTOs
+                var stationDtos = _stationMapper.MapToDtoList(stations);
 
                 return new GetStationsResponse
                 {

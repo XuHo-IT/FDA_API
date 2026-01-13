@@ -1,4 +1,5 @@
 ﻿using FastEndpoints;
+using FDAAPI.App.Common.Models.Map;
 using FDAAPI.App.FeatG31_GetMapCurrentStatus;
 using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat31_GetMapCurrentStatus.DTOs;
 using MediatR;

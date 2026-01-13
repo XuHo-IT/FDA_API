@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FDAAPI.App.Common.Features;
+using FDAAPI.App.Common.Models.Auth;
 
 namespace FDAAPI.App.FeatG11_AuthSetPassword
 {

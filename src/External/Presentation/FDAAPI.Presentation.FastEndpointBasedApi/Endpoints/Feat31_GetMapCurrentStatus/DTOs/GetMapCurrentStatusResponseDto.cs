@@ -1,4 +1,5 @@
-﻿using FDAAPI.App.FeatG31_GetMapCurrentStatus;
+﻿using FDAAPI.App.Common.DTOs;
+using FDAAPI.App.FeatG31_GetMapCurrentStatus;
 
 namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat31_GetMapCurrentStatus.DTOs
 {

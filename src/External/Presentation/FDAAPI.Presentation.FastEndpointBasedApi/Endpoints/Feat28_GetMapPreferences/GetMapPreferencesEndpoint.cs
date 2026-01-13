@@ -1,4 +1,6 @@
 ﻿using FastEndpoints;
+using FDAAPI.App.Common.DTOs;
+using FDAAPI.App.Common.Models.Map;
 using FDAAPI.App.FeatG28_GetMapPreferences;
 using FDAAPI.Domain.RelationalDb.Entities;
 using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat28_GetMapPreferences.DTOs;
@@ -27,16 +29,16 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat28_GetMapPrefer
                 {
                     Success = true,
                     Message = "Map preferences retrieved successfully",
-                    Settings = new MapLayerSettingsDto
+                    Settings = new MapLayerSettings
                     {
                         BaseMap = "standard",
-                        Overlays = new OverlaySettingsDto
+                        Overlays = new OverlaySettings
                         {
                             Flood = true,
                             Traffic = false,
                             Weather = false
                         },
-                        Opacity = new OpacitySettingsDto
+                        Opacity = new OpacitySettings
                         {
                             Flood = 80,
                             Weather = 70
@@ -73,16 +75,16 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat28_GetMapPrefer
                 {
                     Success = result.Success,
                     Message = result.Message,
-                    Settings = result.Settings != null ? new MapLayerSettingsDto
+                    Settings = result.Settings != null ? new MapLayerSettings
                     {
                         BaseMap = result.Settings.BaseMap,
-                        Overlays = new OverlaySettingsDto
+                        Overlays = new OverlaySettings
                         {
                             Flood = result.Settings.Overlays.Flood,
                             Traffic = result.Settings.Overlays.Traffic,
                             Weather = result.Settings.Overlays.Weather
                         },
-                        Opacity = new OpacitySettingsDto
+                        Opacity = new OpacitySettings
                         {
                             Flood = result.Settings.Opacity.Flood,
                             Weather = result.Settings.Opacity.Weather

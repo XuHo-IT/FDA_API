@@ -1,3 +1,5 @@
+using FDAAPI.App.Common.DTOs;
+
 namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat7_AuthLogin.DTOs{
     /// <summary>
     /// Data Transfer Object for Login response
@@ -26,19 +28,6 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat7_AuthLogin.DTO
         /// User information (no sensitive data)
         /// </summary>
         public UserDto? User { get; set; }
-    }
-
-    /// <summary>
-    /// User DTO (public profile data only)
-    /// </summary>
-    public class UserDto
-    {
-        public Guid Id { get; set; }
-        public string Email { get; set; } = string.Empty;
-        public string? FullName { get; set; }
-        public string? PhoneNumber { get; set; }
-        public string? AvatarUrl { get; set; }
-        public List<string> Roles { get; set; } = new();
     }
 }
 

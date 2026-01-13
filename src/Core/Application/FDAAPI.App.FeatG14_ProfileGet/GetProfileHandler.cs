@@ -1,5 +1,6 @@
 
 using FDAAPI.App.Common.Features;
+using FDAAPI.App.Common.Models.Profile;
 using FDAAPI.App.Common.Services.Mapping;
 using FDAAPI.Domain.RelationalDb.Repositories;
 using MediatR;

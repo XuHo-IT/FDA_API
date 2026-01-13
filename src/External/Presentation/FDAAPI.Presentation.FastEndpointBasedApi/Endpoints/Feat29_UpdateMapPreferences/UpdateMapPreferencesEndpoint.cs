@@ -1,4 +1,6 @@
 ﻿using FastEndpoints;
+using FDAAPI.App.Common.DTOs;
+using FDAAPI.App.Common.Models.Map;
 using FDAAPI.App.FeatG28_GetMapPreferences;
 using FDAAPI.App.FeatG29_UpdateMapPreferences;
 using FDAAPI.Domain.RelationalDb.Entities;
@@ -28,8 +30,8 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat29_UpdateMapPre
                 s.ExampleRequest = new UpdateMapPreferencesRequestDto
                 {
                     BaseMap = "satellite",
-                    Overlays = new OverlaySettingsDto { Flood = true, Traffic = true, Weather = false },
-                    Opacity = new OpacitySettingsDto { Flood = 90, Weather = 60 }
+                    Overlays = new OverlaySettings { Flood = true, Traffic = true, Weather = false },
+                    Opacity = new OpacitySettings { Flood = 90, Weather = 60 }
                 };
             });
 

@@ -16,6 +16,7 @@
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG13_AuthGoogleOAuthCallback\FDAAPI.App.FeatG13_AuthGoogleOAuthCallback.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG16_AuthGoogleMobileLogin\FDAAPI.App.FeatG16_AuthGoogleMobileLogin.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG17_AuthCheckIdentifier\FDAAPI.App.FeatG17_AuthCheckIdentifier.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG18_MediaUploadImage\FDAAPI.App.FeatG18_MediaUploadImage.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG19_ProfileVerifyUpdatePhone\FDAAPI.App.FeatG19_ProfileVerifyUpdatePhone.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG1_WaterLevelCreate\FDAAPI.App.FeatG1_SensorReadingCreate.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG20_UserCreate\FDAAPI.App.FeatG20_UserCreate.csproj" />
@@ -43,6 +44,7 @@
   </ItemGroup>
 
   <ItemGroup>
+	  <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.9.0" />
 	  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
 	  <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.0" />
 	  <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
