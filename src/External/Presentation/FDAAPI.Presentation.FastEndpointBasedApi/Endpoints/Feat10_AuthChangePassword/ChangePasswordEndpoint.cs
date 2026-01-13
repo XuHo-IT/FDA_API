@@ -1,6 +1,6 @@
 using FastEndpoints;
 using FDAAPI.App.Common.Features;
-
+using FDAAPI.App.Common.Models.Auth;
 using FDAAPI.App.FeatG10_AuthChangePassword;
 using FDAAPI.Domain.RelationalDb.Entities;
 using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat10_AuthChangePassword.DTOs;

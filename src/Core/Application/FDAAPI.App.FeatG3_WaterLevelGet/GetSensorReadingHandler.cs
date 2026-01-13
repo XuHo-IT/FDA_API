@@ -1,5 +1,6 @@
 using FDAAPI.App.Common.DTOs;
 using FDAAPI.App.Common.Models.SensorReadings;
+using FDAAPI.App.Common.Services.Mapping;
 using FDAAPI.Domain.RelationalDb.Repositories;
 using MediatR;
 
@@ -8,10 +9,14 @@ namespace FDAAPI.App.FeatG3_SensorReadingGet
     public class GetSensorReadingHandler : IRequestHandler<GetSensorReadingRequest, GetSensorReadingResponse>
     {
         private readonly ISensorReadingRepository _sensorReadingRepository;
+        private readonly ISensorReadingMapper _sensorReadingMapper;
 
-        public GetSensorReadingHandler(ISensorReadingRepository sensorReadingRepository)
+        public GetSensorReadingHandler(
+            ISensorReadingRepository sensorReadingRepository,
+            ISensorReadingMapper sensorReadingMapper)
         {
             _sensorReadingRepository = sensorReadingRepository;
+            _sensorReadingMapper = sensorReadingMapper;
         }
 
         public async Task<GetSensorReadingResponse> Handle(GetSensorReadingRequest request, CancellationToken cancellationToken)
@@ -30,24 +35,15 @@ namespace FDAAPI.App.FeatG3_SensorReadingGet
                     };
                 }
 
+                // Use mapper to convert entity to DTO
+                var sensorReadingDto = _sensorReadingMapper.MapToDto(sensorReading);
+
                 return new GetSensorReadingResponse
                 {
                     Success = true,
                     Message = "Sensor reading retrieved successfully",
                     StatusCode = SensorReadingStatusCode.Success,
-                    Data = new SensorReadingDto
-                    {
-                        Id = sensorReading.Id,
-                        StationId = sensorReading.StationId,
-                        Value = sensorReading.Value,
-                        Distance = sensorReading.Distance,
-                        SensorHeight = sensorReading.SensorHeight,
-                        Unit = sensorReading.Unit,
-                        Status = sensorReading.Status,
-                        MeasuredAt = sensorReading.MeasuredAt,
-                        CreatedAt = sensorReading.CreatedAt,
-                        UpdatedAt = sensorReading.UpdatedAt
-                    }
+                    Data = sensorReadingDto
                 };
             }
             catch (Exception ex)

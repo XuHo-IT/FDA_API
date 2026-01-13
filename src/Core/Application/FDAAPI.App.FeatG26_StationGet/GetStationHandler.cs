@@ -1,5 +1,6 @@
 using FDAAPI.App.Common.Features;
 using FDAAPI.App.Common.Models.Stations;
+using FDAAPI.App.Common.Services.Mapping;
 using FDAAPI.Domain.RelationalDb.Repositories;
 using MediatR;
 using System;
@@ -11,10 +12,14 @@ namespace FDAAPI.App.FeatG26_StationGet
     public class GetStationHandler : IRequestHandler<GetStationRequest, GetStationResponse>
     {
         private readonly IStationRepository _stationRepository;
+        private readonly IStationMapper _stationMapper;
 
-        public GetStationHandler(IStationRepository stationRepository)
+        public GetStationHandler(
+            IStationRepository stationRepository,
+            IStationMapper stationMapper)
         {
             _stationRepository = stationRepository;
+            _stationMapper = stationMapper;
         }
 
         public async Task<GetStationResponse> Handle(GetStationRequest request, CancellationToken cancellationToken)
@@ -32,12 +37,15 @@ namespace FDAAPI.App.FeatG26_StationGet
                     };
                 }
 
+                // Use mapper to convert entity to DTO
+                var stationDto = _stationMapper.MapToDto(station);
+
                 return new GetStationResponse
                 {
                     Success = true,
                     Message = "Station retrieved successfully",
                     StatusCode = StationStatusCode.Success,
-                    Station = station
+                    Station = stationDto
                 };
             }
             catch (Exception ex)
