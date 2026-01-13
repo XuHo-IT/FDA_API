@@ -40,7 +40,8 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat24_StationDelet
                 await SendAsync(new DeleteStationResponseDto
                 {
                     Success = false,
-                    Message = "Unauthorized: Could not identify admin user"
+                    Message = "Unauthorized: Could not identify admin user",
+                    StatusCode = 401
                 }, 401, ct);
                 return;
             }
@@ -51,7 +52,8 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat24_StationDelet
                 await SendAsync(new DeleteStationResponseDto
                 {
                     Success = false,
-                    Message = "Invalid station ID format"
+                    Message = "Invalid station ID format",
+                    StatusCode = 400
                 }, 400, ct);
                 return;
             }
@@ -62,9 +64,9 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat24_StationDelet
             await SendAsync(new DeleteStationResponseDto
             {
                 Success = result.Success,
-                Message = result.Message
-            }, result.Success ? 200 : 404, ct);
+                Message = result.Message,
+                StatusCode = (int)result.StatusCode
+            }, (int)result.StatusCode, ct);
         }
     }
 }
-

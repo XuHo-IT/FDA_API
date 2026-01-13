@@ -1,9 +1,12 @@
 using FDAAPI.App.Common.Features;
 using FDAAPI.App.Common.Models.Stations;
+using FDAAPI.App.Common.Services.Mapping;
 using FDAAPI.Domain.RelationalDb.Entities;
 using FDAAPI.Domain.RelationalDb.Repositories;
+using FluentValidation;
 using MediatR;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,10 +15,14 @@ namespace FDAAPI.App.FeatG24_StationUpdate
     public class UpdateStationHandler : IRequestHandler<UpdateStationRequest, UpdateStationResponse>
     {
         private readonly IStationRepository _stationRepository;
+        private readonly IStationMapper _stationMapper;
 
-        public UpdateStationHandler(IStationRepository stationRepository)
+        public UpdateStationHandler(
+            IStationRepository stationRepository,
+            IStationMapper stationMapper)
         {
             _stationRepository = stationRepository;
+            _stationMapper = stationMapper;
         }
 
         public async Task<UpdateStationResponse> Handle(UpdateStationRequest request, CancellationToken cancellationToken)
@@ -29,7 +36,7 @@ namespace FDAAPI.App.FeatG24_StationUpdate
                     {
                         Success = false,
                         Message = "Station not found",
-                        StatusCode = StationStatusCode.InvalidData // Or a NotFound status if added to enum
+                        StatusCode = StationStatusCode.InvalidData
                     };
                 }
 
@@ -41,6 +48,8 @@ namespace FDAAPI.App.FeatG24_StationUpdate
                 station.RoadName = request.RoadName;
                 station.Direction = request.Direction;
                 station.Status = request.Status;
+                station.ThresholdWarning = request.ThresholdWarning;
+                station.ThresholdCritical = request.ThresholdCritical;
                 station.InstalledAt = request.InstalledAt;
                 station.LastSeenAt = request.LastSeenAt;
                 station.UpdatedAt = DateTime.UtcNow;
@@ -67,4 +76,3 @@ namespace FDAAPI.App.FeatG24_StationUpdate
         }
     }
 }
-

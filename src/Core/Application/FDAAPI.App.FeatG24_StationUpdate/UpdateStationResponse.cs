@@ -10,4 +10,3 @@ namespace FDAAPI.App.FeatG24_StationUpdate
         public StationStatusCode StatusCode { get; set; }
     }
 }
-

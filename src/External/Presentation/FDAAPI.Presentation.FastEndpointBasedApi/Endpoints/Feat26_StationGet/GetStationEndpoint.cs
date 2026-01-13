@@ -3,7 +3,6 @@ using FDAAPI.App.Common.Features;
 using FDAAPI.App.FeatG26_StationGet;
 using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat23_StationGet.DTOs;
 using MediatR;
-using Microsoft.AspNetCore.Components.Forms;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,7 +36,8 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat23_StationGet
                 await SendAsync(new GetStationResponseDto
                 {
                     Success = false,
-                    Message = "Invalid station ID format"
+                    Message = "Invalid station ID format",
+                    StatusCode = 400
                 }, 400, ct);
                 return;
             }
@@ -49,9 +49,9 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat23_StationGet
             {
                 Success = result.Success,
                 Message = result.Message,
+                StatusCode = (int)result.StatusCode,
                 Station = result.Station
-            }, result.Success ? 200 : 404, ct);
+            }, (int)result.StatusCode, ct);
         }
     }
 }
-

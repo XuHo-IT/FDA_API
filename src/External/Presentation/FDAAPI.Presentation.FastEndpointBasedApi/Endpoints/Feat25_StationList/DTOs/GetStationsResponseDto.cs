@@ -1,4 +1,5 @@
 using FDAAPI.App.Common.DTOs;
+using System.Collections.Generic;
 
 namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat25_StationList.DTOs
 {
@@ -6,8 +7,8 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat25_StationList.
     {
         public bool Success { get; set; }
         public string Message { get; set; } = string.Empty;
-        public IEnumerable<StationDto> Stations { get; set; } = Enumerable.Empty<StationDto>();
+        public int StatusCode { get; set; }
+        public List<StationDto> Stations { get; set; } = new();
         public int TotalCount { get; set; }
     }
 }
-

@@ -12,4 +12,3 @@ namespace FDAAPI.App.FeatG26_StationGet
         public StationDto? Station { get; set; }
     }
 }
-

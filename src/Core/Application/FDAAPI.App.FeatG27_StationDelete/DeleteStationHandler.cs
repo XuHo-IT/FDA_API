@@ -1,8 +1,11 @@
 using FDAAPI.App.Common.Features;
 using FDAAPI.App.Common.Models.Stations;
+using FDAAPI.App.Common.Services.Mapping;
 using FDAAPI.Domain.RelationalDb.Repositories;
+using FluentValidation;
 using MediatR;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,10 +14,14 @@ namespace FDAAPI.App.FeatG27_StationDelete
     public class DeleteStationHandler : IRequestHandler<DeleteStationRequest, DeleteStationResponse>
     {
         private readonly IStationRepository _stationRepository;
+        private readonly IStationMapper _stationMapper;
 
-        public DeleteStationHandler(IStationRepository stationRepository)
+        public DeleteStationHandler(
+            IStationRepository stationRepository,
+            IStationMapper stationMapper)
         {
             _stationRepository = stationRepository;
+            _stationMapper = stationMapper;
         }
 
         public async Task<DeleteStationResponse> Handle(DeleteStationRequest request, CancellationToken cancellationToken)
@@ -51,4 +58,3 @@ namespace FDAAPI.App.FeatG27_StationDelete
         }
     }
 }
-

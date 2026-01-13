@@ -1,9 +1,12 @@
 using FDAAPI.App.Common.Features;
 using FDAAPI.App.Common.Models.Stations;
 using FDAAPI.App.Common.Services.Mapping;
+using FDAAPI.App.Common.Services.Mapping;
 using FDAAPI.Domain.RelationalDb.Repositories;
+using FluentValidation;
 using MediatR;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -37,15 +40,12 @@ namespace FDAAPI.App.FeatG26_StationGet
                     };
                 }
 
-                // Use mapper to convert entity to DTO
-                var stationDto = _stationMapper.MapToDto(station);
-
                 return new GetStationResponse
                 {
                     Success = true,
                     Message = "Station retrieved successfully",
                     StatusCode = StationStatusCode.Success,
-                    Station = stationDto
+                    Station = _stationMapper.MapToDto(station)
                 };
             }
             catch (Exception ex)
@@ -60,4 +60,3 @@ namespace FDAAPI.App.FeatG26_StationGet
         }
     }
 }
-

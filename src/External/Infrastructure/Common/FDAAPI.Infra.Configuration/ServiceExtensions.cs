@@ -35,6 +35,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
 using System.Text;
+using FluentValidation;
 using FDAAPI.App.FeatG23_StationCreate;
 using FDAAPI.App.FeatG21_UserList;
 using FDAAPI.App.FeatG25_StationList;
@@ -47,6 +48,12 @@ using FDAAPI.App.FeatG28_GetMapPreferences;
 using FDAAPI.App.FeatG29_UpdateMapPreferences;
 using FDAAPI.App.FeatG30_GetFloodSeverityLayer;
 using FDAAPI.App.FeatG31_GetMapCurrentStatus;
+using FDAAPI.App.FeatG32_AreaCreate;
+using FDAAPI.App.FeatG33_AreaList;
+using FDAAPI.App.FeatG34_AreaStatusEvaluate;
+using FDAAPI.App.FeatG35_AreaGet;
+using FDAAPI.App.FeatG36_AreaUpdate;
+using FDAAPI.App.FeatG37_AreaDelete;
 
 namespace FDAAPI.Infra.Configuration
 {
@@ -110,80 +117,61 @@ namespace FDAAPI.Infra.Configuration
             services.AddScoped<IUserMapper, UserMapper>();
             services.AddScoped<IStationMapper, StationMapper>();
             services.AddScoped<ISensorReadingMapper, SensorReadingMapper>();
-            
+            services.AddScoped<IAreaMapper, AreaMapper>();
+
             return services;
         }
 
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
-            // Register MediatR with ValidationBehavior pipeline
+            var assemblies = new[]
+            {
+                typeof(VerifyAndUpdatePhoneRequest).Assembly,
+                typeof(SendOtpRequest).Assembly,
+                typeof(LoginRequest).Assembly,
+                typeof(LogoutRequest).Assembly,
+                typeof(RefreshTokenRequest).Assembly,
+                typeof(ChangePasswordRequest).Assembly,
+                typeof(GoogleLoginInitiateRequest).Assembly,
+                typeof(GoogleOAuthCallbackRequest).Assembly,
+                typeof(GoogleMobileLoginRequest).Assembly,
+                typeof(GetProfileRequest).Assembly,
+                typeof(SetPasswordRequest).Assembly,
+                typeof(CheckIdentifierRequest).Assembly,
+                typeof(CreateUserRequest).Assembly,
+                typeof(GetUsersRequest).Assembly,
+                typeof(UpdateUserRequest).Assembly,
+                typeof(UpdateProfileRequest).Assembly,
+                typeof(CreateStationRequest).Assembly,
+                typeof(UpdateStationRequest).Assembly,
+                typeof(GetStationRequest).Assembly,
+                typeof(GetStationsRequest).Assembly,
+                typeof(DeleteStationRequest).Assembly,
+                typeof(GetMapPreferencesRequest).Assembly,
+                typeof(UpdateMapPreferencesRequest).Assembly,
+                typeof(GetFloodSeverityLayerRequest).Assembly,
+                typeof(CreateSensorReadingRequest).Assembly,
+                typeof(UpdateSensorReadingRequest).Assembly,
+                typeof(GetSensorReadingRequest).Assembly,
+                typeof(DeleteSensorReadingRequest).Assembly,
+                typeof(GetMapCurrentStatusRequest).Assembly,
+                typeof(CreateAreaRequest).Assembly,
+                typeof(AreaListRequest).Assembly,
+                typeof(AreaStatusEvaluateRequest).Assembly,
+                typeof(GetAreaRequest).Assembly,
+                typeof(UpdateAreaRequest).Assembly,
+                typeof(DeleteAreaRequest).Assembly
+            };
+
+            // Register MediatR with all feature assemblies and ValidationBehavior
             services.AddMediatR(cfg =>
             {
-                cfg.RegisterServicesFromAssembly(typeof(VerifyAndUpdatePhoneRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(SendOtpRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(LoginRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(LogoutRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(RefreshTokenRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(ChangePasswordRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(GoogleLoginInitiateRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(GoogleOAuthCallbackRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(GoogleMobileLoginRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(GetProfileRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(SetPasswordRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(CheckIdentifierRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(CreateUserRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(GetUsersRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(UpdateUserRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(UpdateProfileRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(CreateStationRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(UpdateStationRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(GetStationRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(GetStationsRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(DeleteStationRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(GetMapPreferencesRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(UpdateMapPreferencesRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(GetFloodSeverityLayerRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(CreateSensorReadingRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(UpdateSensorReadingRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(GetSensorReadingRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(DeleteSensorReadingRequest).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(GetMapCurrentStatusRequest).Assembly);
-
-                // Register ValidationBehavior for automatic request validation
+                cfg.RegisterServicesFromAssemblies(assemblies);
                 cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
             });
 
             // Register all FluentValidation validators from all feature assemblies
-            services.AddValidatorsFromAssemblyContaining<CreateSensorReadingRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<UpdateSensorReadingRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<GetSensorReadingRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<DeleteSensorReadingRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<SendOtpRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<RefreshTokenRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<LogoutRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<ChangePasswordRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<SetPasswordRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<GoogleLoginInitiateRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<GoogleOAuthCallbackRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<GetProfileRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<UpdateProfileRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<GoogleMobileLoginRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<CheckIdentifierRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<UploadImageRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<VerifyAndUpdatePhoneRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<CreateUserRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<GetUsersRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<UpdateUserRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<CreateStationRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<UpdateStationRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<GetStationsRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<GetStationRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<DeleteStationRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<GetMapPreferencesRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<UpdateMapPreferencesRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<GetFloodSeverityLayerRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<GetMapCurrentStatusRequestValidator>();
+            services.AddValidatorsFromAssemblies(assemblies);
 
             services.AddHttpClient<IImageStorageService, ImageKitService>();
             services.AddScoped<IImageUploadPolicy, ImageUploadPolicy>();
@@ -209,6 +197,8 @@ namespace FDAAPI.Infra.Configuration
             services.AddScoped<IUserOAuthProviderRepository, PgsqlUserOAuthProviderRepository>();
 
             services.AddScoped<IUserPreferenceRepository, PgsqlUserPreferenceRepository>();
+
+            services.AddScoped<IAreaRepository, PgsqlAreaRepository>();
 
             return services;
         }

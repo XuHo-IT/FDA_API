@@ -28,6 +28,12 @@ namespace FDAAPI.App.FeatG23_StationCreate
             RuleFor(x => x.Status)
                 .Must(s => new[] { "active", "offline", "maintenance" }.Contains(s))
                 .WithMessage("Invalid status");
+
+            RuleFor(x => x.ThresholdWarning)
+                .GreaterThanOrEqualTo(0).When(x => x.ThresholdWarning.HasValue);
+
+            RuleFor(x => x.ThresholdCritical)
+                .GreaterThanOrEqualTo(0).When(x => x.ThresholdCritical.HasValue);
         }
     }
 }

@@ -25,16 +25,12 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB
         public DbSet<UserOAuthProvider> UserOAuthProviders { get; set; } = null!;
         public DbSet<Station> Stations { get; set; } = null!;
         public DbSet<UserPreference> UserPreferences { get; set; } = null!;
+        public DbSet<Area> Areas { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         }
     }
 }
-
-
-
-
-
-

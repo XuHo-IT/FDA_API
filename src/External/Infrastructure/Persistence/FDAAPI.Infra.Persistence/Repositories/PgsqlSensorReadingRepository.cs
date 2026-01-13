@@ -94,5 +94,17 @@ namespace FDAAPI.Infra.Persistence.Repositories
 
             return (readings, totalCount);
         }
+
+        public async Task<List<SensorReading>> GetLatestReadingsByStationsAsync(
+            IEnumerable<Guid> stationIds,
+            CancellationToken ct = default)
+        {
+            return await _context.SensorReadings
+                .AsNoTracking()
+                .Where(sr => stationIds.Contains(sr.StationId))
+                .GroupBy(sr => sr.StationId)
+                .Select(g => g.OrderByDescending(sr => sr.MeasuredAt).First())
+                .ToListAsync(ct);
+        }
     }
 }

@@ -1,11 +1,11 @@
 using FDAAPI.App.Common.DTOs;
 using FDAAPI.Domain.RelationalDb.Entities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace FDAAPI.App.Common.Services.Mapping
 {
-    /// <summary>
-    /// Mapper implementation for Station entity to StationDto
-    /// </summary>
     public class StationMapper : IStationMapper
     {
         public StationDto MapToDto(Station station)
@@ -18,14 +18,16 @@ namespace FDAAPI.App.Common.Services.Mapping
             return new StationDto
             {
                 Id = station.Id,
-                Code = station.Code ?? string.Empty,
-                Name = station.Name ?? string.Empty,
-                LocationDesc = station.LocationDesc ?? string.Empty,
+                Code = station.Code,
+                Name = station.Name,
+                LocationDesc = station.LocationDesc,
                 Latitude = station.Latitude,
                 Longitude = station.Longitude,
-                RoadName = station.RoadName ?? string.Empty,
-                Direction = station.Direction ?? string.Empty,
-                Status = station.Status ?? string.Empty,
+                RoadName = station.RoadName,
+                Direction = station.Direction,
+                Status = station.Status,
+                ThresholdWarning = station.ThresholdWarning,
+                ThresholdCritical = station.ThresholdCritical,
                 InstalledAt = station.InstalledAt,
                 LastSeenAt = station.LastSeenAt,
                 CreatedAt = station.CreatedAt,
@@ -37,7 +39,7 @@ namespace FDAAPI.App.Common.Services.Mapping
         {
             if (stations == null)
             {
-                throw new ArgumentNullException(nameof(stations));
+                return new List<StationDto>();
             }
 
             return stations.Select(MapToDto).ToList();
