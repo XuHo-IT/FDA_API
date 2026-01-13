@@ -1,3 +1,5 @@
+using FDAAPI.App.Common.DTOs;
+
 namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat13_AuthGoogleOAuthCallback.DTOs{
     public class GoogleOAuthCallbackResponseDto
     {
@@ -19,15 +21,6 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat13_AuthGoogleOA
         public UserDto? User { get; set; }
         public string? ReturnUrl { get; set; }
         
-    }
-
-    public class UserDto
-    {
-        public Guid Id { get; set; }
-        public string Email { get; set; } = string.Empty;
-        public string? FullName { get; set; }
-        public string? AvatarUrl { get; set; }
-        public List<string> Roles { get; set; } = new();
     }
 }
 

@@ -1,6 +1,7 @@
 using FDAAPI.App.Common.Features;
 using FDAAPI.App.Common.Models.Stations;
 using FDAAPI.App.Common.Services.Mapping;
+using FDAAPI.App.Common.Services.Mapping;
 using FDAAPI.Domain.RelationalDb.Repositories;
 using FluentValidation;
 using MediatR;
@@ -14,16 +15,13 @@ namespace FDAAPI.App.FeatG26_StationGet
     public class GetStationHandler : IRequestHandler<GetStationRequest, GetStationResponse>
     {
         private readonly IStationRepository _stationRepository;
-        private readonly IValidator<GetStationRequest> _validator;
         private readonly IStationMapper _stationMapper;
 
         public GetStationHandler(
             IStationRepository stationRepository,
-            IValidator<GetStationRequest> validator,
             IStationMapper stationMapper)
         {
             _stationRepository = stationRepository;
-            _validator = validator;
             _stationMapper = stationMapper;
         }
 
@@ -52,6 +50,9 @@ namespace FDAAPI.App.FeatG26_StationGet
                         StatusCode = StationStatusCode.InvalidData
                     };
                 }
+
+                // Use mapper to convert entity to DTO
+                var stationDto = _stationMapper.MapToDto(station);
 
                 return new GetStationResponse
                 {

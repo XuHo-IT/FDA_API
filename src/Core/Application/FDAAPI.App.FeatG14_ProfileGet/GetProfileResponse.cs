@@ -1,5 +1,6 @@
 using FDAAPI.App.Common.DTOs;
 using FDAAPI.App.Common.Features;
+using FDAAPI.App.Common.Models.Profile;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,5 +1,5 @@
-﻿using FDAAPI.App.Common.Features;
-using FDAAPI.App.FeatG28_GetMapPreferences;
+﻿using FDAAPI.App.Common.DTOs;
+using FDAAPI.App.Common.Features;
 
 namespace FDAAPI.App.FeatG29_UpdateMapPreferences
 {

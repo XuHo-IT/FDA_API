@@ -5,6 +5,7 @@ using FDAAPI.App.FeatG13_AuthGoogleOAuthCallback;
 using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat13_AuthGoogleOAuthCallback;
 using MediatR;
 using Microsoft.Extensions.Configuration;
+using FDAAPI.App.Common.DTOs;
 
 namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat13_AuthGoogleOAuthCallback{
     /// <summary>

@@ -1,9 +1,9 @@
 using FastEndpoints;
+using FDAAPI.App.Common.DTOs;
 using FDAAPI.App.Common.Features;
 using FDAAPI.App.FeatG7_AuthLogin;
 using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat7_AuthLogin.DTOs;
 using MediatR;
-using UserDto = FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat7_AuthLogin.DTOs.UserDto;
 
 namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat7_AuthLogin{
     /// <summary>

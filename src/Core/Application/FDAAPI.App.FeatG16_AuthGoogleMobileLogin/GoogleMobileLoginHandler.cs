@@ -1,5 +1,7 @@
+using FDAAPI.App.Common.DTOs;
 using FDAAPI.App.Common.Features;
 using FDAAPI.App.Common.Services;
+using FDAAPI.App.Common.Services.Mapping;
 using FDAAPI.App.FeatG16_AuthGoogleMobileLogin;
 using FDAAPI.Domain.RelationalDb.Entities;
 using FDAAPI.Domain.RelationalDb.Repositories;
@@ -27,6 +29,7 @@ namespace FDAAPI.App.FeatG16_AuthGoogleMobileLogin
         private readonly IUserRoleRepository _userRoleRepository;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IJwtTokenService _jwtTokenService;
+        private readonly IUserMapper _userMapper;
 
         public GoogleMobileLoginHandler(
             IGoogleOAuthService googleOAuthService,
@@ -35,7 +38,8 @@ namespace FDAAPI.App.FeatG16_AuthGoogleMobileLogin
             IRoleRepository roleRepository,
             IUserRoleRepository userRoleRepository,
             IRefreshTokenRepository refreshTokenRepository,
-            IJwtTokenService jwtTokenService)
+            IJwtTokenService jwtTokenService,
+            IUserMapper userMapper)
         {
             _googleOAuthService = googleOAuthService;
             _userRepository = userRepository;
@@ -44,6 +48,7 @@ namespace FDAAPI.App.FeatG16_AuthGoogleMobileLogin
             _userRoleRepository = userRoleRepository;
             _refreshTokenRepository = refreshTokenRepository;
             _jwtTokenService = jwtTokenService;
+            _userMapper = userMapper;
         }
 
         public async Task<GoogleMobileLoginResponse> Handle(
@@ -210,7 +215,10 @@ namespace FDAAPI.App.FeatG16_AuthGoogleMobileLogin
                 user.UpdatedBy = user.Id;
                 await _userRepository.UpdateAsync(user, ct);
 
-                // 8. Return success response
+                // 8. Load user with roles for mapping
+                var userWithRoles = await _userRepository.GetUserWithRolesAsync(user.Id, ct);
+
+                // 9. Return success response
                 return new GoogleMobileLoginResponse
                 {
                     Success = true,
@@ -218,14 +226,7 @@ namespace FDAAPI.App.FeatG16_AuthGoogleMobileLogin
                     AccessToken = accessToken,
                     RefreshToken = refreshToken,
                     ExpiresAt = DateTime.UtcNow.AddMinutes(60), // Access token expiry
-                    User = new UserDto
-                    {
-                        Id = user.Id,
-                        Email = user.Email,
-                        FullName = user.FullName,
-                        AvatarUrl = user.AvatarUrl,
-                        Roles = roleCodes
-                    }
+                    User = _userMapper.MapToDto(userWithRoles)
                 };
             }
             catch (Exception ex)

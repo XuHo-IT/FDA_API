@@ -8,6 +8,7 @@ using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat14_ProfileGet;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Security.Claims;
+using FDAAPI.App.Common.Models.Profile;
 
 namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat14_ProfileGet{
     public class GetProfileEndpoint : EndpointWithoutRequest<GetProfileResponseDto>

@@ -1,4 +1,6 @@
-﻿using FDAAPI.Domain.RelationalDb.RealationalDB;
+﻿using FDAAPI.App.Common.DTOs;
+using FDAAPI.App.Common.Models.Map;
+using FDAAPI.Domain.RelationalDb.RealationalDB;
 using FDAAPI.Domain.RelationalDb.Repositories;
 using MediatR;
 using Microsoft.EntityFrameworkCore;

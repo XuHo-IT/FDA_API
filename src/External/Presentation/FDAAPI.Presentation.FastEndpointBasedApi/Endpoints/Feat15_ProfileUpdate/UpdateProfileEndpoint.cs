@@ -8,6 +8,7 @@ using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat15_ProfileUpdate;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Security.Claims;
+using FDAAPI.App.Common.Models.Profile;
 
 namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat15_ProfileUpdate{
     public class UpdateProfileEndpoint : Endpoint<UpdateProfileRequestDto, UpdateProfileResponseDto>
