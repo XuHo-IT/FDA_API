@@ -1,6 +1,6 @@
-namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat33_AreaList.DTOs
+namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat33_AreaListByUser.DTOs
 {
-    public class AreaListRequestDto
+    public class AreaListByUserRequestDto
     {
         public string? SearchTerm { get; set; }
         public int PageNumber { get; set; } = 1;

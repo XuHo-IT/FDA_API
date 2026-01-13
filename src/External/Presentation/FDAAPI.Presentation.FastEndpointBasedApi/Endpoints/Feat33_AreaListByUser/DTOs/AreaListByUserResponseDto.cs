@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat33_AreaList.DTOs
+namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat33_AreaListByUser.DTOs
 {
-    public class AreaListResponseDto
+    public class AreaListByUserResponseDto
     {
         public bool Success { get; set; }
         public string Message { get; set; } = string.Empty;

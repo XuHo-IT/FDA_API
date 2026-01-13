@@ -11,6 +11,7 @@ namespace FDAAPI.Domain.RelationalDb.Repositories
     {
         Task<Area?> GetByIdAsync(Guid id, CancellationToken ct);
         Task<(List<Area> Areas, int TotalCount)> GetByUserIdAsync(Guid userId, string? searchTerm, int pageNumber, int pageSize, CancellationToken ct);
+        Task<(List<Area> Areas, int TotalCount)> GetAdminAreasAsync(string? searchTerm, int pageNumber, int pageSize, CancellationToken ct);
         Task<Guid> CreateAsync(Area area, CancellationToken ct);
         Task<bool> UpdateAsync(Area area, CancellationToken ct);
         Task<bool> DeleteAsync(Guid id, CancellationToken ct);

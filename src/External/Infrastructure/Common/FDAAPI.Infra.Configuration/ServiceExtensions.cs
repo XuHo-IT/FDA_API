@@ -49,11 +49,14 @@ using FDAAPI.App.FeatG29_UpdateMapPreferences;
 using FDAAPI.App.FeatG30_GetFloodSeverityLayer;
 using FDAAPI.App.FeatG31_GetMapCurrentStatus;
 using FDAAPI.App.FeatG32_AreaCreate;
-using FDAAPI.App.FeatG33_AreaList;
+
 using FDAAPI.App.FeatG34_AreaStatusEvaluate;
-using FDAAPI.App.FeatG35_AreaGet;
+
 using FDAAPI.App.FeatG36_AreaUpdate;
 using FDAAPI.App.FeatG37_AreaDelete;
+using FDAAPI.App.FeatG35_AreaGet;
+using FDAAPI.App.FeatG33_AreaListByUser;
+using FDAAPI.App.FeatG38_AreaList;
 
 namespace FDAAPI.Infra.Configuration
 {
@@ -156,9 +159,10 @@ namespace FDAAPI.Infra.Configuration
                 typeof(DeleteSensorReadingRequest).Assembly,
                 typeof(GetMapCurrentStatusRequest).Assembly,
                 typeof(CreateAreaRequest).Assembly,
-                typeof(AreaListRequest).Assembly,
+                typeof(AreaListByUserRequest).Assembly,
                 typeof(AreaStatusEvaluateRequest).Assembly,
-                typeof(GetAreaRequest).Assembly,
+                typeof(AreaGetRequest).Assembly,
+                typeof(AreaListRequest).Assembly,
                 typeof(UpdateAreaRequest).Assembly,
                 typeof(DeleteAreaRequest).Assembly
             };

@@ -49,6 +49,31 @@ namespace FDAAPI.Infra.Persistence.Repositories
             return (areas, totalCount);
         }
 
+        public async Task<(List<Area> Areas, int TotalCount)> GetAdminAreasAsync(string? searchTerm, int pageNumber, int pageSize, CancellationToken ct)
+        {
+            var query = _context.Areas
+                .AsNoTracking()
+                .Where(a => _context.UserRoles
+                    .Any(ur => ur.UserId == a.CreatedBy && 
+                               (ur.Role.Code == "ADMIN" || ur.Role.Code == "SUPERADMIN" || ur.Role.Code == "AUTHORITY")));
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                searchTerm = searchTerm.ToLower();
+                query = query.Where(a => a.Name.ToLower().Contains(searchTerm) || 
+                                         a.AddressText.ToLower().Contains(searchTerm));
+            }
+
+            var totalCount = await query.CountAsync(ct);
+            var areas = await query
+                .OrderByDescending(a => a.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(ct);
+
+            return (areas, totalCount);
+        }
+
         public async Task<Guid> CreateAsync(Area area, CancellationToken ct)
         {
             _context.Areas.Add(area);

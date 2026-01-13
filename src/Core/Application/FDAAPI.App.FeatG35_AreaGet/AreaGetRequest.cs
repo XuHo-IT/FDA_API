@@ -3,6 +3,6 @@ using System;
 
 namespace FDAAPI.App.FeatG35_AreaGet
 {
-    public sealed record GetAreaRequest(Guid Id) : IFeatureRequest<GetAreaResponse>;
+    public sealed record AreaGetRequest(Guid Id) : IFeatureRequest<AreaGetResponse>;
 }
 
