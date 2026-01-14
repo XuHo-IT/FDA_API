@@ -21,7 +21,7 @@ namespace FDAAPI.App.FeatG32_AreaCreate
 
             RuleFor(x => x.RadiusMeters)
                 .GreaterThanOrEqualTo(100).WithMessage("Radius must be at least 100 meters.")
-                .LessThanOrEqualTo(5000).WithMessage("Radius must not exceed 150 meters.");
+                .LessThanOrEqualTo(150).WithMessage("Radius must not exceed 150 meters.");
 
             RuleFor(x => x.AddressText)
                 .MaximumLength(500).WithMessage("Address text must not exceed 500 characters.");
