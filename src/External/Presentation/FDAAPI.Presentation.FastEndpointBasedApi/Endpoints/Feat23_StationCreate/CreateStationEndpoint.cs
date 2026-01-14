@@ -16,7 +16,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat21_StationCreat
 
         public override void Configure()
         {
-            Post("/api/v1/create-station");
+            Post("/api/v1/stations/station");
             Policies("Admin"); 
             AllowAnonymous();
             Summary(s => {

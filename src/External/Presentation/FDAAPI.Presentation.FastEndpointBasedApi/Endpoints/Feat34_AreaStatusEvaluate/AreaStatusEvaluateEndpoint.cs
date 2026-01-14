@@ -17,7 +17,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat34_AreaStatusEv
 
         public override void Configure()
         {
-            Get("/api/v1/areas/{id}/status");
+            Get("/api/v1/area/areas/{id}/status");
             Policies("User");
             Summary(s =>
             {

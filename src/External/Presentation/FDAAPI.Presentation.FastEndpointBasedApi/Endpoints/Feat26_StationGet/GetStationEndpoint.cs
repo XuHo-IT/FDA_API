@@ -20,7 +20,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat23_StationGet
 
         public override void Configure()
         {
-            Get("/api/v1/get-station/{id}");
+            Get("/api/v1/stations/station/{id}");
             AllowAnonymous();
             Summary(s => {
                 s.Summary = "Get monitoring station details.";

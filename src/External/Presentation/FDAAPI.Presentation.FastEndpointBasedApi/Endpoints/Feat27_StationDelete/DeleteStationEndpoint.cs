@@ -21,7 +21,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat24_StationDelet
 
         public override void Configure()
         {
-            Delete("/api/v1/delete-station/{id}");
+            Delete("/api/v1/stations/station/{id}");
             Policies("Admin");
             Summary(s => {
                 s.Summary = "Delete a monitoring station.";
