@@ -20,7 +20,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat37_AreaDelete
 
         public override void Configure()
         {
-            Delete("/api/v1/areas/{id}");
+            Delete("/api/v1/areas/area/{id}");
             Policies("Authority");
             Summary(s =>
             {

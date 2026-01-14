@@ -20,7 +20,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat32_AreaCreate
 
         public override void Configure()
         {
-            Post("/api/v1/areas");
+            Post("/api/v1/areas/area");
             Policies("Authority");
             Summary(s =>
             {

@@ -21,8 +21,8 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat38_AreaList
 
         public override void Configure()
         {
-            Get("/api/v1/areas");
-            Policies("User");
+            Get("/api/v1/areas/areas");
+            AllowAnonymous();
             Summary(s =>
             {
                 s.Summary = "List all areas";
