@@ -21,7 +21,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat36_AreaUpdate
         public override void Configure()
         {
             Put("/api/v1/areas/area/{id}");
-            Policies("Authority");
+            Policies("User");
             Summary(s =>
             {
                 s.Summary = "Update an existing monitored area";

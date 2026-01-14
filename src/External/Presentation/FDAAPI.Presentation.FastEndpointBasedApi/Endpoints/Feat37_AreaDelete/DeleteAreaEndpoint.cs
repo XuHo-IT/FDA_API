@@ -21,7 +21,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat37_AreaDelete
         public override void Configure()
         {
             Delete("/api/v1/areas/area/{id}");
-            Policies("Authority");
+            Policies("User");
             Summary(s =>
             {
                 s.Summary = "Delete a monitored area";

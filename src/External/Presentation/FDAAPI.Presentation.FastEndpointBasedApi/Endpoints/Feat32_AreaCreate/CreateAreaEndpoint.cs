@@ -21,7 +21,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat32_AreaCreate
         public override void Configure()
         {
             Post("/api/v1/areas/area");
-            Policies("Authority");
+            Policies("User");
             Summary(s =>
             {
                 s.Summary = "Create a new monitored area";

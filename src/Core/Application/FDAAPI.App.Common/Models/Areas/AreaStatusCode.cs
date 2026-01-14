@@ -8,6 +8,8 @@ namespace FDAAPI.App.Common.Models.Areas
         Unauthorized = 401,
         Forbidden = 403,
         NotFound = 404,
+        Conflict = 409,                 // NEW - for duplicate name/location
+        TooManyRequests = 429,          // NEW - for area limit exceeded
         InternalServerError = 500
     }
 }
