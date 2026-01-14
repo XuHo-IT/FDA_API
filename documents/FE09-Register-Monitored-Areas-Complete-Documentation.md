@@ -153,7 +153,7 @@ public class Area : EntityWithId<Guid>, ICreatedEntity<Guid>, IUpdatedEntity<Gui
 ### FeatG32: Create Monitored Area
 
 **Endpoint**: `POST /api/v1/areas/area`
-**Authorization**: `Policies("Authority")` - Authenticated users (USER, AUTHORITY, ADMIN, SUPERADMIN)
+**Authorization**: `Policies("User")` - Authenticated users (USER, AUTHORITY, ADMIN, SUPERADMIN)
 **Pattern**: MediatR + FluentValidation + Mapper
 
 #### Request DTO
