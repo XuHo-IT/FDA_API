@@ -97,6 +97,35 @@ namespace FDAAPI.Infra.Persistence.Repositories
             var rowsAffected = await _context.SaveChangesAsync(ct);
             return rowsAffected > 0;
         }
+
+        public async Task<int> CountByUserIdAsync(Guid userId, CancellationToken ct)
+        {
+            return await _context.Areas
+                .Where(a => a.UserId == userId)
+                .CountAsync(ct);
+        }
+
+        public async Task<Area?> GetByUserIdAndNameAsync(Guid userId, string name, CancellationToken ct)
+        {
+            return await _context.Areas
+                .AsNoTracking()
+                .FirstOrDefaultAsync(a =>
+                    a.UserId == userId &&
+                    a.Name.ToLower() == name.ToLower(), ct);
+        }
+
+        public async Task<List<Area>> GetUserAreasWithinRadiusAsync(Guid userId, decimal latitude, decimal longitude, int radiusMeters, CancellationToken ct)
+        {
+            // Fetch all user's areas (in-memory distance calculation)
+            var userAreas = await _context.Areas
+                .AsNoTracking()
+                .Where(a => a.UserId == userId)
+                .ToListAsync(ct);
+
+            // Note: Haversine filtering done in Handler for simplicity
+            // PostGIS alternative can be added later for scale
+            return userAreas;
+        }
     }
 }
 

@@ -20,7 +20,8 @@ namespace FDAAPI.App.FeatG32_AreaCreate
                 .InclusiveBetween(-180, 180).WithMessage("Longitude must be between -180 and 180 degrees.");
 
             RuleFor(x => x.RadiusMeters)
-                .GreaterThan(0).WithMessage("Radius must be greater than 0 meters.");
+                .GreaterThanOrEqualTo(100).WithMessage("Radius must be at least 100 meters.")
+                .LessThanOrEqualTo(5000).WithMessage("Radius must not exceed 150 meters.");
 
             RuleFor(x => x.AddressText)
                 .MaximumLength(500).WithMessage("Address text must not exceed 500 characters.");
