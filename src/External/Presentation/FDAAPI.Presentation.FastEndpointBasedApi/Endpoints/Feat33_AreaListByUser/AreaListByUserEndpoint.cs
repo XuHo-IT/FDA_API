@@ -19,11 +19,11 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat33_AreaListByUs
 
         public override void Configure()
         {
-            Get("/api/v1/areas-created");
+            Get("/api/v1/areas/areas-created");
             Policies("Authority");
             Summary(s =>
             {
-                s.Summary = "List monitored areas created by that person";
+                s.Summary = "List monitored areas created by that person(author,admin,superadmin)";
                 s.Description = "Retrieve a paginated list of geographic areas for the current user";
             });
             Tags("Area");

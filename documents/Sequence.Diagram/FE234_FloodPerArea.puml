@@ -1,0 +1,51 @@
+@startuml FE234_AreaStatusEvaluate_Sequence
+title FE234 - Evaluate Area Flood Status (FeatG34)
+
+actor User
+participant UI
+participant AreaStatusEvaluateEndpoint
+participant MediatR
+participant AreaStatusEvaluateHandler
+participant Repository
+participant Service
+database Database
+
+User -> UI: 1. Select area to view status
+UI -> AreaStatusEvaluateEndpoint: 2. GET /api/v1/areas/{id}/status
+AreaStatusEvaluateEndpoint -> MediatR: 3. Send(AreaStatusEvaluateRequest)
+MediatR -> AreaStatusEvaluateHandler: 4. Handle(request)
+
+AreaStatusEvaluateHandler -> Service: 5. GetStatusFromCache(areaId)
+alt [Cache Hit]
+    Service --> AreaStatusEvaluateHandler: 6. Return cached response
+    AreaStatusEvaluateHandler --> MediatR: 7. Response (from cache)
+else [Cache Miss]
+    AreaStatusEvaluateHandler -> Repository: 8. GetAreaById(id)
+    Repository -> Database: 9. SELECT * FROM areas WHERE id = {id}
+    Database --> Repository: 10. Area entity
+    Repository --> AreaStatusEvaluateHandler: 11. Area entity
+
+    alt [Area NOT found]
+        AreaStatusEvaluateHandler --> MediatR: 12. Response {success: false, message: "Not Found"}
+    else [Area exists]
+        AreaStatusEvaluateHandler -> Repository: 13. GetActiveStations()
+        Repository -> Database: 14. SELECT * FROM stations...
+        Database --> Repository: 15. List<Station>
+        Repository --> AreaStatusEvaluateHandler: 16. List<Station>
+
+        AreaStatusEvaluateHandler -> Repository: 17. GetLatestReadings(stationIds)
+        Repository -> Database: 18. SELECT * FROM readings...
+        Database --> Repository: 19. List<Reading>
+        Repository --> AreaStatusEvaluateHandler: 20. List<Reading>
+
+        AreaStatusEvaluateHandler -> AreaStatusEvaluateHandler: 21. Calculate Weights & Status
+        AreaStatusEvaluateHandler -> Service: 22. SaveToCache(areaId, response, 30s)
+        AreaStatusEvaluateHandler --> MediatR: 23. Response {success: true, data}
+    end
+end
+
+MediatR --> AreaStatusEvaluateEndpoint: 24. Response
+AreaStatusEvaluateEndpoint --> UI: 25. HTTP 200/404 (AreaStatusDto)
+UI --> User: 26. Display Area Flood Status
+
+@enduml

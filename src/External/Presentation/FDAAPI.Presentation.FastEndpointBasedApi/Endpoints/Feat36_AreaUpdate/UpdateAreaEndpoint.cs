@@ -20,7 +20,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat36_AreaUpdate
 
         public override void Configure()
         {
-            Put("/api/v1/areas/{id}");
+            Put("/api/v1/areas/area/{id}");
             Policies("Authority");
             Summary(s =>
             {

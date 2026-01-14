@@ -20,8 +20,8 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat22_StationUpdat
 
         public override void Configure()
         {
-            Put("/api/v1/update-station/{id}");
-            Policies("ADMIN");
+            Put("/api/v1/stations/station/{id}");
+            Policies("Admin");
             Summary(s => {
                 s.Summary = "Update an existing monitoring station.";
                 s.Description = "Update station details by ID.";
