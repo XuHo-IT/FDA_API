@@ -1,4 +1,4 @@
-using FDAAPI.App.Common.Models.Areas;
+﻿using FDAAPI.App.Common.Models.Areas;
 using FDAAPI.App.Common.Services.Mapping;
 using FDAAPI.Domain.RelationalDb.Repositories;
 using FluentValidation;
@@ -37,15 +37,36 @@ namespace FDAAPI.App.FeatG36_AreaUpdate
                 };
             }
 
-            // Authorization check: Only the owner can update the area
-            if (area.UserId != request.UserId)
+            // 2. Check if user is Admin or SuperAdmin
+            bool isAdmin = request.UserRole == "ADMIN" || request.UserRole == "SUPERADMIN";
+
+            // 3. Authorization check with Admin override
+            if (!isAdmin && area.UserId != request.UserId)
             {
+                // Return 404 instead of 403 to prevent area ID enumeration
                 return new UpdateAreaResponse
                 {
                     Success = false,
-                    Message = "Unauthorized to update this area",
-                    StatusCode = AreaStatusCode.Forbidden
+                    Message = "Area not found",  // ← Changed from "Unauthorized..."
+                    StatusCode = AreaStatusCode.NotFound  // ← Changed from Forbidden
                 };
+            }
+
+            // 4. Check duplicate name (if name is being changed)
+            if (area.Name != request.Name)
+            {
+                var duplicateArea = await _areaRepository
+                    .GetByUserIdAndNameAsync(area.UserId, request.Name, ct);
+
+                if (duplicateArea != null && duplicateArea.Id != request.Id)
+                {
+                    return new UpdateAreaResponse
+                    {
+                        Success = false,
+                        Message = $"You already have an area named '{request.Name}'. Please choose a different name.",
+                        StatusCode = AreaStatusCode.Conflict
+                    };
+                }
             }
 
             area.Name = request.Name;
@@ -72,7 +93,8 @@ namespace FDAAPI.App.FeatG36_AreaUpdate
             {
                 Success = true,
                 Message = "Area updated successfully",
-                StatusCode = AreaStatusCode.Success
+                StatusCode = AreaStatusCode.Success,
+                Data = _areaMapper.MapToDto(area)
             };
         }
     }
