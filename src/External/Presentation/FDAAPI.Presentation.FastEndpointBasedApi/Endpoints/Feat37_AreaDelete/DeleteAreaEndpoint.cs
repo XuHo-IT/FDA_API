@@ -20,7 +20,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat37_AreaDelete
 
         public override void Configure()
         {
-            Delete("/api/v1/areas/area/{id}");
+            Delete("/api/v1/areas/{id}");
             Policies("User");
             Summary(s =>
             {
@@ -46,7 +46,10 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat37_AreaDelete
             }
 
             var userId = Guid.Parse(userIdClaim.Value);
-            var command = new DeleteAreaRequest(id, userId);
+
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "USER";
+
+            var command = new DeleteAreaRequest(id, userId, userRole);
 
             var result = await _mediator.Send(command, ct);
 
@@ -56,19 +59,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat37_AreaDelete
                 Message = result.Message
             };
 
-            if (result.Success)
-            {
-                await SendAsync(response, 200, ct);
-            }
-            else
-            {
-                if (result.Message == "Area not found")
-                    await SendAsync(response, 404, ct);
-                else if (result.Message == "Unauthorized to delete this area")
-                    await SendAsync(response, 403, ct);
-                else
-                    await SendAsync(response, 400, ct);
-            }
+            await SendAsync(response, (int)result.StatusCode, ct);
         }
     }
 }

@@ -12,14 +12,12 @@ namespace FDAAPI.App.FeatG37_AreaDelete
     public class DeleteAreaHandler : IRequestHandler<DeleteAreaRequest, DeleteAreaResponse>
     {
         private readonly IAreaRepository _areaRepository;
-        private readonly IAreaMapper _areaMapper;
 
         public DeleteAreaHandler(
             IAreaRepository areaRepository, 
             IAreaMapper areaMapper)
         {
             _areaRepository = areaRepository;
-            _areaMapper = areaMapper;
         }
 
         public async Task<DeleteAreaResponse> Handle(DeleteAreaRequest request, CancellationToken ct)
@@ -36,14 +34,18 @@ namespace FDAAPI.App.FeatG37_AreaDelete
                 };
             }
 
-            // Authorization check: Only the owner can delete the area
-            if (area.UserId != request.UserId)
+            // 2. Check if user is Admin or SuperAdmin
+            bool isAdmin = request.UserRole == "ADMIN" || request.UserRole == "SUPERADMIN";
+
+            // 3. Authorization check with Admin override
+            if (!isAdmin && area.UserId != request.UserId)
             {
+                // Return 404 instead of 403 to prevent enumeration
                 return new DeleteAreaResponse
                 {
                     Success = false,
-                    Message = "Unauthorized to delete this area",
-                    StatusCode = AreaStatusCode.Forbidden
+                    Message = "Area not found",
+                    StatusCode = AreaStatusCode.NotFound
                 };
             }
 

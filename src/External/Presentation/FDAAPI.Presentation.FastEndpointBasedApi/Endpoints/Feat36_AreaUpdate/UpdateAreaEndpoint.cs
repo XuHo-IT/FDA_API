@@ -1,5 +1,6 @@
 using FastEndpoints;
 using FDAAPI.App.FeatG36_AreaUpdate;
+using FDAAPI.Domain.RelationalDb.Entities;
 using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat36_AreaUpdate.DTOs;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -20,7 +21,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat36_AreaUpdate
 
         public override void Configure()
         {
-            Put("/api/v1/areas/area/{id}");
+            Put("/api/v1/areas/{id}");
             Policies("User");
             Summary(s =>
             {
@@ -46,9 +47,13 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat36_AreaUpdate
             }
 
             var userId = Guid.Parse(userIdClaim.Value);
+
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "USER";
+
             var command = new UpdateAreaRequest(
-                id,
+            id,
                 userId,
+                userRole,
                 req.Name,
                 req.Latitude,
                 req.Longitude,
@@ -61,22 +66,11 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat36_AreaUpdate
             var response = new UpdateAreaResponseDto
             {
                 Success = result.Success,
-                Message = result.Message
+                Message = result.Message,
+                Data = result.Data
             };
 
-            if (result.Success)
-            {
-                await SendAsync(response, 200, ct);
-            }
-            else
-            {
-                if (result.Message == "Area not found")
-                    await SendAsync(response, 404, ct);
-                else if (result.Message == "Unauthorized to update this area")
-                    await SendAsync(response, 403, ct);
-                else
-                    await SendAsync(response, 400, ct);
-            }
+            await SendAsync(response, (int)result.StatusCode, ct);
         }
     }
 }
