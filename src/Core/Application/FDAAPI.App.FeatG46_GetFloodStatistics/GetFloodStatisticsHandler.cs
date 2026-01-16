@@ -9,7 +9,7 @@ using FDAAPI.App.Common.Services.Mapping;
 using FDAAPI.Domain.RelationalDb.Repositories;
 using MediatR;
 
-namespace FDAAPI.App.FeatG41_GetFloodStatistics
+namespace FDAAPI.App.FeatG46_GetFloodStatistics
 {
     public class GetFloodStatisticsHandler : IRequestHandler<GetFloodStatisticsRequest, GetFloodStatisticsResponse>
     {

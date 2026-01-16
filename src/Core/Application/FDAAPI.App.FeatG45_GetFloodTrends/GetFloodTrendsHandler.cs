@@ -9,7 +9,7 @@ using FDAAPI.App.Common.Services.Mapping;
 using FDAAPI.Domain.RelationalDb.Repositories;
 using MediatR;
 
-namespace FDAAPI.App.FeatG40_GetFloodTrends
+namespace FDAAPI.App.FeatG45_GetFloodTrends
 {
     public class GetFloodTrendsHandler : IRequestHandler<GetFloodTrendsRequest, GetFloodTrendsResponse>
     {

@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 using FDAAPI.App.Common.DTOs;
 using FDAAPI.App.Common.Models.FloodHistory;
 using FDAAPI.App.Common.Services.Mapping;
+using FDAAPI.App.FeatG44_GetFloodHistory;
 using FDAAPI.Domain.RelationalDb.Repositories;
 using MediatR;
 
-namespace FDAAPI.App.FeatG39_GetFloodHistory
+namespace FDAAPI.App.FeatG44_GetFloodHistory
 {
     public class GetFloodHistoryHandler : IRequestHandler<GetFloodHistoryRequest, GetFloodHistoryResponse>
     {

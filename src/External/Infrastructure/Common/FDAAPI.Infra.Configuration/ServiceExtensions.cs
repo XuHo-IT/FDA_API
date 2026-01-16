@@ -56,11 +56,11 @@ using FDAAPI.App.FeatG37_AreaDelete;
 using FDAAPI.App.FeatG35_AreaGet;
 using FDAAPI.App.FeatG33_AreaListByUser;
 using FDAAPI.App.FeatG38_AreaList;
-using FDAAPI.App.FeatG39_GetFloodHistory;
-using FDAAPI.App.FeatG40_GetFloodTrends;
-using FDAAPI.App.FeatG41_GetFloodStatistics;
 using Quartz;
 using FDAAPI.Infra.Services.Aggregation;
+using FDAAPI.App.FeatG44_GetFloodHistory;
+using FDAAPI.App.FeatG45_GetFloodTrends;
+using FDAAPI.App.FeatG46_GetFloodStatistics;
 
 namespace FDAAPI.Infra.Configuration
 {

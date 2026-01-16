@@ -1,4 +1,4 @@
-﻿namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat39_GetFloodHistory.DTOs
+﻿namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat44_GetFloodHistory.DTOs
 {
     /// <summary>
     /// Request DTO for getting flood history data with time-range filters

@@ -1,6 +1,6 @@
 ﻿using FDAAPI.App.Common.Features;
 
-namespace FDAAPI.App.FeatG39_GetFloodHistory
+namespace FDAAPI.App.FeatG44_GetFloodHistory
 {
     public sealed record GetFloodHistoryRequest(
         Guid? StationId,

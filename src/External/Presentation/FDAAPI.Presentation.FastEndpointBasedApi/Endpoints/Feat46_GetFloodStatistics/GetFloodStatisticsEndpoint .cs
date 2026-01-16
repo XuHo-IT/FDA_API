@@ -1,48 +1,48 @@
 ﻿using FastEndpoints;
 using FDAAPI.App.Common.Models.FloodHistory;
-using FDAAPI.App.FeatG40_GetFloodTrends;
-using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat40_GetFloodTrends.DTOs;
+using FDAAPI.App.FeatG46_GetFloodStatistics;
+using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat46_GetFloodStatistics.DTOs;
 using MediatR;
 
-namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat40_GetFloodTrends
+namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat46_GetFloodStatistics
 {
-    public class GetFloodTrendsEndpoint : Endpoint<GetFloodTrendsRequestDto, GetFloodTrendsResponseDto>
+    public class GetFloodStatisticsEndpoint : Endpoint<GetFloodStatisticsRequestDto, GetFloodStatisticsResponseDto>
     {
         private readonly IMediator _mediator;
 
-        public GetFloodTrendsEndpoint(IMediator mediator)
+        public GetFloodStatisticsEndpoint(IMediator mediator)
         {
             _mediator = mediator;
         }
 
         public override void Configure()
         {
-            Get("/api/v1/flood-trends");
+            Get("/api/v1/flood-statistics");
             Policies("User");
             Summary(s =>
             {
-                s.Summary = "Get flood trends over time";
-                s.Description = "Returns aggregated flood trends with daily/weekly/monthly granularity and optional period comparison";
-                s.ExampleRequest = new GetFloodTrendsRequestDto
+                s.Summary = "Get flood statistics summary";
+                s.Description = "Returns statistical summary with severity breakdown, data quality metrics, and period comparison";
+                s.ExampleRequest = new GetFloodStatisticsRequestDto
                 {
                     StationId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                     Period = "last30days",
-                    Granularity = "daily",
-                    CompareWithPrevious = true
+                    IncludeBreakdown = true,
+                    IncludeComparison = true
                 };
             });
-            Tags("FloodHistory", "Trends", "Analytics");
+            Tags("FloodHistory", "Statistics", "Analytics");
         }
 
-        public override async Task HandleAsync(GetFloodTrendsRequestDto req, CancellationToken ct)
+        public override async Task HandleAsync(GetFloodStatisticsRequestDto req, CancellationToken ct)
         {
-            var query = new GetFloodTrendsRequest(
+            var query = new GetFloodStatisticsRequest(
                 req.StationId,
+                req.StationIds,
+                req.AreaId,
                 req.Period,
-                req.StartDate,
-                req.EndDate,
-                req.Granularity,
-                req.CompareWithPrevious
+                req.IncludeBreakdown,
+                req.IncludeComparison
             );
 
             var result = await _mediator.Send(query, ct);
@@ -58,7 +58,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat40_GetFloodTren
                 _ => 500
             };
 
-            var responseDto = new GetFloodTrendsResponseDto
+            var responseDto = new GetFloodStatisticsResponseDto
             {
                 Success = result.Success,
                 Message = result.Message,

@@ -1,6 +1,6 @@
 ﻿using FDAAPI.App.Common.Features;
 
-namespace FDAAPI.App.FeatG41_GetFloodStatistics
+namespace FDAAPI.App.FeatG46_GetFloodStatistics
 {
     public sealed record GetFloodStatisticsRequest(
         Guid? StationId,

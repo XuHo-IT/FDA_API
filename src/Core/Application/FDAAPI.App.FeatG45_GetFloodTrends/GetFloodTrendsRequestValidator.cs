@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FluentValidation;
 
-namespace FDAAPI.App.FeatG40_GetFloodTrends
+namespace FDAAPI.App.FeatG45_GetFloodTrends
 {
     public class GetFloodTrendsRequestValidator : AbstractValidator<GetFloodTrendsRequest>
     {

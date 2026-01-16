@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FluentValidation;
 
-namespace FDAAPI.App.FeatG39_GetFloodHistory
+namespace FDAAPI.App.FeatG44_GetFloodHistory
 {
     public class GetFloodHistoryRequestValidator : AbstractValidator<GetFloodHistoryRequest>
     {

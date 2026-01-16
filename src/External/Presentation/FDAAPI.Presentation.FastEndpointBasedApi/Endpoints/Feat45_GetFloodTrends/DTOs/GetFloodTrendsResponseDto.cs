@@ -1,6 +1,6 @@
 ﻿using FDAAPI.App.Common.DTOs;
 
-namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat40_GetFloodTrends.DTOs
+namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat45_GetFloodTrends.DTOs
 {
     public class GetFloodTrendsResponseDto
     {

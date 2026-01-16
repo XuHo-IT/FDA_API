@@ -1,6 +1,6 @@
 ﻿using FDAAPI.App.Common.DTOs;
 
-namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat39_GetFloodHistory.DTOs
+namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat44_GetFloodHistory.DTOs
 {
     /// <summary>
     /// Response DTO for flood history endpoint

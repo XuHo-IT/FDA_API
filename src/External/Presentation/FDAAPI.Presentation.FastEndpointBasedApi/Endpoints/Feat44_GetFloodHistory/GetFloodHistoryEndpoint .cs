@@ -1,10 +1,10 @@
 ﻿using FastEndpoints;
 using FDAAPI.App.Common.Models.FloodHistory;
-using FDAAPI.App.FeatG39_GetFloodHistory;
-using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat39_GetFloodHistory.DTOs;
+using FDAAPI.App.FeatG44_GetFloodHistory;
+using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat44_GetFloodHistory.DTOs;
 using MediatR;
 
-namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat39_GetFloodHistory
+namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat44_GetFloodHistory
 {
     public class GetFloodHistoryEndpoint : Endpoint<GetFloodHistoryRequestDto, GetFloodHistoryResponseDto>
     {

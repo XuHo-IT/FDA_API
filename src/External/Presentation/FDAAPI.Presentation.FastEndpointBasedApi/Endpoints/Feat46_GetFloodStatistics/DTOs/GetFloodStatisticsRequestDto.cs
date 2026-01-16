@@ -1,4 +1,4 @@
-﻿namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat41_GetFloodStatistics.DTOs
+﻿namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat46_GetFloodStatistics.DTOs
 {
     /// <summary>
     /// Request DTO for getting flood statistics

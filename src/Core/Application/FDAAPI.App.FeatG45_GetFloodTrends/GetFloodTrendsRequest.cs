@@ -1,6 +1,6 @@
 ﻿using FDAAPI.App.Common.Features;
 
-namespace FDAAPI.App.FeatG40_GetFloodTrends
+namespace FDAAPI.App.FeatG45_GetFloodTrends
 {
     public sealed record GetFloodTrendsRequest(
         Guid StationId,

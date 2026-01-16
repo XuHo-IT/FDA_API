@@ -1,4 +1,4 @@
-﻿namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat40_GetFloodTrends.DTOs
+﻿namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat45_GetFloodTrends.DTOs
 {
     /// <summary>
     /// Request DTO for getting flood trends data
