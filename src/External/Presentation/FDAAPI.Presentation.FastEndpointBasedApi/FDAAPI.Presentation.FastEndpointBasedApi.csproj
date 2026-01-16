@@ -52,6 +52,7 @@
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG34_AreaStatusEvaluate\FDAAPI.App.FeatG34_AreaStatusEvaluate.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG38_AreaList\FDAAPI.App.FeatG38_AreaList.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG3_WaterLevelGet\FDAAPI.App.FeatG3_SensorReadingGet.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG40_GetFloodTrends\FDAAPI.App.FeatG40_GetFloodTrends.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG4_WaterLevelDelete\FDAAPI.App.FeatG4_SensorReadingDelete.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG6_AuthSendOtp\FDAAPI.App.FeatG6_AuthSendOtp.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG7_AuthLogin\FDAAPI.App.FeatG7_AuthLogin.csproj" />

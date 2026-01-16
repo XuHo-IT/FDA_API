@@ -106,5 +106,33 @@ namespace FDAAPI.Infra.Persistence.Repositories
                 .Select(g => g.OrderByDescending(sr => sr.MeasuredAt).First())
                 .ToListAsync(ct);
         }
+
+        public async Task<List<SensorReading>> GetByStationAndTimeRangeAsync(
+            Guid stationId,
+            DateTime startDate,
+            DateTime endDate,
+            int limit = 1000,
+            CancellationToken ct = default)
+        {
+            return await _context.SensorReadings
+                .AsNoTracking()
+                .Where(sr => sr.StationId == stationId
+                    && sr.MeasuredAt >= startDate
+                    && sr.MeasuredAt <= endDate)
+                .OrderBy(sr => sr.MeasuredAt)
+                .Take(limit)
+                .ToListAsync(ct);
+        }
+
+        public async Task<List<SensorReading>> GetByHourAsync(
+            DateTime hour,
+            CancellationToken ct = default)
+        {
+            return await _context.SensorReadings
+                .AsNoTracking()
+                .Where(sr => sr.MeasuredAt >= hour && sr.MeasuredAt < hour.AddHours(1))
+                .OrderBy(sr => sr.MeasuredAt)
+                .ToListAsync(ct);
+        }
     }
 }

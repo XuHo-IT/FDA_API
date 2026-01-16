@@ -26,6 +26,8 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB
         public DbSet<Station> Stations { get; set; } = null!;
         public DbSet<UserPreference> UserPreferences { get; set; } = null!;
         public DbSet<Area> Areas { get; set; } = null!;
+        public DbSet<SensorHourlyAgg> SensorHourlyAggs { get; set; }
+        public DbSet<SensorDailyAgg> SensorDailyAggs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -35,7 +35,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
 using System.Text;
-using FluentValidation;
 using FDAAPI.App.FeatG23_StationCreate;
 using FDAAPI.App.FeatG21_UserList;
 using FDAAPI.App.FeatG25_StationList;
@@ -57,6 +56,11 @@ using FDAAPI.App.FeatG37_AreaDelete;
 using FDAAPI.App.FeatG35_AreaGet;
 using FDAAPI.App.FeatG33_AreaListByUser;
 using FDAAPI.App.FeatG38_AreaList;
+using FDAAPI.App.FeatG39_GetFloodHistory;
+using FDAAPI.App.FeatG40_GetFloodTrends;
+using FDAAPI.App.FeatG41_GetFloodStatistics;
+using Quartz;
+using FDAAPI.Infra.Services.Aggregation;
 
 namespace FDAAPI.Infra.Configuration
 {
@@ -121,6 +125,7 @@ namespace FDAAPI.Infra.Configuration
             services.AddScoped<IStationMapper, StationMapper>();
             services.AddScoped<ISensorReadingMapper, SensorReadingMapper>();
             services.AddScoped<IAreaMapper, AreaMapper>();
+            services.AddScoped<IFloodHistoryMapper, FloodHistoryMapper>();
 
             return services;
         }
@@ -164,7 +169,10 @@ namespace FDAAPI.Infra.Configuration
                 typeof(AreaGetRequest).Assembly,
                 typeof(AreaListRequest).Assembly,
                 typeof(UpdateAreaRequest).Assembly,
-                typeof(DeleteAreaRequest).Assembly
+                typeof(DeleteAreaRequest).Assembly,
+                typeof(GetFloodHistoryRequest).Assembly,
+                typeof(GetFloodTrendsRequest).Assembly,
+                typeof(GetFloodStatisticsRequest).Assembly
             };
 
             // Register MediatR with all feature assemblies and ValidationBehavior
@@ -203,6 +211,9 @@ namespace FDAAPI.Infra.Configuration
             services.AddScoped<IUserPreferenceRepository, PgsqlUserPreferenceRepository>();
 
             services.AddScoped<IAreaRepository, PgsqlAreaRepository>();
+
+            services.AddScoped<ISensorHourlyAggRepository, PgsqlSensorHourlyAggRepository>();
+            services.AddScoped<ISensorDailyAggRepository, PgsqlSensorDailyAggRepository>();
 
             return services;
         }
@@ -287,6 +298,38 @@ namespace FDAAPI.Infra.Configuration
 
             // Register state cache service for OAuth
             services.AddScoped<IStateCache, RedisStateCache>();
+
+            return services;
+        }
+
+        public static IServiceCollection AddBackgroundJobs(this IServiceCollection services)
+        {
+            services.AddQuartz(q =>
+            {
+                // Use a Scoped container for creating jobs
+                q.UseMicrosoftDependencyInjectionJobFactory();
+
+                // Hourly Aggregation Job - runs every hour at :05
+                var hourlyJobKey = new JobKey("HourlyAggregationJob");
+                q.AddJob<HourlyAggregationJob>(opts => opts.WithIdentity(hourlyJobKey));
+                q.AddTrigger(opts => opts
+                    .ForJob(hourlyJobKey)
+                    .WithIdentity("HourlyAggregationTrigger")
+                    .WithCronSchedule("0 5 * * * ?")  // Every hour at :05
+                    .WithDescription("Aggregates sensor readings into hourly summaries"));
+
+                // Daily Aggregation Job - runs daily at 00:15 UTC
+                var dailyJobKey = new JobKey("DailyAggregationJob");
+                q.AddJob<DailyAggregationJob>(opts => opts.WithIdentity(dailyJobKey));
+                q.AddTrigger(opts => opts
+                    .ForJob(dailyJobKey)
+                    .WithIdentity("DailyAggregationTrigger")
+                    .WithCronSchedule("0 15 0 * * ?")  // Daily at 00:15 UTC
+                    .WithDescription("Aggregates hourly data into daily summaries"));
+            });
+
+            // Add Quartz hosted service
+            services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
             return services;
         }
