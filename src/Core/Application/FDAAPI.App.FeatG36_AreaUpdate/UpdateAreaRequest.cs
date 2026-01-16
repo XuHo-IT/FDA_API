@@ -1,4 +1,4 @@
-using FDAAPI.App.Common.Features;
+﻿using FDAAPI.App.Common.Features;
 using System;
 
 namespace FDAAPI.App.FeatG36_AreaUpdate
@@ -6,6 +6,7 @@ namespace FDAAPI.App.FeatG36_AreaUpdate
     public sealed record UpdateAreaRequest(
         Guid Id,
         Guid UserId,
+        string UserRole,  // ← ADD THIS: "ADMIN", "USER", etc.
         string Name,
         decimal Latitude,
         decimal Longitude,

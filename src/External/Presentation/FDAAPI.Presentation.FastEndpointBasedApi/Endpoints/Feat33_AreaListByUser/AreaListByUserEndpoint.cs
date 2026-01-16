@@ -19,7 +19,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat33_AreaListByUs
 
         public override void Configure()
         {
-            Get("/api/v1/areas/areas-created");
+            Get("/api/v1/areas/me");
             Policies("User");
             Summary(s =>
             {

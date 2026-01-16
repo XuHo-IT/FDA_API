@@ -2,6 +2,7 @@ using FastEndpoints;
 using FastEndpoints.Swagger;
 using FDAAPI.Domain.RelationalDb.RealationalDB;
 using FDAAPI.Infra.Configuration;
+using FDAAPI.Presentation.FastEndpointBasedApi.Middleware;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
@@ -86,6 +87,9 @@ var app = builder.Build();
 // ==================================================
 // MIDDLEWARE PIPELINE (ORDER MATTERS!)
 // ==================================================
+
+// 0. Global Exception Handler (MUST be first to catch all exceptions)
+app.UseMiddleware<ValidationExceptionMiddleware>();
 
 // 1. API Documentation (Development)
 if (app.Environment.IsDevelopment())
