@@ -3,13 +3,6 @@ using FDAAPI.App.Common.Features;
 using FDAAPI.App.Common.Services;
 using FDAAPI.App.Common.Services.Mapping;
 using FDAAPI.App.FeatG1_SensorReadingCreate;
-using FDAAPI.App.FeatG2_SensorReadingUpdate;
-using FDAAPI.App.FeatG3_SensorReadingGet;
-using FDAAPI.App.FeatG4_SensorReadingDelete;
-using FDAAPI.App.FeatG6_AuthSendOtp;
-using FDAAPI.App.FeatG7_AuthLogin;
-using FDAAPI.App.FeatG8_AuthRefreshToken;
-using FDAAPI.App.FeatG9_AuthLogout;
 using FDAAPI.App.FeatG10_AuthChangePassword;
 using FDAAPI.App.FeatG11_AuthSetPassword;
 using FDAAPI.App.FeatG12_AuthGoogleLoginInitiate;
@@ -20,12 +13,45 @@ using FDAAPI.App.FeatG16_AuthGoogleMobileLogin;
 using FDAAPI.App.FeatG17_AuthCheckIdentifier;
 using FDAAPI.App.FeatG18_MediaUploadImage;
 using FDAAPI.App.FeatG19_ProfileVerifyUpdatePhone;
+using FDAAPI.App.FeatG2_SensorReadingUpdate;
+using FDAAPI.App.FeatG20_UserCreate;
+using FDAAPI.App.FeatG21_UserList;
+using FDAAPI.App.FeatG22_UserUpdate;
+using FDAAPI.App.FeatG23_StationCreate;
+using FDAAPI.App.FeatG24_StationUpdate;
+using FDAAPI.App.FeatG25_StationList;
+using FDAAPI.App.FeatG26_StationGet;
+using FDAAPI.App.FeatG27_StationDelete;
+using FDAAPI.App.FeatG28_GetMapPreferences;
+using FDAAPI.App.FeatG29_UpdateMapPreferences;
+using FDAAPI.App.FeatG3_SensorReadingGet;
+using FDAAPI.App.FeatG30_GetFloodSeverityLayer;
+using FDAAPI.App.FeatG31_GetMapCurrentStatus;
+using FDAAPI.App.FeatG32_AreaCreate;
+using FDAAPI.App.FeatG33_AreaListByUser;
+using FDAAPI.App.FeatG34_AreaStatusEvaluate;
+using FDAAPI.App.FeatG35_AreaGet;
+using FDAAPI.App.FeatG36_AreaUpdate;
+using FDAAPI.App.FeatG37_AreaDelete;
+using FDAAPI.App.FeatG38_AreaList;
+using FDAAPI.App.FeatG39_SubscribeToAlerts;
+using FDAAPI.App.FeatG4_SensorReadingDelete;
+using FDAAPI.App.FeatG40_GetAlertHistory;
+using FDAAPI.App.FeatG41_UpdateAlertPreferences;
+using FDAAPI.App.FeatG42_ProcessAlerts;
+using FDAAPI.App.FeatG43_DispatchNotifications;
+using FDAAPI.App.FeatG6_AuthSendOtp;
+using FDAAPI.App.FeatG7_AuthLogin;
+using FDAAPI.App.FeatG8_AuthRefreshToken;
+using FDAAPI.App.FeatG9_AuthLogout;
 using FDAAPI.Domain.RelationalDb.RealationalDB;
 using FDAAPI.Domain.RelationalDb.Repositories;
 using FDAAPI.Infra.Persistence.Repositories;
 using FDAAPI.Infra.Services.Auth;
 using FDAAPI.Infra.Services.Cache;
+using FDAAPI.Infra.Services.Notifications;
 using FDAAPI.Infra.Services.OAuth;
+using FluentValidation;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -35,28 +61,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
 using System.Text;
-using FluentValidation;
-using FDAAPI.App.FeatG23_StationCreate;
-using FDAAPI.App.FeatG21_UserList;
-using FDAAPI.App.FeatG25_StationList;
-using FDAAPI.App.FeatG22_UserUpdate;
-using FDAAPI.App.FeatG20_UserCreate;
-using FDAAPI.App.FeatG24_StationUpdate;
-using FDAAPI.App.FeatG26_StationGet;
-using FDAAPI.App.FeatG27_StationDelete;
-using FDAAPI.App.FeatG28_GetMapPreferences;
-using FDAAPI.App.FeatG29_UpdateMapPreferences;
-using FDAAPI.App.FeatG30_GetFloodSeverityLayer;
-using FDAAPI.App.FeatG31_GetMapCurrentStatus;
-using FDAAPI.App.FeatG32_AreaCreate;
-
-using FDAAPI.App.FeatG34_AreaStatusEvaluate;
-
-using FDAAPI.App.FeatG36_AreaUpdate;
-using FDAAPI.App.FeatG37_AreaDelete;
-using FDAAPI.App.FeatG35_AreaGet;
-using FDAAPI.App.FeatG33_AreaListByUser;
-using FDAAPI.App.FeatG38_AreaList;
 
 namespace FDAAPI.Infra.Configuration
 {
@@ -164,8 +168,13 @@ namespace FDAAPI.Infra.Configuration
                 typeof(AreaGetRequest).Assembly,
                 typeof(AreaListRequest).Assembly,
                 typeof(UpdateAreaRequest).Assembly,
-                typeof(DeleteAreaRequest).Assembly
-            };
+                typeof(DeleteAreaRequest).Assembly,
+                typeof(SubscribeToAlertsRequest).Assembly,
+                typeof(GetAlertHistoryRequest).Assembly,
+                typeof(UpdateAlertPreferencesRequest).Assembly,
+                typeof(ProcessAlertsRequest).Assembly,
+                typeof(DispatchNotificationsRequest).Assembly
+        };
 
             // Register MediatR with all feature assemblies and ValidationBehavior
             services.AddMediatR(cfg =>
@@ -197,6 +206,16 @@ namespace FDAAPI.Infra.Configuration
             services.AddScoped<IRefreshTokenRepository, PgsqlRefreshTokenRepository>();
             services.AddScoped<IOtpCodeRepository, PgsqlOtpCodeRepository>();
 
+            services.AddScoped<IAlertRepository, PgsqlAlertRepository>();
+            services.AddScoped<IAlertRuleRepository, PgsqlAlertRuleRepository>();
+            services.AddScoped<INotificationLogRepository, PgsqlNotificationLogRepository>();
+            services.AddScoped<IUserAlertSubscriptionRepository, PgsqlUserAlertSubscriptionRepository>();
+            services.AddScoped<IPriorityRoutingService, PriorityRoutingService>();
+            services.AddScoped<INotificationTemplateService, NotificationTemplateService>();
+            services.AddScoped<INotificationDispatchService, NotificationDispatchService>();
+            services.AddScoped<IPushNotificationService, PushNotificationService>();
+            services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<ISmsService, SmsService>();
             // OAuth provider repository
             services.AddScoped<IUserOAuthProviderRepository, PgsqlUserOAuthProviderRepository>();
 

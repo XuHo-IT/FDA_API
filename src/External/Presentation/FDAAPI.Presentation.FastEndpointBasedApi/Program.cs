@@ -30,6 +30,11 @@ builder.Services
     .AddAuthenticationServices(configuration)
     .AddCacheServices(configuration);
 
+// ==================================================
+// BACKGROUND JOBS REGISTRATION
+// ==================================================
+builder.Services.AddHostedService<FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.Feat42_ProcessAlerts.AlertProcessingJob>();
+builder.Services.AddHostedService<FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.Feat43_DispatchNotifications.NotificationDispatchJob>();
 
 // FastEndpoints
 builder.Services

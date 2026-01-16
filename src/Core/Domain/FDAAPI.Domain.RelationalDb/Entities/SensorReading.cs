@@ -3,10 +3,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FDAAPI.Domain.RelationalDb
 {
-    /// <summary>
-    /// Minimal WaterLevel domain model used by feature handlers.
-    /// This is a lightweight model for demo / scaffolding purposes.
-    /// </summary>
     public class SensorReading
     {
         public Guid Id { get; set; }

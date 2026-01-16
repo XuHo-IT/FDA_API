@@ -3,6 +3,7 @@ using System;
 using FDAAPI.Domain.RelationalDb.RealationalDB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FDAAPI.Domain.RelationalDb.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260115151356_AddAlertSystemTables")]
+    partial class AddAlertSystemTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -40,22 +43,9 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         .HasPrecision(14, 4)
                         .HasColumnType("numeric(14,4)");
 
-                    b.Property<DateTime?>("LastNotificationAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("Message")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("NotificationCount")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
-
-                    b.Property<bool>("NotificationSent")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
 
                     b.Property<string>("Priority")
                         .IsRequired()
@@ -67,20 +57,16 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
 
                     b.Property<string>("Severity")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasDefaultValue("info");
+                        .HasColumnType("character varying(20)");
 
                     b.Property<Guid>("StationId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasDefaultValue("open");
+                        .HasColumnType("character varying(20)");
 
                     b.Property<DateTime>("TriggeredAt")
                         .HasColumnType("timestamp with time zone");
@@ -100,9 +86,6 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
 
                     b.HasIndex("Status")
                         .HasDatabaseName("ix_alerts_status");
-
-                    b.HasIndex("NotificationSent", "Status")
-                        .HasDatabaseName("ix_alerts_notification_status");
 
                     b.HasIndex("StationId", "TriggeredAt")
                         .HasDatabaseName("ix_alerts_station_triggered");
@@ -141,17 +124,13 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
 
                     b.Property<string>("RuleType")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
                         .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasDefaultValue("threshold");
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("Severity")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasDefaultValue("warning");
+                        .HasColumnType("character varying(20)");
 
                     b.Property<Guid>("StationId")
                         .HasColumnType("uuid");
@@ -249,9 +228,6 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("CreatedBy")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime?>("DeliveredAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -265,9 +241,7 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         .HasColumnType("character varying(1000)");
 
                     b.Property<int>("MaxRetries")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(3);
+                        .HasColumnType("integer");
 
                     b.Property<string>("Priority")
                         .IsRequired()
@@ -275,25 +249,15 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         .HasColumnType("character varying(20)");
 
                     b.Property<int>("RetryCount")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("SentAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasDefaultValue("pending");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UpdatedBy")
-                        .HasColumnType("uuid");
+                        .HasColumnType("character varying(20)");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
@@ -615,9 +579,6 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("CreatedBy")
-                        .HasColumnType("uuid");
-
                     b.Property<bool>("EnableEmail")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
@@ -640,28 +601,13 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         .HasColumnType("character varying(20)")
                         .HasDefaultValue("warning");
 
-                    b.Property<TimeSpan?>("QuietHoursEnd")
-                        .HasColumnType("interval");
-
-                    b.Property<TimeSpan?>("QuietHoursStart")
-                        .HasColumnType("interval");
-
                     b.Property<Guid?>("StationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UpdatedBy")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AreaId")
-                        .HasDatabaseName("ix_user_alert_subscriptions_area");
 
                     b.HasIndex("StationId")
                         .HasDatabaseName("ix_user_alert_subscriptions_station");
@@ -927,23 +873,16 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
 
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.UserAlertSubscription", b =>
                 {
-                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.Area", "Area")
-                        .WithMany()
-                        .HasForeignKey("AreaId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("FDAAPI.Domain.RelationalDb.Entities.Station", "Station")
                         .WithMany()
                         .HasForeignKey("StationId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("FDAAPI.Domain.RelationalDb.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Area");
 
                     b.Navigation("Station");
 
