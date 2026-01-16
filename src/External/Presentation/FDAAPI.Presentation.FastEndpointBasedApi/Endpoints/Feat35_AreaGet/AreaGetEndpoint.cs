@@ -20,7 +20,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat35_AreaGet
 
         public override void Configure()
         {
-            Get("/api/v1/areas/area/{id}");
+            Get("/api/v1/areas/{id}");
             Policies("User");
             Summary(s =>
             {
