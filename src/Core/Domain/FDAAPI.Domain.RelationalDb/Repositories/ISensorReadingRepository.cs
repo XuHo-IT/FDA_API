@@ -21,5 +21,16 @@ namespace FDAAPI.Domain.RelationalDb.Repositories
         Task<List<SensorReading>> GetLatestReadingsByStationsAsync(
             IEnumerable<Guid> stationIds,
             CancellationToken ct = default);
+
+        Task<List<SensorReading>> GetByStationAndTimeRangeAsync(
+            Guid stationId,
+            DateTime startTime,
+            DateTime endTime,
+            int limit,
+            CancellationToken ct = default);
+
+        Task<List<SensorReading>> GetByHourAsync(
+            DateTime hourStart,
+            CancellationToken ct = default);
     }
 }

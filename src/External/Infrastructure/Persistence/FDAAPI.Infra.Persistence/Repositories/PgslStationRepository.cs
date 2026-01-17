@@ -83,5 +83,12 @@ namespace FDAAPI.Infra.Persistence.Repositories
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<List<Station>> GetAllAsync(CancellationToken ct = default)
+        {
+            return await _context.Stations
+                .AsNoTracking()
+                .ToListAsync(ct);
+        }
     }
 }

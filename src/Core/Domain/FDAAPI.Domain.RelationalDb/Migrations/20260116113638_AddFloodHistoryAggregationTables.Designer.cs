@@ -3,6 +3,7 @@ using System;
 using FDAAPI.Domain.RelationalDb.RealationalDB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FDAAPI.Domain.RelationalDb.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260116113638_AddFloodHistoryAggregationTables")]
+    partial class AddFloodHistoryAggregationTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,161 +24,6 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.Alert", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("AlertRuleId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("CreatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("CurrentValue")
-                        .HasPrecision(14, 4)
-                        .HasColumnType("numeric(14,4)");
-
-                    b.Property<DateTime?>("LastNotificationAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("NotificationCount")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
-
-                    b.Property<bool>("NotificationSent")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("Priority")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<DateTime?>("ResolvedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Severity")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasDefaultValue("info");
-
-                    b.Property<Guid>("StationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasDefaultValue("open");
-
-                    b.Property<DateTime>("TriggeredAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UpdatedBy")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AlertRuleId");
-
-                    b.HasIndex("Severity")
-                        .HasDatabaseName("ix_alerts_severity");
-
-                    b.HasIndex("Status")
-                        .HasDatabaseName("ix_alerts_status");
-
-                    b.HasIndex("NotificationSent", "Status")
-                        .HasDatabaseName("ix_alerts_notification_status");
-
-                    b.HasIndex("StationId", "TriggeredAt")
-                        .HasDatabaseName("ix_alerts_station_triggered");
-
-                    b.ToTable("Alerts");
-                });
-
-            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.AlertRule", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("CreatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<int?>("DurationMin")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true);
-
-                    b.Property<string>("MinTierRequired")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<string>("RuleType")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasDefaultValue("threshold");
-
-                    b.Property<string>("Severity")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasDefaultValue("warning");
-
-                    b.Property<Guid>("StationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("ThresholdValue")
-                        .HasPrecision(14, 4)
-                        .HasColumnType("numeric(14,4)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UpdatedBy")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IsActive")
-                        .HasDatabaseName("ix_alert_rules_active");
-
-                    b.HasIndex("StationId")
-                        .HasDatabaseName("ix_alert_rules_station");
-
-                    b.ToTable("AlertRules");
-                });
 
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.Area", b =>
                 {
@@ -227,92 +75,6 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         .HasDatabaseName("ix_areas_geo");
 
                     b.ToTable("Areas");
-                });
-
-            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.NotificationLog", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("AlertId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Channel")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("CreatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("DeliveredAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Destination")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<string>("ErrorMessage")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<int>("MaxRetries")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(3);
-
-                    b.Property<string>("Priority")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<int>("RetryCount")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
-
-                    b.Property<DateTime?>("SentAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasDefaultValue("pending");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UpdatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AlertId")
-                        .HasDatabaseName("ix_notification_logs_alert");
-
-                    b.HasIndex("Status")
-                        .HasDatabaseName("ix_notification_logs_status");
-
-                    b.HasIndex("Status", "RetryCount")
-                        .HasDatabaseName("ix_notification_logs_retry");
-
-                    b.HasIndex("UserId", "CreatedAt")
-                        .HasDatabaseName("ix_notification_logs_user_time");
-
-                    b.ToTable("NotificationLogs");
                 });
 
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.OtpCode", b =>
@@ -720,78 +482,6 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.UserAlertSubscription", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("AreaId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("CreatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("EnableEmail")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
-                    b.Property<bool>("EnablePush")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true);
-
-                    b.Property<bool>("EnableSms")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("MinSeverity")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasDefaultValue("warning");
-
-                    b.Property<TimeSpan?>("QuietHoursEnd")
-                        .HasColumnType("interval");
-
-                    b.Property<TimeSpan?>("QuietHoursStart")
-                        .HasColumnType("interval");
-
-                    b.Property<Guid?>("StationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UpdatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AreaId")
-                        .HasDatabaseName("ix_user_alert_subscriptions_area");
-
-                    b.HasIndex("StationId")
-                        .HasDatabaseName("ix_user_alert_subscriptions_station");
-
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("ix_user_alert_subscriptions_user");
-
-                    b.HasIndex("UserId", "StationId")
-                        .IsUnique()
-                        .HasDatabaseName("uq_user_alert_subscriptions_user_station");
-
-                    b.ToTable("UserAlertSubscriptions");
-                });
-
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.UserOAuthProvider", b =>
                 {
                     b.Property<Guid>("Id")
@@ -970,36 +660,6 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                     b.ToTable("SensorReadings");
                 });
 
-            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.Alert", b =>
-                {
-                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.AlertRule", "AlertRule")
-                        .WithMany("Alerts")
-                        .HasForeignKey("AlertRuleId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.Station", "Station")
-                        .WithMany()
-                        .HasForeignKey("StationId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("AlertRule");
-
-                    b.Navigation("Station");
-                });
-
-            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.AlertRule", b =>
-                {
-                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.Station", "Station")
-                        .WithMany()
-                        .HasForeignKey("StationId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Station");
-                });
-
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.Area", b =>
                 {
                     b.HasOne("FDAAPI.Domain.RelationalDb.Entities.User", "User")
@@ -1011,25 +671,6 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.NotificationLog", b =>
-                {
-                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.Alert", "Alert")
-                        .WithMany("NotificationLogs")
-                        .HasForeignKey("AlertId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Alert");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.RefreshToken", b =>
                 {
                     b.HasOne("FDAAPI.Domain.RelationalDb.Entities.User", "User")
@@ -1037,31 +678,6 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.UserAlertSubscription", b =>
-                {
-                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.Area", "Area")
-                        .WithMany()
-                        .HasForeignKey("AreaId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.Station", "Station")
-                        .WithMany()
-                        .HasForeignKey("StationId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Area");
-
-                    b.Navigation("Station");
 
                     b.Navigation("User");
                 });
@@ -1138,16 +754,6 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         .IsRequired();
 
                     b.Navigation("Station");
-                });
-
-            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.Alert", b =>
-                {
-                    b.Navigation("NotificationLogs");
-                });
-
-            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.AlertRule", b =>
-                {
-                    b.Navigation("Alerts");
                 });
 
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.Role", b =>

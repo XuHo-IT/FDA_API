@@ -29,7 +29,8 @@ builder.Services
     .AddInfrastructureServices(configuration)
     .AddPersistenceServices(configuration)
     .AddAuthenticationServices(configuration)
-    .AddCacheServices(configuration);
+    .AddCacheServices(configuration)
+    .AddBackgroundJobs();
 
 // ==================================================
 // BACKGROUND JOBS REGISTRATION

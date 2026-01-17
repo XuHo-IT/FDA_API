@@ -20,5 +20,6 @@ namespace FDAAPI.Domain.RelationalDb.Repositories
             int pageNumber,
             int pageSize,
             CancellationToken ct = default);
+        Task<List<Station>> GetAllAsync(CancellationToken ct = default);
     }
 }

@@ -61,6 +61,32 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
 using System.Text;
+using FDAAPI.App.FeatG23_StationCreate;
+using FDAAPI.App.FeatG21_UserList;
+using FDAAPI.App.FeatG25_StationList;
+using FDAAPI.App.FeatG22_UserUpdate;
+using FDAAPI.App.FeatG20_UserCreate;
+using FDAAPI.App.FeatG24_StationUpdate;
+using FDAAPI.App.FeatG26_StationGet;
+using FDAAPI.App.FeatG27_StationDelete;
+using FDAAPI.App.FeatG28_GetMapPreferences;
+using FDAAPI.App.FeatG29_UpdateMapPreferences;
+using FDAAPI.App.FeatG30_GetFloodSeverityLayer;
+using FDAAPI.App.FeatG31_GetMapCurrentStatus;
+using FDAAPI.App.FeatG32_AreaCreate;
+
+using FDAAPI.App.FeatG34_AreaStatusEvaluate;
+
+using FDAAPI.App.FeatG36_AreaUpdate;
+using FDAAPI.App.FeatG37_AreaDelete;
+using FDAAPI.App.FeatG35_AreaGet;
+using FDAAPI.App.FeatG33_AreaListByUser;
+using FDAAPI.App.FeatG38_AreaList;
+using Quartz;
+using FDAAPI.Infra.Services.Aggregation;
+using FDAAPI.App.FeatG44_GetFloodHistory;
+using FDAAPI.App.FeatG45_GetFloodTrends;
+using FDAAPI.App.FeatG46_GetFloodStatistics;
 
 namespace FDAAPI.Infra.Configuration
 {
@@ -125,6 +151,7 @@ namespace FDAAPI.Infra.Configuration
             services.AddScoped<IStationMapper, StationMapper>();
             services.AddScoped<ISensorReadingMapper, SensorReadingMapper>();
             services.AddScoped<IAreaMapper, AreaMapper>();
+            services.AddScoped<IFloodHistoryMapper, FloodHistoryMapper>();
 
             return services;
         }
@@ -173,8 +200,11 @@ namespace FDAAPI.Infra.Configuration
                 typeof(GetAlertHistoryRequest).Assembly,
                 typeof(UpdateAlertPreferencesRequest).Assembly,
                 typeof(ProcessAlertsRequest).Assembly,
-                typeof(DispatchNotificationsRequest).Assembly
-        };
+                typeof(DispatchNotificationsRequest).Assembly,
+                typeof(GetFloodHistoryRequest).Assembly,
+                typeof(GetFloodTrendsRequest).Assembly,
+                typeof(GetFloodStatisticsRequest).Assembly
+            };
 
             // Register MediatR with all feature assemblies and ValidationBehavior
             services.AddMediatR(cfg =>
@@ -222,6 +252,9 @@ namespace FDAAPI.Infra.Configuration
             services.AddScoped<IUserPreferenceRepository, PgsqlUserPreferenceRepository>();
 
             services.AddScoped<IAreaRepository, PgsqlAreaRepository>();
+
+            services.AddScoped<ISensorHourlyAggRepository, PgsqlSensorHourlyAggRepository>();
+            services.AddScoped<ISensorDailyAggRepository, PgsqlSensorDailyAggRepository>();
 
             return services;
         }
@@ -306,6 +339,38 @@ namespace FDAAPI.Infra.Configuration
 
             // Register state cache service for OAuth
             services.AddScoped<IStateCache, RedisStateCache>();
+
+            return services;
+        }
+
+        public static IServiceCollection AddBackgroundJobs(this IServiceCollection services)
+        {
+            services.AddQuartz(q =>
+            {
+                // Use a Scoped container for creating jobs
+                q.UseMicrosoftDependencyInjectionJobFactory();
+
+                // Hourly Aggregation Job - runs every hour at :05
+                var hourlyJobKey = new JobKey("HourlyAggregationJob");
+                q.AddJob<HourlyAggregationJob>(opts => opts.WithIdentity(hourlyJobKey));
+                q.AddTrigger(opts => opts
+                    .ForJob(hourlyJobKey)
+                    .WithIdentity("HourlyAggregationTrigger")
+                    .WithCronSchedule("0 5 * * * ?")  // Every hour at :05
+                    .WithDescription("Aggregates sensor readings into hourly summaries"));
+
+                // Daily Aggregation Job - runs daily at 00:15 UTC
+                var dailyJobKey = new JobKey("DailyAggregationJob");
+                q.AddJob<DailyAggregationJob>(opts => opts.WithIdentity(dailyJobKey));
+                q.AddTrigger(opts => opts
+                    .ForJob(dailyJobKey)
+                    .WithIdentity("DailyAggregationTrigger")
+                    .WithCronSchedule("0 15 0 * * ?")  // Daily at 00:15 UTC
+                    .WithDescription("Aggregates hourly data into daily summaries"));
+            });
+
+            // Add Quartz hosted service
+            services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
             return services;
         }

@@ -30,6 +30,8 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB
         public DbSet<AlertRule> AlertRules { get; set; } = null!;
         public DbSet<NotificationLog> NotificationLogs { get; set; } = null!;
         public DbSet<UserAlertSubscription> UserAlertSubscriptions { get; set; } = null!;
+        public DbSet<SensorHourlyAgg> SensorHourlyAggs { get; set; }
+        public DbSet<SensorDailyAgg> SensorDailyAggs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
