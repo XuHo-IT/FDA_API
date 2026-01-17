@@ -2,6 +2,8 @@ using FastEndpoints;
 using FastEndpoints.Swagger;
 using FDAAPI.Domain.RelationalDb.RealationalDB;
 using FDAAPI.Infra.Configuration;
+using FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.Feat54_MqttIngestion.Services;
+using FDAAPI.Presentation.FastEndpointBasedApi.Hubs;
 using FDAAPI.Presentation.FastEndpointBasedApi.Middleware;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
@@ -37,6 +39,7 @@ builder.Services
 // ==================================================
 builder.Services.AddHostedService<FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.Feat42_ProcessAlerts.AlertProcessingJob>();
 builder.Services.AddHostedService<FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.Feat43_DispatchNotifications.NotificationDispatchJob>();
+builder.Services.AddHostedService<FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.Feat54_MqttIngestion.MqttIngestionJob>();
 
 // FastEndpoints
 builder.Services
@@ -79,6 +82,18 @@ builder.Services.AddCors(options =>
                .AllowAnyHeader();
     });
 });
+
+// ==================================================
+// SIGNALR CONFIGURATION
+// ==================================================
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = true; // For development
+    options.MaximumReceiveMessageSize = 102400; // 100KB
+});
+
+// Register Realtime Service
+builder.Services.AddScoped<IRealtimeMapService, RealtimeMapService>();
 
 // ==================================================
 // BUILD APPLICATION
@@ -137,6 +152,11 @@ app.UseFastEndpoints(config =>
 
 // 7. Swagger (after FastEndpoints)
 app.UseSwaggerGen();
+
+// ==================================================
+// SIGNALR HUB MAPPING
+// ==================================================
+app.MapHub<FloodDataHub>("/hubs/flood-data");
 
 // ==================================================
 // DATABASE MIGRATION (Auto-apply on startup)

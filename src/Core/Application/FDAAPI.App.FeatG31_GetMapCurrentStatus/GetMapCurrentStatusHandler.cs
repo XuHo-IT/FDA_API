@@ -185,13 +185,13 @@ namespace FDAAPI.App.FeatG31_GetMapCurrentStatus
             double waterLevelInMeters = waterLevel / 100.0; // Assuming input is in cm
 
             // Severity thresholds (configurable in production)
-            if (waterLevelInMeters >= 3.0)
+            if (waterLevelInMeters >= 0.4)
                 return ("critical", 3);  // Severe flooding
 
-            if (waterLevelInMeters >= 2.0)
+            if (waterLevelInMeters >= 0.2)
                 return ("warning", 2);   // High water level
 
-            if (waterLevelInMeters >= 1.0)
+            if (waterLevelInMeters >= 0.1)
                 return ("caution", 1);   // Elevated water level
 
             return ("safe", 0);          // Normal water level

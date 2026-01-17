@@ -21,6 +21,8 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
     <PackageReference Include="Scalar.AspNetCore" Version="2.11.0" />
     <PackageReference Include="StackExchange.Redis" Version="2.10.1" />
+	<PackageReference Include="MQTTnet" Version="4.3.1.873" />
+	<PackageReference Include="MQTTnet.Extensions.ManagedClient" Version="4.3.1.873" />
   </ItemGroup>
 
   <ItemGroup>
