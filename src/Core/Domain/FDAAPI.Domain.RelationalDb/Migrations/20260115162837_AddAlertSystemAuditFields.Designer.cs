@@ -3,6 +3,7 @@ using System;
 using FDAAPI.Domain.RelationalDb.RealationalDB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FDAAPI.Domain.RelationalDb.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260115162837_AddAlertSystemAuditFields")]
+    partial class AddAlertSystemAuditFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -40,22 +43,9 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         .HasPrecision(14, 4)
                         .HasColumnType("numeric(14,4)");
 
-                    b.Property<DateTime?>("LastNotificationAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("Message")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("NotificationCount")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
-
-                    b.Property<bool>("NotificationSent")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
 
                     b.Property<string>("Priority")
                         .IsRequired()
@@ -100,9 +90,6 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
 
                     b.HasIndex("Status")
                         .HasDatabaseName("ix_alerts_status");
-
-                    b.HasIndex("NotificationSent", "Status")
-                        .HasDatabaseName("ix_alerts_notification_status");
 
                     b.HasIndex("StationId", "TriggeredAt")
                         .HasDatabaseName("ix_alerts_station_triggered");
@@ -639,12 +626,6 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
                         .HasDefaultValue("warning");
-
-                    b.Property<TimeSpan?>("QuietHoursEnd")
-                        .HasColumnType("interval");
-
-                    b.Property<TimeSpan?>("QuietHoursStart")
-                        .HasColumnType("interval");
 
                     b.Property<Guid?>("StationId")
                         .HasColumnType("uuid");

@@ -13,6 +13,8 @@
     <Folder Include="Helpers\" />
     <Folder Include="IdGenerator\" />
     <Folder Include="Mail\" />
+    <Folder Include="Models\Notification\" />
+    <Folder Include="Models\UserSubcription\" />
     <Folder Include="Repositories\" />
     <Folder Include="Tokens\" />
     <Folder Include="Serializer\" />

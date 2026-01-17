@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\External\Infrastructure\Services\FDAAPI.Infra.Services\FDAAPI.Infra.Services.csproj" />
+    <ProjectReference Include="..\FDAAPI.App.Common\FDAAPI.App.Common.csproj" />
+  </ItemGroup>
+
+</Project>
