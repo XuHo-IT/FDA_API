@@ -26,6 +26,10 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB
         public DbSet<Station> Stations { get; set; } = null!;
         public DbSet<UserPreference> UserPreferences { get; set; } = null!;
         public DbSet<Area> Areas { get; set; } = null!;
+        public DbSet<Alert> Alerts { get; set; } = null!;
+        public DbSet<AlertRule> AlertRules { get; set; } = null!;
+        public DbSet<NotificationLog> NotificationLogs { get; set; } = null!;
+        public DbSet<UserAlertSubscription> UserAlertSubscriptions { get; set; } = null!;
         public DbSet<SensorHourlyAgg> SensorHourlyAggs { get; set; }
         public DbSet<SensorDailyAgg> SensorDailyAggs { get; set; }
 
