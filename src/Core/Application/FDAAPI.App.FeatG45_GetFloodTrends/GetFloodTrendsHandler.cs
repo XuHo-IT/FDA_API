@@ -144,13 +144,15 @@ namespace FDAAPI.App.FeatG45_GetFloodTrends
                 "last30days" => endDate.AddDays(-30),
                 "last90days" => endDate.AddDays(-90),
                 "last365days" => endDate.AddDays(-365),
-                "custom" => customStart?.Date ?? endDate.AddDays(-30),
+                "custom" => customStart.HasValue
+                    ? DateTime.SpecifyKind(customStart.Value.Date, DateTimeKind.Utc)
+                    : endDate.AddDays(-30),
                 _ => endDate.AddDays(-30)
             };
 
             if (period.ToLower() == "custom" && customEnd.HasValue)
             {
-                endDate = customEnd.Value.Date;
+                endDate = DateTime.SpecifyKind(customEnd.Value.Date, DateTimeKind.Utc);
             }
 
             return (startDate, endDate);
