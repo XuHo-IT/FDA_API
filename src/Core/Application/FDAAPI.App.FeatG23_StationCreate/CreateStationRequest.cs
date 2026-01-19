@@ -15,6 +15,7 @@ namespace FDAAPI.App.FeatG23_StationCreate
         string Status,
         decimal? ThresholdWarning,
         decimal? ThresholdCritical,
+        Guid? AdministrativeAreaId,
         DateTimeOffset? InstalledAt,
         Guid AdminId
     ) : IFeatureRequest<CreateStationResponse>;

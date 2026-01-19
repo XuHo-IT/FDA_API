@@ -1,0 +1,374 @@
+@startuml FE17_AnalyticsAggregation_ClassDiagram
+title Class Diagram - FE17 Analytics Aggregation
+
+skinparam backgroundColor #FEFEFE
+skinparam classBackgroundColor #FFFFFF
+skinparam classBorderColor #000000
+skinparam packageBackgroundColor #E8E8E8
+skinparam packageBorderColor #666666
+skinparam stereotypeCBackgroundColor #ADD1B2
+skinparam arrowColor #333333
+
+package "PRESENTATION LAYER" #E1D5E7 {
+    class FrequencyAggregationEndpoint <<Endpoint>> {
+        - _mediator: IMediator
+        --
+        + Configure(): void
+        + HandleAsync(req: FrequencyAggregationRequestDto, ct): Task
+    }
+
+    class SeverityAggregationEndpoint <<Endpoint>> {
+        - _mediator: IMediator
+        --
+        + Configure(): void
+        + HandleAsync(req: SeverityAggregationRequestDto, ct): Task
+    }
+
+    class HotspotAggregationEndpoint <<Endpoint>> {
+        - _mediator: IMediator
+        --
+        + Configure(): void
+        + HandleAsync(req: HotspotAggregationRequestDto, ct): Task
+    }
+
+    class GetFrequencyAnalyticsEndpoint <<Endpoint>> {
+        - _mediator: IMediator
+        --
+        + Configure(): void
+        + HandleAsync(ct): Task
+    }
+
+    class GetSeverityAnalyticsEndpoint <<Endpoint>> {
+        - _mediator: IMediator
+        --
+        + Configure(): void
+        + HandleAsync(ct): Task
+    }
+
+    class GetHotspotRankingsEndpoint <<Endpoint>> {
+        - _mediator: IMediator
+        --
+        + Configure(): void
+        + HandleAsync(ct): Task
+    }
+
+    class GetJobStatusEndpoint <<Endpoint>> {
+        - _mediator: IMediator
+        --
+        + Configure(): void
+        + HandleAsync(jobRunId: Guid, ct): Task
+    }
+
+    class FrequencyAnalyticsResponseDto <<DTO>> {
+        + Success: bool
+        + Message: string
+        + Data: FrequencyAnalyticsDto
+    }
+
+    class SeverityAnalyticsResponseDto <<DTO>> {
+        + Success: bool
+        + Message: string
+        + Data: SeverityAnalyticsDto
+    }
+
+    class HotspotRankingsResponseDto <<DTO>> {
+        + Success: bool
+        + Message: string
+        + Data: HotspotRankingsDto
+    }
+
+    class JobStatusResponseDto <<DTO>> {
+        + Success: bool
+        + Data: JobRunDto
+    }
+}
+
+package "APPLICATION LAYER" #D5E8D4 {
+    interface "IRequestHandler<FrequencyAggregationRequest, FrequencyAggregationResponse>" as IFrequencyAggregationHandler <<Interface>>
+
+    class FrequencyAggregationHandler <<Handler>> {
+        - _eventRepository: IFloodEventRepository
+        - _readingRepository: ISensorReadingRepository
+        - _frequencyRepository: IFloodAnalyticsFrequencyRepository
+        - _jobRunRepository: IAnalyticsJobRunRepository
+        - _areaRepository: IAreaRepository
+        --
+        + Handle(request: FrequencyAggregationRequest, ct): Task<FrequencyAggregationResponse>
+        - AggregateBucketAsync(bucketStart, bucketEnd, bucketType, areaIds, ct): Task
+        - GenerateTimeBuckets(startDate, endDate, bucketType): List<TimeBucket>
+    }
+
+    class SeverityAggregationHandler <<Handler>> {
+        - _readingRepository: ISensorReadingRepository
+        - _severityRepository: IFloodAnalyticsSeverityRepository
+        - _jobRunRepository: IAnalyticsJobRunRepository
+        - _areaRepository: IAreaRepository
+        --
+        + Handle(request: SeverityAggregationRequest, ct): Task<SeverityAggregationResponse>
+        - AggregateBucketAsync(bucketStart, bucketEnd, bucketType, areaIds, ct): Task
+        - CalculateSeverityMetrics(readings): SeverityMetrics
+    }
+
+    class HotspotAggregationHandler <<Handler>> {
+        - _frequencyRepository: IFloodAnalyticsFrequencyRepository
+        - _severityRepository: IFloodAnalyticsSeverityRepository
+        - _hotspotRepository: IFloodAnalyticsHotspotRepository
+        - _jobRunRepository: IAnalyticsJobRunRepository
+        - _areaRepository: IAreaRepository
+        --
+        + Handle(request: HotspotAggregationRequest, ct): Task<HotspotAggregationResponse>
+        - CalculateHotspotScore(areaId, periodStart, periodEnd): decimal
+        - RankHotspots(hotspots): List<Hotspot>
+    }
+
+    class GetFrequencyAnalyticsHandler <<Handler>> {
+        - _frequencyRepository: IFloodAnalyticsFrequencyRepository
+        - _cache: IDistributedCache
+        --
+        + Handle(request: GetFrequencyAnalyticsRequest, ct): Task<GetFrequencyAnalyticsResponse>
+        - GetFromCacheOrDatabase(areaId, startDate, endDate, bucketType, ct): Task
+    }
+
+    class GetSeverityAnalyticsHandler <<Handler>> {
+        - _severityRepository: IFloodAnalyticsSeverityRepository
+        - _cache: IDistributedCache
+        --
+        + Handle(request: GetSeverityAnalyticsRequest, ct): Task<GetSeverityAnalyticsResponse>
+    }
+
+    class GetHotspotRankingsHandler <<Handler>> {
+        - _hotspotRepository: IFloodAnalyticsHotspotRepository
+        - _cache: IDistributedCache
+        --
+        + Handle(request: GetHotspotRankingsRequest, ct): Task<GetHotspotRankingsResponse>
+    }
+
+    class GetJobStatusHandler <<Handler>> {
+        - _jobRunRepository: IAnalyticsJobRunRepository
+        --
+        + Handle(request: GetJobStatusRequest, ct): Task<GetJobStatusResponse>
+    }
+
+    class FrequencyAggregationRequest <<Request>> {
+        + BucketType: string
+        + StartDate: DateTime
+        + EndDate: DateTime
+        + AreaIds: List<Guid>?
+    }
+
+    class FrequencyAggregationResponse <<Response>> {
+        + Success: bool
+        + Message: string
+        + JobRunId: Guid
+    }
+
+    class SeverityAggregationRequest <<Request>> {
+        + BucketType: string
+        + StartDate: DateTime
+        + EndDate: DateTime
+        + AreaIds: List<Guid>?
+    }
+
+    class HotspotAggregationRequest <<Request>> {
+        + PeriodStart: DateTime
+        + PeriodEnd: DateTime
+        + TopN: int?
+    }
+
+    class GetFrequencyAnalyticsRequest <<Request>> {
+        + AreaId: Guid?
+        + StartDate: DateTime?
+        + EndDate: DateTime?
+        + BucketType: string
+    }
+
+    class GetFrequencyAnalyticsResponse <<Response>> {
+        + Success: bool
+        + Data: FrequencyAnalyticsDto
+    }
+}
+
+package "DOMAIN LAYER - Entities" #F8CECC {
+    class FloodAnalyticsFrequency <<Entity>> {
+        + Id: Guid
+        + AreaId: Guid
+        + TimeBucket: DateTime
+        + BucketType: string
+        + EventCount: int
+        + ExceedCount: int
+        + CalculatedAt: DateTime
+        --
+        + Area: Area
+    }
+
+    class FloodAnalyticsSeverity <<Entity>> {
+        + Id: Guid
+        + AreaId: Guid
+        + TimeBucket: DateTime
+        + BucketType: string
+        + MaxLevel: decimal
+        + AvgLevel: decimal
+        + MinLevel: decimal
+        + DurationHours: int
+        + ReadingCount: int
+        + CalculatedAt: DateTime
+        --
+        + Area: Area
+    }
+
+    class FloodAnalyticsHotspot <<Entity>> {
+        + Id: Guid
+        + AreaId: Guid
+        + Score: decimal
+        + Rank: int
+        + PeriodStart: DateTime
+        + PeriodEnd: DateTime
+        + CalculatedAt: DateTime
+        --
+        + Area: Area
+    }
+
+    class AnalyticsJob <<Entity>> {
+        + Id: Guid
+        + JobType: string
+        + Schedule: string
+        + IsActive: bool
+        + LastRunAt: DateTime?
+        + NextRunAt: DateTime?
+    }
+
+    class AnalyticsJobRun <<Entity>> {
+        + Id: Guid
+        + JobId: Guid
+        + StartedAt: DateTime
+        + FinishedAt: DateTime?
+        + Status: string
+        + ErrorMessage: string?
+        + RecordsProcessed: int
+        + RecordsCreated: int
+        + ExecutionTimeMs: int
+        --
+        + Job: AnalyticsJob
+    }
+
+    class Area <<Entity>> {
+        + Id: Guid
+        + Name: string
+        + Level: string
+    }
+
+    class FloodEvent <<Entity>> {
+        + Id: Guid
+        + AreaId: Guid
+        + StartTime: DateTime
+        + EndTime: DateTime
+        + PeakLevel: decimal
+    }
+
+    class SensorReading <<Entity>> {
+        + Id: Guid
+        + StationId: Guid
+        + Value: decimal
+        + MeasuredAt: DateTime
+        + SeverityLevel: int
+    }
+}
+
+package "DOMAIN LAYER - Repositories" #FFE6CC {
+    interface IFloodAnalyticsFrequencyRepository <<Interface>> {
+        + GetByAreaAndPeriodAsync(areaId, startDate, endDate, bucketType, ct): Task<List<FloodAnalyticsFrequency>>
+        + BulkUpsertAsync(aggregates, ct): Task
+    }
+
+    interface IFloodAnalyticsSeverityRepository <<Interface>> {
+        + GetByAreaAndPeriodAsync(areaId, startDate, endDate, bucketType, ct): Task<List<FloodAnalyticsSeverity>>
+        + BulkUpsertAsync(aggregates, ct): Task
+    }
+
+    interface IFloodAnalyticsHotspotRepository <<Interface>> {
+        + GetTopHotspotsAsync(periodStart, periodEnd, topN, ct): Task<List<FloodAnalyticsHotspot>>
+        + BulkUpsertAsync(hotspots, ct): Task
+    }
+
+    interface IAnalyticsJobRepository <<Interface>> {
+        + GetByJobTypeAsync(jobType, ct): Task<AnalyticsJob?>
+        + UpdateAsync(job, ct): Task<bool>
+    }
+
+    interface IAnalyticsJobRunRepository <<Interface>> {
+        + CreateAsync(jobRun, ct): Task<Guid>
+        + GetByIdAsync(id, ct): Task<AnalyticsJobRun?>
+        + UpdateStatusAsync(id, status, errorMessage, ct): Task<bool>
+    }
+
+    interface IFloodEventRepository <<Interface>> {
+        + CountByAreaAndPeriodAsync(areaId, startDate, endDate, ct): Task<int>
+        + GetByAreaAndPeriodAsync(areaId, startDate, endDate, ct): Task<List<FloodEvent>>
+    }
+
+    interface ISensorReadingRepository <<Interface>> {
+        + CountExceedancesAsync(areaId, startDate, endDate, ct): Task<int>
+        + GetByAreaAndPeriodAsync(areaId, startDate, endDate, ct): Task<List<SensorReading>>
+    }
+
+    interface IAreaRepository <<Interface>> {
+        + GetByIdsAsync(ids, ct): Task<List<Area>>
+        + GetAllAsync(ct): Task<List<Area>>
+    }
+}
+
+package "COMMON SERVICES" #E1D5E7 {
+    interface IMediator <<Interface>>
+    interface IDistributedCache <<Interface>>
+}
+
+' Relationships
+FrequencyAggregationEndpoint ..> IMediator : uses
+FrequencyAggregationEndpoint ..> FrequencyAggregationRequest : sends
+FrequencyAggregationHandler ..|> IFrequencyAggregationHandler : implements
+FrequencyAggregationHandler ..> IFloodEventRepository : uses
+FrequencyAggregationHandler ..> ISensorReadingRepository : uses
+FrequencyAggregationHandler ..> IFloodAnalyticsFrequencyRepository : uses
+FrequencyAggregationHandler ..> IAnalyticsJobRunRepository : uses
+FrequencyAggregationHandler ..> IAreaRepository : uses
+
+SeverityAggregationHandler ..> ISensorReadingRepository : uses
+SeverityAggregationHandler ..> IFloodAnalyticsSeverityRepository : uses
+SeverityAggregationHandler ..> IAnalyticsJobRunRepository : uses
+
+HotspotAggregationHandler ..> IFloodAnalyticsFrequencyRepository : uses
+HotspotAggregationHandler ..> IFloodAnalyticsSeverityRepository : uses
+HotspotAggregationHandler ..> IFloodAnalyticsHotspotRepository : uses
+HotspotAggregationHandler ..> IAnalyticsJobRunRepository : uses
+
+GetFrequencyAnalyticsHandler ..> IFloodAnalyticsFrequencyRepository : uses
+GetFrequencyAnalyticsHandler ..> IDistributedCache : uses
+
+GetSeverityAnalyticsHandler ..> IFloodAnalyticsSeverityRepository : uses
+GetSeverityAnalyticsHandler ..> IDistributedCache : uses
+
+GetHotspotRankingsHandler ..> IFloodAnalyticsHotspotRepository : uses
+GetHotspotRankingsHandler ..> IDistributedCache : uses
+
+GetJobStatusHandler ..> IAnalyticsJobRunRepository : uses
+
+FloodAnalyticsFrequency "many" *-- "1" Area : belongs to
+FloodAnalyticsSeverity "many" *-- "1" Area : belongs to
+FloodAnalyticsHotspot "many" *-- "1" Area : belongs to
+AnalyticsJobRun "many" *-- "1" AnalyticsJob : belongs to
+
+legend bottom left
+| Color | Layer |
+|<#E1D5E7>| PRESENTATION / COMMON |
+|<#D5E8D4>| APPLICATION LAYER |
+|<#F8CECC>| DOMAIN ENTITIES |
+|<#FFE6CC>| DOMAIN REPOSITORIES |
+| Relationship | Meaning |
+| ..> | Uses / Dependency |
+| ..|> | Implements |
+| *-- | Composition |
+| "many" *-- "1" | Database Relationship |
+endlegend
+
+@enduml
+

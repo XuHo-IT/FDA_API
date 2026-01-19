@@ -64,6 +64,15 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB.Configurations
             // Time
             builder.Property(x => x.CreatedAt)
                 .IsRequired();
+
+            // Relationship to AdministrativeArea
+            builder.HasOne(x => x.AdministrativeArea)
+                .WithMany(a => a.Stations)
+                .HasForeignKey(x => x.AdministrativeAreaId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            builder.HasIndex(x => x.AdministrativeAreaId)
+                .HasDatabaseName("ix_station_administrative_area");
         }
     }
 }

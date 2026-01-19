@@ -53,14 +53,15 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat22_StationUpdat
                 req.Latitude,
                 req.Longitude,
                 req.RoadName,
-                    req.Direction,
-                    req.Status,
-                    req.ThresholdWarning,
-                    req.ThresholdCritical,
-                    req.InstalledAt,
-                    req.LastSeenAt,
-                    adminId
-                );
+                req.Direction,
+                req.Status,
+                req.ThresholdWarning,
+                req.ThresholdCritical,
+                req.AdministrativeAreaId,
+                req.InstalledAt,
+                req.LastSeenAt,
+                adminId
+            );
 
             var result = await _mediator.Send(command, ct);
 

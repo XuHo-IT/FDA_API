@@ -42,19 +42,20 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat21_StationCreat
             }
 
             var command = new CreateStationRequest(
-          req.Code,
-          req.Name,
-          req.LocationDesc,
-          req.Latitude,
-          req.Longitude,
-          req.RoadName,
-              req.Direction,
-              req.Status,
-              req.ThresholdWarning,
-              req.ThresholdCritical,
-              req.InstalledAt,
-              adminId 
-                 );
+                req.Code,
+                req.Name,
+                req.LocationDesc,
+                req.Latitude,
+                req.Longitude,
+                req.RoadName,
+                req.Direction,
+                req.Status,
+                req.ThresholdWarning,
+                req.ThresholdCritical,
+                req.AdministrativeAreaId,
+                req.InstalledAt,
+                adminId
+            );
 
             var result = await _mediator.Send(command, ct);
 

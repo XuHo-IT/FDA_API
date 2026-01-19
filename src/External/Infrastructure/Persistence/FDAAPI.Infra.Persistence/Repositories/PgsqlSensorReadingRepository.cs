@@ -134,5 +134,73 @@ namespace FDAAPI.Infra.Persistence.Repositories
                 .OrderBy(sr => sr.MeasuredAt)
                 .ToListAsync(ct);
         }
+
+        public async Task<int> CountExceedancesByAdministrativeAreaAndPeriodAsync(
+            Guid administrativeAreaId,
+            DateTime startDate,
+            DateTime endDate,
+            CancellationToken ct = default)
+        {
+            // Count readings where value >= threshold_warning (exceedance = warning or critical)
+            // Join with Station to get thresholds and filter by administrative area
+            return await _context.SensorReadings
+                .AsNoTracking()
+                .Join(_context.Stations,
+                    sr => sr.StationId,
+                    s => s.Id,
+                    (sr, s) => new { Reading = sr, Station = s })
+                .Where(x => x.Station.AdministrativeAreaId == administrativeAreaId
+                    && x.Reading.MeasuredAt >= startDate
+                    && x.Reading.MeasuredAt < endDate
+                    && x.Station.ThresholdWarning.HasValue
+                    && x.Reading.Value >= (double)x.Station.ThresholdWarning.Value) // Value >= threshold_warning = exceedance
+                .CountAsync(ct);
+        }
+
+        public async Task<List<SensorReading>> GetByAdministrativeAreaAndPeriodAsync(
+            Guid administrativeAreaId,
+            DateTime startDate,
+            DateTime endDate,
+            CancellationToken ct = default)
+        {
+            // Get stations in the administrative area
+            var stationIds = await _context.Stations
+                .Where(s => s.AdministrativeAreaId == administrativeAreaId)
+                .Select(s => s.Id)
+                .ToListAsync(ct);
+
+            if (!stationIds.Any())
+                return new List<SensorReading>();
+
+            return await _context.SensorReadings
+                .AsNoTracking()
+                .Where(sr => stationIds.Contains(sr.StationId)
+                    && sr.MeasuredAt >= startDate
+                    && sr.MeasuredAt < endDate)
+                .OrderBy(sr => sr.MeasuredAt)
+                .ToListAsync(ct);
+        }
+
+        public async Task<List<(SensorReading Reading, Station Station)>> GetReadingsWithStationsByAdministrativeAreaAndPeriodAsync(
+            Guid administrativeAreaId,
+            DateTime startDate,
+            DateTime endDate,
+            CancellationToken ct = default)
+        {
+            // Get readings with station info (for threshold comparison)
+            var query = from sr in _context.SensorReadings
+                       join s in _context.Stations on sr.StationId equals s.Id
+                       where s.AdministrativeAreaId == administrativeAreaId
+                          && sr.MeasuredAt >= startDate
+                          && sr.MeasuredAt < endDate
+                       orderby sr.MeasuredAt
+                       select new { Reading = sr, Station = s };
+
+            var results = await query
+                .AsNoTracking()
+                .ToListAsync(ct);
+
+            return results.Select(x => (x.Reading, x.Station)).ToList();
+        }
     }
 }

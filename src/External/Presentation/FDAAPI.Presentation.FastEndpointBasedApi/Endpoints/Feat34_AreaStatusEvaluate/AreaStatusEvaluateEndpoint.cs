@@ -47,6 +47,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat34_AreaStatusEv
                     EvaluatedAt = result.Data.EvaluatedAt,
                     ContributingStations = result.Data.ContributingStations.Select(s => new FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat34_AreaStatusEvaluate.DTOs.ContributingStationDto
                     {
+                        StationId = s.StationId,
                         StationCode = s.StationCode,
                         Distance = s.Distance,
                         WaterLevel = s.WaterLevel,

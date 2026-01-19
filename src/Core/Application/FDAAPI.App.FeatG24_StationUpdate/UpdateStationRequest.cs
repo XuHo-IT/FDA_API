@@ -16,6 +16,7 @@ namespace FDAAPI.App.FeatG24_StationUpdate
         string Status,
         decimal? ThresholdWarning,
         decimal? ThresholdCritical,
+        Guid? AdministrativeAreaId,
         DateTimeOffset? InstalledAt,
         DateTimeOffset? LastSeenAt,
         Guid AdminId

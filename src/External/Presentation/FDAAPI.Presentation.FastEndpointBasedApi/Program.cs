@@ -5,6 +5,7 @@ using FDAAPI.Infra.Configuration;
 using FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.Feat54_MqttIngestion.Services;
 using FDAAPI.Presentation.FastEndpointBasedApi.Hubs;
 using FDAAPI.Presentation.FastEndpointBasedApi.Middleware;
+using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
@@ -32,7 +33,7 @@ builder.Services
     .AddPersistenceServices(configuration)
     .AddAuthenticationServices(configuration)
     .AddCacheServices(configuration)
-    .AddBackgroundJobs();
+    .AddBackgroundJobs(configuration);
 
 // ==================================================
 // BACKGROUND JOBS REGISTRATION
@@ -128,6 +129,13 @@ app.UseAuthentication();
 
 // 5. Authorization (NEW - MUST be after Authentication)
 app.UseAuthorization();
+
+// 5.5. Hangfire Dashboard (for monitoring background jobs)
+app.UseHangfireDashboard("/hangfire", new Hangfire.DashboardOptions
+{
+    Authorization = new[] { new FDAAPI.Presentation.FastEndpointBasedApi.HangfireAuthorizationFilter() },
+    DashboardTitle = "FDA API Background Jobs"
+});
 
 // 6. FastEndpoints (MUST be after Auth middleware)
 app.UseFastEndpoints(config =>
