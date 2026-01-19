@@ -32,5 +32,23 @@ namespace FDAAPI.Domain.RelationalDb.Repositories
         Task<List<SensorReading>> GetByHourAsync(
             DateTime hourStart,
             CancellationToken ct = default);
+
+        Task<int> CountExceedancesByAdministrativeAreaAndPeriodAsync(
+            Guid administrativeAreaId,
+            DateTime startDate,
+            DateTime endDate,
+            CancellationToken ct = default);
+
+        Task<List<SensorReading>> GetByAdministrativeAreaAndPeriodAsync(
+            Guid administrativeAreaId,
+            DateTime startDate,
+            DateTime endDate,
+            CancellationToken ct = default);
+
+        Task<List<(SensorReading Reading, Station Station)>> GetReadingsWithStationsByAdministrativeAreaAndPeriodAsync(
+            Guid administrativeAreaId,
+            DateTime startDate,
+            DateTime endDate,
+            CancellationToken ct = default);
     }
 }

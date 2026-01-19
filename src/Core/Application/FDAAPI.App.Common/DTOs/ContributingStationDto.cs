@@ -8,6 +8,7 @@ namespace FDAAPI.App.Common.DTOs
 {
     public class ContributingStationDto
     {
+        public Guid StationId { get; set; }
         public string StationCode { get; set; } = string.Empty;
         public double Distance { get; set; }
         public double WaterLevel { get; set; }

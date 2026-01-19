@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -24,11 +25,16 @@ namespace FDAAPI.Domain.RelationalDb.Entities
         public string Status { get; set; }
         public decimal? ThresholdWarning { get; set; }
         public decimal? ThresholdCritical { get; set; }
+        public Guid? AdministrativeAreaId { get; set; } // Reference to administrative area (ward/district)
         public DateTimeOffset? InstalledAt { get; set; }
         public DateTimeOffset? LastSeenAt { get; set; }
         public Guid CreatedBy { get; set; }
         public DateTime CreatedAt { get; set; }
         public Guid UpdatedBy { get; set; }
         public DateTime UpdatedAt { get; set; }
+
+        // Navigation property
+        [JsonIgnore]
+        public virtual AdministrativeArea? AdministrativeArea { get; set; }
     }
 }

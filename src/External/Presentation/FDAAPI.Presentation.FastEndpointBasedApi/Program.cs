@@ -2,7 +2,10 @@ using FastEndpoints;
 using FastEndpoints.Swagger;
 using FDAAPI.Domain.RelationalDb.RealationalDB;
 using FDAAPI.Infra.Configuration;
+using FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.Feat54_MqttIngestion.Services;
+using FDAAPI.Presentation.FastEndpointBasedApi.Hubs;
 using FDAAPI.Presentation.FastEndpointBasedApi.Middleware;
+using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
@@ -30,13 +33,14 @@ builder.Services
     .AddPersistenceServices(configuration)
     .AddAuthenticationServices(configuration)
     .AddCacheServices(configuration)
-    .AddBackgroundJobs();
+    .AddBackgroundJobs(configuration);
 
 // ==================================================
 // BACKGROUND JOBS REGISTRATION
 // ==================================================
 builder.Services.AddHostedService<FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.Feat42_ProcessAlerts.AlertProcessingJob>();
 builder.Services.AddHostedService<FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.Feat43_DispatchNotifications.NotificationDispatchJob>();
+builder.Services.AddHostedService<FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.Feat54_MqttIngestion.MqttIngestionJob>();
 
 // FastEndpoints
 builder.Services
@@ -81,6 +85,18 @@ builder.Services.AddCors(options =>
 });
 
 // ==================================================
+// SIGNALR CONFIGURATION
+// ==================================================
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = true; // For development
+    options.MaximumReceiveMessageSize = 102400; // 100KB
+});
+
+// Register Realtime Service
+builder.Services.AddScoped<IRealtimeMapService, RealtimeMapService>();
+
+// ==================================================
 // BUILD APPLICATION
 // ==================================================
 var app = builder.Build();
@@ -114,6 +130,13 @@ app.UseAuthentication();
 // 5. Authorization (NEW - MUST be after Authentication)
 app.UseAuthorization();
 
+// 5.5. Hangfire Dashboard (for monitoring background jobs)
+app.UseHangfireDashboard("/hangfire", new Hangfire.DashboardOptions
+{
+    Authorization = new[] { new FDAAPI.Presentation.FastEndpointBasedApi.HangfireAuthorizationFilter() },
+    DashboardTitle = "FDA API Background Jobs"
+});
+
 // 6. FastEndpoints (MUST be after Auth middleware)
 app.UseFastEndpoints(config =>
 {
@@ -137,6 +160,11 @@ app.UseFastEndpoints(config =>
 
 // 7. Swagger (after FastEndpoints)
 app.UseSwaggerGen();
+
+// ==================================================
+// SIGNALR HUB MAPPING
+// ==================================================
+app.MapHub<FloodDataHub>("/hubs/flood-data");
 
 // ==================================================
 // DATABASE MIGRATION (Auto-apply on startup)

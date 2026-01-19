@@ -50,6 +50,7 @@ namespace FDAAPI.App.FeatG24_StationUpdate
                 station.Status = request.Status;
                 station.ThresholdWarning = request.ThresholdWarning;
                 station.ThresholdCritical = request.ThresholdCritical;
+                station.AdministrativeAreaId = request.AdministrativeAreaId;
                 station.InstalledAt = request.InstalledAt;
                 station.LastSeenAt = request.LastSeenAt;
                 station.UpdatedAt = DateTime.UtcNow;

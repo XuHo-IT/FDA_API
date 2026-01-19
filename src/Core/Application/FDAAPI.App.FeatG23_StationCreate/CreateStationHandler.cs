@@ -43,6 +43,7 @@ namespace FDAAPI.App.FeatG23_StationCreate
                     Status = request.Status,
                     ThresholdWarning = request.ThresholdWarning,
                     ThresholdCritical = request.ThresholdCritical,
+                    AdministrativeAreaId = request.AdministrativeAreaId,
                     InstalledAt = request.InstalledAt,
                     CreatedAt = DateTime.UtcNow,
                     CreatedBy = request.AdminId,

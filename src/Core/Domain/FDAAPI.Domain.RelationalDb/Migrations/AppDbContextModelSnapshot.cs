@@ -22,6 +22,46 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.AdministrativeArea", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Geometry")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Level")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<Guid?>("ParentId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .HasDatabaseName("ix_administrative_areas_code");
+
+                    b.HasIndex("Level")
+                        .HasDatabaseName("ix_administrative_areas_level");
+
+                    b.HasIndex("ParentId")
+                        .HasDatabaseName("ix_administrative_areas_parent");
+
+                    b.ToTable("AdministrativeAreas", (string)null);
+                });
+
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.Alert", b =>
                 {
                     b.Property<Guid>("Id")
@@ -284,6 +324,102 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                     b.ToTable("AlertRules");
                 });
 
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.AnalyticsJob", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("JobType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime?>("LastRunAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("NextRunAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Schedule")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JobType")
+                        .IsUnique()
+                        .HasDatabaseName("ix_jobs_type");
+
+                    b.HasIndex("IsActive", "NextRunAt")
+                        .HasDatabaseName("ix_jobs_active");
+
+                    b.ToTable("AnalyticsJobs", (string)null);
+                });
+
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.AnalyticsJobRun", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("ExecutionTimeMs")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("FinishedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("JobId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("RecordsCreated")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("RecordsProcessed")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JobId", "StartedAt")
+                        .IsDescending(false, true)
+                        .HasDatabaseName("ix_job_runs_job");
+
+                    b.HasIndex("Status", "StartedAt")
+                        .IsDescending(false, true)
+                        .HasDatabaseName("ix_job_runs_status");
+
+                    b.ToTable("AnalyticsJobRuns", (string)null);
+                });
+
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.Area", b =>
                 {
                     b.Property<Guid>("Id")
@@ -334,6 +470,180 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         .HasDatabaseName("ix_areas_geo");
 
                     b.ToTable("Areas");
+                });
+
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.FloodAnalyticsFrequency", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AdministrativeAreaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BucketType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime>("CalculatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("EventCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("ExceedCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<DateTime>("TimeBucket")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AdministrativeAreaId", "TimeBucket")
+                        .HasDatabaseName("ix_frequency_area_bucket");
+
+                    b.HasIndex("BucketType", "TimeBucket")
+                        .HasDatabaseName("ix_frequency_bucket_type");
+
+                    b.HasIndex("AdministrativeAreaId", "TimeBucket", "BucketType")
+                        .IsUnique()
+                        .HasDatabaseName("uq_frequency_area_bucket");
+
+                    b.ToTable("FloodAnalyticsFrequency", (string)null);
+                });
+
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.FloodAnalyticsHotspot", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AdministrativeAreaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CalculatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("PeriodEnd")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("PeriodStart")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("Rank")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("Score")
+                        .HasColumnType("numeric(14,4)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AdministrativeAreaId")
+                        .HasDatabaseName("ix_hotspot_area");
+
+                    b.HasIndex("Score", "CalculatedAt")
+                        .IsDescending(false, true)
+                        .HasDatabaseName("ix_hotspot_score");
+
+                    b.HasIndex("AdministrativeAreaId", "PeriodStart", "PeriodEnd")
+                        .IsUnique()
+                        .HasDatabaseName("uq_hotspot_area_period");
+
+                    b.ToTable("FloodAnalyticsHotspots", (string)null);
+                });
+
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.FloodAnalyticsSeverity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AdministrativeAreaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("AvgLevel")
+                        .HasColumnType("numeric(14,4)");
+
+                    b.Property<string>("BucketType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime>("CalculatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("DurationHours")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<decimal?>("MaxLevel")
+                        .HasColumnType("numeric(14,4)");
+
+                    b.Property<decimal?>("MinLevel")
+                        .HasColumnType("numeric(14,4)");
+
+                    b.Property<int>("ReadingCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<DateTime>("TimeBucket")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AdministrativeAreaId", "TimeBucket")
+                        .HasDatabaseName("ix_severity_area_bucket");
+
+                    b.HasIndex("BucketType", "TimeBucket")
+                        .HasDatabaseName("ix_severity_bucket_type");
+
+                    b.HasIndex("AdministrativeAreaId", "TimeBucket", "BucketType")
+                        .IsUnique()
+                        .HasDatabaseName("uq_severity_area_bucket");
+
+                    b.ToTable("FloodAnalyticsSeverity", (string)null);
+                });
+
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.FloodEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AdministrativeAreaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("DurationHours")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("EndTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal?>("PeakLevel")
+                        .HasColumnType("numeric(14,4)");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StartTime")
+                        .HasDatabaseName("ix_flood_events_start_time");
+
+                    b.HasIndex("AdministrativeAreaId", "StartTime")
+                        .HasDatabaseName("ix_flood_events_area_start");
+
+                    b.ToTable("FloodEvents", (string)null);
                 });
 
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.NotificationLog", b =>
@@ -684,6 +994,9 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("AdministrativeAreaId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -748,6 +1061,9 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AdministrativeAreaId")
+                        .HasDatabaseName("ix_station_administrative_area");
 
                     b.HasIndex("Code")
                         .IsUnique()
@@ -1084,6 +1400,16 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                     b.ToTable("SensorReadings");
                 });
 
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.AdministrativeArea", b =>
+                {
+                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.AdministrativeArea", "Parent")
+                        .WithMany("Children")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Parent");
+                });
+
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.Alert", b =>
                 {
                     b.HasOne("FDAAPI.Domain.RelationalDb.Entities.AlertRule", "AlertRule")
@@ -1114,6 +1440,17 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                     b.Navigation("Station");
                 });
 
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.AnalyticsJobRun", b =>
+                {
+                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.AnalyticsJob", "Job")
+                        .WithMany()
+                        .HasForeignKey("JobId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Job");
+                });
+
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.Area", b =>
                 {
                     b.HasOne("FDAAPI.Domain.RelationalDb.Entities.User", "User")
@@ -1123,6 +1460,50 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.FloodAnalyticsFrequency", b =>
+                {
+                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.AdministrativeArea", "AdministrativeArea")
+                        .WithMany()
+                        .HasForeignKey("AdministrativeAreaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AdministrativeArea");
+                });
+
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.FloodAnalyticsHotspot", b =>
+                {
+                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.AdministrativeArea", "AdministrativeArea")
+                        .WithMany()
+                        .HasForeignKey("AdministrativeAreaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AdministrativeArea");
+                });
+
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.FloodAnalyticsSeverity", b =>
+                {
+                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.AdministrativeArea", "AdministrativeArea")
+                        .WithMany()
+                        .HasForeignKey("AdministrativeAreaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AdministrativeArea");
+                });
+
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.FloodEvent", b =>
+                {
+                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.AdministrativeArea", "AdministrativeArea")
+                        .WithMany()
+                        .HasForeignKey("AdministrativeAreaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AdministrativeArea");
                 });
 
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.NotificationLog", b =>
@@ -1175,6 +1556,17 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         .IsRequired();
 
                     b.Navigation("Station");
+                });
+
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.UserAlertSubscription", b =>
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.Station", b =>
+                {
+                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.AdministrativeArea", "AdministrativeArea")
+                        .WithMany("Stations")
+                        .HasForeignKey("AdministrativeAreaId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("AdministrativeArea");
                 });
 
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.UserAlertSubscription", b =>
@@ -1252,6 +1644,13 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         .IsRequired();
 
                     b.Navigation("Station");
+                });
+
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.AdministrativeArea", b =>
+                {
+                    b.Navigation("Children");
+
+                    b.Navigation("Stations");
                 });
 
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.Alert", b =>

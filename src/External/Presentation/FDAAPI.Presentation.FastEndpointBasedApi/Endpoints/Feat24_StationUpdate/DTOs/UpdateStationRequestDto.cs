@@ -15,6 +15,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat22_StationUpdat
         public string Status { get; set; }
         public decimal? ThresholdWarning { get; set; }
         public decimal? ThresholdCritical { get; set; }
+        public Guid? AdministrativeAreaId { get; set; }
         public DateTimeOffset? InstalledAt { get; set; }
         public DateTimeOffset? LastSeenAt { get; set; }
     }

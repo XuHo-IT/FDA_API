@@ -1,0 +1,59 @@
+@startuml FE17_GetFrequencyAnalytics_Sequence
+title FE17 - Get Frequency Analytics (FeatG46) - Consumed by FE-16
+
+actor User
+participant UI
+participant GetFrequencyAnalyticsEndpoint
+participant MediatR
+participant GetFrequencyAnalyticsHandler
+participant Cache
+participant FloodAnalyticsFrequencyRepository
+database Database
+
+User -> UI: 1. View flood history chart
+UI -> GetFrequencyAnalyticsEndpoint: 2. GET /api/v1/analytics/frequency?areaId=...&startDate=...&endDate=...&bucketType=day
+activate GetFrequencyAnalyticsEndpoint
+GetFrequencyAnalyticsEndpoint -> MediatR: 3. Send(GetFrequencyAnalyticsRequest)
+activate MediatR
+MediatR -> GetFrequencyAnalyticsHandler: 4. Handle(request)
+activate GetFrequencyAnalyticsHandler
+
+GetFrequencyAnalyticsHandler -> GetFrequencyAnalyticsHandler: 5. BuildCacheKey(areaId, startDate, endDate, bucketType)
+activate GetFrequencyAnalyticsHandler
+
+GetFrequencyAnalyticsHandler -> Cache: 6. GetFromCache(cacheKey)
+activate Cache
+alt [Cache Hit]
+    Cache --> GetFrequencyAnalyticsHandler: 7. Cached data
+    GetFrequencyAnalyticsHandler --> MediatR: 8. Response (from cache)
+else [Cache Miss]
+    Cache --> GetFrequencyAnalyticsHandler: 9. null
+    deactivate Cache
+    
+    GetFrequencyAnalyticsHandler -> FloodAnalyticsFrequencyRepository: 10. GetByAreaAndPeriod(areaId, startDate, endDate, bucketType)
+    activate FloodAnalyticsFrequencyRepository
+    FloodAnalyticsFrequencyRepository -> Database: 11. SELECT * FROM flood_analytics_frequency WHERE area_id = ? AND time_bucket BETWEEN ? AND ? AND bucket_type = ? ORDER BY time_bucket
+    Database --> FloodAnalyticsFrequencyRepository: 12. List<FloodAnalyticsFrequency>
+    FloodAnalyticsFrequencyRepository --> GetFrequencyAnalyticsHandler: 13. List<FloodAnalyticsFrequency>
+    deactivate FloodAnalyticsFrequencyRepository
+    
+    GetFrequencyAnalyticsHandler -> GetFrequencyAnalyticsHandler: 14. MapToDto(entities)
+    activate GetFrequencyAnalyticsHandler
+    
+    GetFrequencyAnalyticsHandler -> Cache: 15. SetCache(cacheKey, data, TTL: 1 hour)
+    activate Cache
+    Cache --> GetFrequencyAnalyticsHandler: 16. Cached
+    deactivate Cache
+    
+    GetFrequencyAnalyticsHandler --> MediatR: 17. Response {success: true, data}
+    deactivate GetFrequencyAnalyticsHandler
+end
+
+MediatR --> GetFrequencyAnalyticsEndpoint: 18. Response
+deactivate MediatR
+GetFrequencyAnalyticsEndpoint --> UI: 19. HTTP 200 OK (FrequencyAnalyticsDto)
+deactivate GetFrequencyAnalyticsEndpoint
+UI --> User: 20. Display flood frequency chart
+
+@enduml
+
