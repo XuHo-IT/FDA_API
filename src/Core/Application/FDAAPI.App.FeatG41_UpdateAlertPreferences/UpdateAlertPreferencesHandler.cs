@@ -1,29 +1,40 @@
 ﻿using FDAAPI.Domain.RelationalDb.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace FDAAPI.App.FeatG41_UpdateAlertPreferences
 {
     public class UpdateAlertPreferencesHandler : IRequestHandler<UpdateAlertPreferencesRequest, UpdateAlertPreferencesResponse>
     {
         private readonly IUserAlertSubscriptionRepository _subscriptionRepo;
+        private readonly IAreaRepository _areaRepo;
+        private readonly ILogger<UpdateAlertPreferencesHandler> _logger;
 
-        public UpdateAlertPreferencesHandler(IUserAlertSubscriptionRepository subscriptionRepo)
+        public UpdateAlertPreferencesHandler(
+            IUserAlertSubscriptionRepository subscriptionRepo,
+            IAreaRepository areaRepo,
+            ILogger<UpdateAlertPreferencesHandler> logger)
         {
             _subscriptionRepo = subscriptionRepo;
+            _areaRepo = areaRepo;
+            _logger = logger;
         }
 
-        public async Task<UpdateAlertPreferencesResponse> Handle(UpdateAlertPreferencesRequest request, CancellationToken ct)
+        public async Task<UpdateAlertPreferencesResponse> Handle(
+            UpdateAlertPreferencesRequest request,
+            CancellationToken ct)
         {
             try
             {
-                // Get existing subscription
-                var subscription = await _subscriptionRepo.GetByIdAsync(request.SubscriptionId, ct);
+                var subscriptions = await _subscriptionRepo.GetByAreaIdAsync(request.AreaId, ct);
+                var subscription = subscriptions.FirstOrDefault();
+
                 if (subscription == null)
                 {
                     return new UpdateAlertPreferencesResponse
                     {
                         Success = false,
-                        Message = "Subscription not found"
+                        Message = "No subscription found for this area. Please create an area first."
                     };
                 }
 
@@ -33,7 +44,7 @@ namespace FDAAPI.App.FeatG41_UpdateAlertPreferences
                     return new UpdateAlertPreferencesResponse
                     {
                         Success = false,
-                        Message = "Unauthorized: Subscription does not belong to this user"
+                        Message = "Unauthorized: This area does not belong to you"
                     };
                 }
 
@@ -51,11 +62,15 @@ namespace FDAAPI.App.FeatG41_UpdateAlertPreferences
                 if (request.QuietHoursEnd.HasValue)
                     subscription.QuietHoursEnd = request.QuietHoursEnd.Value;
 
-                subscription.UserId = request.UserId;
+                subscription.UpdatedBy = request.UserId;
                 subscription.UpdatedAt = DateTime.UtcNow;
 
                 // Save changes
                 await _subscriptionRepo.UpdateAsync(subscription, ct);
+
+                _logger.LogInformation(
+                    "User {UserId} updated alert preferences for area {AreaId}",
+                    request.UserId, request.AreaId);
 
                 return new UpdateAlertPreferencesResponse
                 {
@@ -65,6 +80,7 @@ namespace FDAAPI.App.FeatG41_UpdateAlertPreferences
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error updating alert preferences");
                 return new UpdateAlertPreferencesResponse
                 {
                     Success = false,

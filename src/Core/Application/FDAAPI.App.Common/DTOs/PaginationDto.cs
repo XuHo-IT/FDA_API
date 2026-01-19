@@ -14,5 +14,8 @@ namespace FDAAPI.App.Common.DTOs
         public bool HasMore { get; set; }
         public string? NextCursor { get; set; }
         public int TotalCount { get; set; }
+        public int? CurrentPage { get; set; }
+        public int? PageSize { get; set; }
+        public int? TotalPages { get; set; }
     }
 }

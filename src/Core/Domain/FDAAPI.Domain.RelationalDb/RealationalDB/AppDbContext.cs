@@ -32,6 +32,8 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB
         public DbSet<UserAlertSubscription> UserAlertSubscriptions { get; set; } = null!;
         public DbSet<SensorHourlyAgg> SensorHourlyAggs { get; set; }
         public DbSet<SensorDailyAgg> SensorDailyAggs { get; set; }
+        public DbSet<AlertCooldownConfig> AlertCooldownConfigs { get; set; } = null!;
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

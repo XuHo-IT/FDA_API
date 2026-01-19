@@ -17,14 +17,21 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat41_UpdateAlertP
 
         public override void Configure()
         {
-            Put("/api/v1/alerts/subscriptions/{subscriptionId}");
-            Policies("User", "Admin", "Authority");
+            Put("/api/v1/alerts/subscriptions/{areaId}");
+            Policies("User");
             Summary(s =>
             {
-                s.Summary = "Update alert subscription preferences";
-                s.Description = "Update notification channels, severity threshold, quiet hours for an existing subscription";
+                s.Summary = "Update alert notification preferences for an area";
+                s.Description = "Update minimum severity, notification channels, and quiet hours";
+                s.ExampleRequest = new UpdateAlertPreferencesRequestDto
+                {
+                    MinSeverity = "warning",
+                    EnablePush = true,
+                    EnableEmail = true,
+                    EnableSms = false
+                };
             });
-            Tags("Alerts", "Notifications");
+            Tags("Areas", "Alerts");
         }
 
         public override async Task HandleAsync(UpdateAlertPreferencesRequestDto req, CancellationToken ct)
@@ -43,8 +50,21 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat41_UpdateAlertP
                 return;
             }
 
+            // ✅ Get AREA ID from route (thay vì subscription ID)
+            var areaIdStr = Route<string>("areaId");
+            if (string.IsNullOrEmpty(areaIdStr) || !Guid.TryParse(areaIdStr, out var areaId))
+            {
+                await SendAsync(new UpdateAlertPreferencesResponseDto
+                {
+                    Success = false,
+                    Message = "Invalid area ID"
+                }, 400, ct);
+                return;
+            }
+
+            // ✅ Request với AreaId
             var command = new UpdateAlertPreferencesRequest(
-                SubscriptionId: req.SubscriptionId,
+                AreaId: areaId,           // ✅ Truyền AreaId
                 UserId: userId,
                 MinSeverity: req.MinSeverity,
                 EnablePush: req.EnablePush,

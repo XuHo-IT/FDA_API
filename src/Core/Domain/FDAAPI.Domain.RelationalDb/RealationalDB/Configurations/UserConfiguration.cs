@@ -21,6 +21,13 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB.Configurations
             
             builder.Property(e => e.Provider)
                 .HasDefaultValue("local");
+            builder.Property(e => e.FcmToken)
+                .HasColumnName("FcmToken")
+                .HasColumnType("varchar(200)")
+                .IsRequired(false);
+
+            builder.HasIndex(e => e.FcmToken)
+                .HasDatabaseName("IX_Users_FcmToken");
         }
     }
 }

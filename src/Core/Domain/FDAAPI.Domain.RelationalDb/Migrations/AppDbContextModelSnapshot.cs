@@ -110,6 +110,113 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                     b.ToTable("Alerts");
                 });
 
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.AlertCooldownConfig", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("CooldownMinutes")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(10);
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<int>("MaxNotificationsPerHour")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(6);
+
+                    b.Property<string>("Severity")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("IX_AlertCooldownConfig_IsActive");
+
+                    b.HasIndex("Severity")
+                        .IsUnique()
+                        .HasDatabaseName("IX_AlertCooldownConfig_Severity");
+
+                    b.ToTable("AlertCooldownConfigs");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
+                            CooldownMinutes = 30,
+                            CreatedAt = new DateTime(2026, 1, 19, 15, 22, 33, 866, DateTimeKind.Utc).AddTicks(795),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            Description = "Low priority alerts - 30 min cooldown",
+                            IsActive = true,
+                            MaxNotificationsPerHour = 2,
+                            Severity = "info",
+                            UpdatedAt = new DateTime(2026, 1, 19, 15, 22, 33, 866, DateTimeKind.Utc).AddTicks(795),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
+                            CooldownMinutes = 20,
+                            CreatedAt = new DateTime(2026, 1, 19, 15, 22, 33, 866, DateTimeKind.Utc).AddTicks(795),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            Description = "Caution alerts - 20 min cooldown",
+                            IsActive = true,
+                            MaxNotificationsPerHour = 3,
+                            Severity = "caution",
+                            UpdatedAt = new DateTime(2026, 1, 19, 15, 22, 33, 866, DateTimeKind.Utc).AddTicks(795),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("33333333-3333-3333-3333-333333333333"),
+                            CooldownMinutes = 10,
+                            CreatedAt = new DateTime(2026, 1, 19, 15, 22, 33, 866, DateTimeKind.Utc).AddTicks(795),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            Description = "Warning alerts - 10 min cooldown",
+                            IsActive = true,
+                            MaxNotificationsPerHour = 6,
+                            Severity = "warning",
+                            UpdatedAt = new DateTime(2026, 1, 19, 15, 22, 33, 866, DateTimeKind.Utc).AddTicks(795),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-444444444444"),
+                            CooldownMinutes = 5,
+                            CreatedAt = new DateTime(2026, 1, 19, 15, 22, 33, 866, DateTimeKind.Utc).AddTicks(795),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            Description = "Critical alerts - 5 min cooldown",
+                            IsActive = true,
+                            MaxNotificationsPerHour = 12,
+                            Severity = "critical",
+                            UpdatedAt = new DateTime(2026, 1, 19, 15, 22, 33, 866, DateTimeKind.Utc).AddTicks(795),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        });
+                });
+
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.AlertRule", b =>
                 {
                     b.Property<Guid>("Id")
@@ -676,6 +783,10 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                     b.Property<DateTime?>("EmailVerifiedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("FcmToken")
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("FcmToken");
+
                     b.Property<string>("FullName")
                         .HasColumnType("text");
 
@@ -713,6 +824,9 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
 
                     b.HasIndex("Email")
                         .IsUnique();
+
+                    b.HasIndex("FcmToken")
+                        .HasDatabaseName("IX_Users_FcmToken");
 
                     b.HasIndex("PhoneNumber")
                         .IsUnique();
@@ -1041,6 +1155,28 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.SensorDailyAgg", b =>
+                {
+                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.Station", "Station")
+                        .WithMany()
+                        .HasForeignKey("StationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Station");
+                });
+
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.SensorHourlyAgg", b =>
+                {
+                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.Station", "Station")
+                        .WithMany()
+                        .HasForeignKey("StationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Station");
+                });
+
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.UserAlertSubscription", b =>
                 {
                     b.HasOne("FDAAPI.Domain.RelationalDb.Entities.Area", "Area")
@@ -1064,28 +1200,6 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                     b.Navigation("Station");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.SensorDailyAgg", b =>
-                {
-                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.Station", "Station")
-                        .WithMany()
-                        .HasForeignKey("StationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Station");
-                });
-
-            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.SensorHourlyAgg", b =>
-                {
-                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.Station", "Station")
-                        .WithMany()
-                        .HasForeignKey("StationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Station");
                 });
 
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.UserOAuthProvider", b =>

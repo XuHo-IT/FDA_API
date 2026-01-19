@@ -87,6 +87,9 @@ using FDAAPI.Infra.Services.Aggregation;
 using FDAAPI.App.FeatG44_GetFloodHistory;
 using FDAAPI.App.FeatG45_GetFloodTrends;
 using FDAAPI.App.FeatG46_GetFloodStatistics;
+using FDAAPI.App.FeatG67_GetMySubscriptions;
+using FDAAPI.App.FeatG68_DeleteSubscription;
+using FDAAPI.App.FeatG70_AdminGetAlertStats;
 
 namespace FDAAPI.Infra.Configuration
 {
@@ -203,7 +206,10 @@ namespace FDAAPI.Infra.Configuration
                 typeof(DispatchNotificationsRequest).Assembly,
                 typeof(GetFloodHistoryRequest).Assembly,
                 typeof(GetFloodTrendsRequest).Assembly,
-                typeof(GetFloodStatisticsRequest).Assembly
+                typeof(GetFloodStatisticsRequest).Assembly,
+                typeof(GetMySubscriptionsRequest).Assembly,
+                typeof(DeleteSubscriptionRequest).Assembly,
+                typeof(AdminGetAlertStatsRequest).Assembly,
             };
 
             // Register MediatR with all feature assemblies and ValidationBehavior
@@ -246,6 +252,8 @@ namespace FDAAPI.Infra.Configuration
             services.AddScoped<IPushNotificationService, PushNotificationService>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<ISmsService, SmsService>();
+            services.AddScoped<IAlertCooldownConfigRepository, PgsqlAlertCooldownConfigRepository>();
+
             // OAuth provider repository
             services.AddScoped<IUserOAuthProviderRepository, PgsqlUserOAuthProviderRepository>();
 

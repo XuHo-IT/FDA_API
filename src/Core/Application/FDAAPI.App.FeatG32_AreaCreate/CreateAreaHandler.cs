@@ -15,13 +15,16 @@ namespace FDAAPI.App.FeatG32_AreaCreate
     {
         private readonly IAreaRepository _areaRepository;
         private readonly IAreaMapper _areaMapper;
+        private readonly IUserAlertSubscriptionRepository _subscriptionRepo;
 
         public CreateAreaHandler(
             IAreaRepository areaRepository, 
-            IAreaMapper areaMapper)
+            IAreaMapper areaMapper,
+            IUserAlertSubscriptionRepository subscriptionRepository)
         {
             _areaRepository = areaRepository;
             _areaMapper = areaMapper;
+            _subscriptionRepo = subscriptionRepository;
         }
 
         public async Task<CreateAreaResponse> Handle(CreateAreaRequest request, CancellationToken ct)
@@ -100,7 +103,26 @@ namespace FDAAPI.App.FeatG32_AreaCreate
                 UpdatedAt = DateTime.UtcNow
             };
 
-            await _areaRepository.CreateAsync(area, ct);
+            var areaId = await _areaRepository.CreateAsync(area, ct);
+
+            // AUTO-CREATE subscription with default settings
+            var subscription = new UserAlertSubscription
+            {
+                Id = Guid.NewGuid(),
+                UserId = request.UserId,
+                AreaId = areaId,
+                StationId = null,
+                MinSeverity = "warning",
+                EnablePush = true,
+                EnableEmail = false,
+                EnableSms = false,
+                CreatedBy = request.UserId,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedBy = request.UserId,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            await _subscriptionRepo.CreateAsync(subscription, ct);
 
             return new CreateAreaResponse
             {

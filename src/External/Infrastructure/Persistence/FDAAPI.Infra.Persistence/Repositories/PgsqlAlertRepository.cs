@@ -76,5 +76,72 @@ namespace FDAAPI.Infra.Persistence.Repositories
                 .Take(take)
                 .ToListAsync(ct);
         }
+
+
+        public async Task<int> CountAlertsAsync(
+            DateTime? fromDate,
+            DateTime? toDate,
+            CancellationToken ct = default)
+        {
+            var query = _context.Alerts.AsNoTracking();
+
+            if (fromDate.HasValue)
+            {
+                query = query.Where(a => a.TriggeredAt >= fromDate.Value);
+            }
+
+            if (toDate.HasValue)
+            {
+                query = query.Where(a => a.TriggeredAt <= toDate.Value);
+            }
+
+            return await query.CountAsync(ct);
+        }
+
+        public async Task<Dictionary<string, int>> CountAlertsBySeverityAsync(
+            DateTime? fromDate,
+            DateTime? toDate,
+            CancellationToken ct = default)
+        {
+            var query = _context.Alerts.AsNoTracking();
+
+            if (fromDate.HasValue)
+            {
+                query = query.Where(a => a.TriggeredAt >= fromDate.Value);
+            }
+
+            if (toDate.HasValue)
+            {
+                query = query.Where(a => a.TriggeredAt <= toDate.Value);
+            }
+
+            return await query
+                .GroupBy(a => a.Severity)
+                .Select(g => new { Severity = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.Severity, x => x.Count, ct);
+        }
+
+        public async Task<Dictionary<string, int>> CountAlertsByStatusAsync(
+            DateTime? fromDate,
+            DateTime? toDate,
+            CancellationToken ct = default)
+        {
+            var query = _context.Alerts.AsNoTracking();
+
+            if (fromDate.HasValue)
+            {
+                query = query.Where(a => a.TriggeredAt >= fromDate.Value);
+            }
+
+            if (toDate.HasValue)
+            {
+                query = query.Where(a => a.TriggeredAt <= toDate.Value);
+            }
+
+            return await query
+                .GroupBy(a => a.Status)
+                .Select(g => new { Status = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.Status, x => x.Count, ct);
+        }
     }
 }
