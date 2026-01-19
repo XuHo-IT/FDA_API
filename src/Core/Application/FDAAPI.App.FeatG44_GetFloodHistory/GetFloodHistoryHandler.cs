@@ -70,8 +70,13 @@ namespace FDAAPI.App.FeatG44_GetFloodHistory
                 }
 
                 // Set default date range (last 24 hours)
-                var endDate = request.EndDate ?? DateTime.UtcNow;
-                var startDate = request.StartDate ?? endDate.AddHours(-24);
+                // Ensure DateTime is in UTC for PostgreSQL timestamp with time zone
+                var endDate = request.EndDate.HasValue
+                    ? DateTime.SpecifyKind(request.EndDate.Value, DateTimeKind.Utc)
+                    : DateTime.UtcNow;
+                var startDate = request.StartDate.HasValue
+                    ? DateTime.SpecifyKind(request.StartDate.Value, DateTimeKind.Utc)
+                    : endDate.AddHours(-24);
 
                 // Get data based on granularity
                 List<FloodDataPointDto> dataPoints;
