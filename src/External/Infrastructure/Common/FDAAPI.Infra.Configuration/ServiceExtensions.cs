@@ -52,7 +52,8 @@ using FDAAPI.Infra.Services.Cache;
 using FDAAPI.Infra.Services.Notifications;
 using FDAAPI.Infra.Services.OAuth;
 using FluentValidation;
-using FluentValidation;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -87,6 +88,23 @@ using FDAAPI.Infra.Services.Aggregation;
 using FDAAPI.App.FeatG44_GetFloodHistory;
 using FDAAPI.App.FeatG45_GetFloodTrends;
 using FDAAPI.App.FeatG46_GetFloodStatistics;
+using FDAAPI.App.FeatG47_FrequencyAggregation;
+using FDAAPI.App.FeatG48_SeverityAggregation;
+using FDAAPI.App.FeatG49_HotspotAggregation;
+using FDAAPI.App.FeatG50_GetJobStatus;
+using FDAAPI.App.FeatG51_GetFrequencyAnalytics;
+using FDAAPI.App.FeatG52_GetSeverityAnalytics;
+using FDAAPI.App.FeatG53_GetHotspotRankings;
+using FDAAPI.App.FeatG57_AdministrativeAreaCreate;
+using FDAAPI.App.FeatG58_AdministrativeAreaList;
+using FDAAPI.App.FeatG59_AdministrativeAreaGet;
+using FDAAPI.App.FeatG60_AdministrativeAreaUpdate;
+using FDAAPI.App.FeatG61_AdministrativeAreaDelete;
+using FDAAPI.App.FeatG62_FloodEventCreate;
+using FDAAPI.App.FeatG63_FloodEventList;
+using FDAAPI.App.FeatG64_FloodEventGet;
+using FDAAPI.App.FeatG65_FloodEventUpdate;
+using FDAAPI.App.FeatG66_FloodEventDelete;
 
 namespace FDAAPI.Infra.Configuration
 {
@@ -152,6 +170,8 @@ namespace FDAAPI.Infra.Configuration
             services.AddScoped<ISensorReadingMapper, SensorReadingMapper>();
             services.AddScoped<IAreaMapper, AreaMapper>();
             services.AddScoped<IFloodHistoryMapper, FloodHistoryMapper>();
+            services.AddScoped<IAdministrativeAreaMapper, AdministrativeAreaMapper>();
+            services.AddScoped<IFloodEventMapper, FloodEventMapper>();
 
             return services;
         }
@@ -203,7 +223,24 @@ namespace FDAAPI.Infra.Configuration
                 typeof(DispatchNotificationsRequest).Assembly,
                 typeof(GetFloodHistoryRequest).Assembly,
                 typeof(GetFloodTrendsRequest).Assembly,
-                typeof(GetFloodStatisticsRequest).Assembly
+                typeof(GetFloodStatisticsRequest).Assembly,
+                typeof(FrequencyAggregationRequest).Assembly,
+                typeof(SeverityAggregationRequest).Assembly,
+                typeof(HotspotAggregationRequest).Assembly,
+                typeof(GetJobStatusRequest).Assembly,
+                typeof(GetFrequencyAnalyticsRequest).Assembly,
+                typeof(GetSeverityAnalyticsRequest).Assembly,
+                typeof(GetHotspotRankingsRequest).Assembly,
+                typeof(CreateAdministrativeAreaRequest).Assembly,
+                typeof(GetAdministrativeAreasRequest).Assembly,
+                typeof(GetAdministrativeAreaRequest).Assembly,
+                typeof(UpdateAdministrativeAreaRequest).Assembly,
+                typeof(DeleteAdministrativeAreaRequest).Assembly,
+                typeof(CreateFloodEventRequest).Assembly,
+                typeof(GetFloodEventsRequest).Assembly,
+                typeof(GetFloodEventRequest).Assembly,
+                typeof(UpdateFloodEventRequest).Assembly,
+                typeof(DeleteFloodEventRequest).Assembly
             };
 
             // Register MediatR with all feature assemblies and ValidationBehavior
@@ -255,6 +292,20 @@ namespace FDAAPI.Infra.Configuration
 
             services.AddScoped<ISensorHourlyAggRepository, PgsqlSensorHourlyAggRepository>();
             services.AddScoped<ISensorDailyAggRepository, PgsqlSensorDailyAggRepository>();
+
+            // Analytics repositories
+            services.AddScoped<IAdministrativeAreaRepository, PgsqlAdministrativeAreaRepository>();
+            services.AddScoped<IFloodAnalyticsFrequencyRepository, PgsqlFloodAnalyticsFrequencyRepository>();
+            services.AddScoped<IFloodAnalyticsSeverityRepository, PgsqlFloodAnalyticsSeverityRepository>();
+            services.AddScoped<IFloodAnalyticsHotspotRepository, PgsqlFloodAnalyticsHotspotRepository>();
+            services.AddScoped<IAnalyticsJobRepository, PgsqlAnalyticsJobRepository>();
+            services.AddScoped<IAnalyticsJobRunRepository, PgsqlAnalyticsJobRunRepository>();
+            services.AddScoped<IFloodEventRepository, PgsqlFloodEventRepository>();
+
+            // Analytics background job services (for Hangfire)
+            services.AddScoped<FrequencyAggregationBackgroundJob>();
+            services.AddScoped<SeverityAggregationBackgroundJob>();
+            services.AddScoped<HotspotAggregationBackgroundJob>();
 
             return services;
         }
@@ -343,8 +394,9 @@ namespace FDAAPI.Infra.Configuration
             return services;
         }
 
-        public static IServiceCollection AddBackgroundJobs(this IServiceCollection services)
+        public static IServiceCollection AddBackgroundJobs(this IServiceCollection services, IConfiguration configuration)
         {
+            // Quartz for scheduled jobs
             services.AddQuartz(q =>
             {
                 // Use a Scoped container for creating jobs
@@ -371,6 +423,33 @@ namespace FDAAPI.Infra.Configuration
 
             // Add Quartz hosted service
             services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
+
+            // Hangfire for on-demand background jobs (analytics aggregation)
+            var connectionString = configuration.GetConnectionString("PostgreSQLConnection");
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                connectionString = Environment.GetEnvironmentVariable("POSTGRES_CONN_STRING");
+            }
+
+            if (!string.IsNullOrEmpty(connectionString))
+            {
+                services.AddHangfire(config => config
+                    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+                    .UseSimpleAssemblyNameTypeSerializer()
+                    .UseRecommendedSerializerSettings()
+                    .UsePostgreSqlStorage(connectionString, new Hangfire.PostgreSql.PostgreSqlStorageOptions
+                    {
+                        SchemaName = "hangfire"
+                    }));
+
+                // Add the processing server as IHostedService
+                services.AddHangfireServer(options =>
+                {
+                    options.WorkerCount = 5; // Number of concurrent workers
+                    options.ServerTimeout = TimeSpan.FromMinutes(4);
+                    options.SchedulePollingInterval = TimeSpan.FromSeconds(15);
+                });
+            }
 
             return services;
         }

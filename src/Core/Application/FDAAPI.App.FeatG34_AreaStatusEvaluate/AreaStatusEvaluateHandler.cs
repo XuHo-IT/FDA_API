@@ -124,6 +124,7 @@ namespace FDAAPI.App.FeatG34_AreaStatusEvaluate
 
                         return new ContributingStationDto
                         {
+                            StationId = ns.Station.Id,
                             StationCode = ns.Station.Code,
                             Distance = Math.Round(ns.Distance, 2),
                             WaterLevel = reading?.Value ?? 0,

@@ -1,0 +1,85 @@
+@startuml FE17_FrequencyAggregation_Sequence
+title FE17 - Frequency Aggregation (FeatG42)
+
+actor Admin
+participant FrequencyAggregationEndpoint
+participant MediatR
+participant FrequencyAggregationHandler
+participant AnalyticsJobRunRepository
+participant FloodEventRepository
+participant SensorReadingRepository
+participant AreaRepository
+participant FloodAnalyticsFrequencyRepository
+database Database
+participant Cache
+
+Admin -> FrequencyAggregationEndpoint: 1. POST /api/v1/analytics/aggregate-frequency
+activate FrequencyAggregationEndpoint
+FrequencyAggregationEndpoint -> MediatR: 2. Send(FrequencyAggregationRequest)
+activate MediatR
+MediatR -> FrequencyAggregationHandler: 3. Handle(request)
+activate FrequencyAggregationHandler
+
+FrequencyAggregationHandler -> AnalyticsJobRunRepository: 4. CreateJobRun("FREQUENCY_AGG")
+activate AnalyticsJobRunRepository
+AnalyticsJobRunRepository -> Database: 5. INSERT INTO analytics_job_runs
+Database --> AnalyticsJobRunRepository: 6. jobRunId
+AnalyticsJobRunRepository --> FrequencyAggregationHandler: 7. jobRunId
+deactivate AnalyticsJobRunRepository
+
+FrequencyAggregationHandler -> FrequencyAggregationHandler: 8. GenerateTimeBuckets(startDate, endDate, bucketType)
+activate FrequencyAggregationHandler
+
+loop For each time bucket
+    FrequencyAggregationHandler -> AreaRepository: 9. GetAreas(areaIds)
+    activate AreaRepository
+    AreaRepository -> Database: 10. SELECT * FROM areas WHERE id IN (...)
+    Database --> AreaRepository: 11. List<Area>
+    AreaRepository --> FrequencyAggregationHandler: 12. List<Area>
+    deactivate AreaRepository
+    
+    loop For each area
+        FrequencyAggregationHandler -> FloodEventRepository: 13. CountByAreaAndPeriod(areaId, bucketStart, bucketEnd)
+        activate FloodEventRepository
+        FloodEventRepository -> Database: 14. SELECT COUNT(*) FROM flood_events WHERE area_id = ? AND start_time BETWEEN ? AND ?
+        Database --> FloodEventRepository: 15. eventCount
+        FloodEventRepository --> FrequencyAggregationHandler: 16. eventCount
+        deactivate FloodEventRepository
+        
+        FrequencyAggregationHandler -> SensorReadingRepository: 17. CountExceedances(areaId, bucketStart, bucketEnd)
+        activate SensorReadingRepository
+        SensorReadingRepository -> Database: 18. SELECT COUNT(*) FROM sensor_readings WHERE station_id IN (...) AND severity_level >= 2 AND measured_at BETWEEN ? AND ?
+        Database --> SensorReadingRepository: 19. exceedCount
+        SensorReadingRepository --> FrequencyAggregationHandler: 20. exceedCount
+        deactivate SensorReadingRepository
+        
+        FrequencyAggregationHandler -> FloodAnalyticsFrequencyRepository: 21. Upsert(aggregate)
+        activate FloodAnalyticsFrequencyRepository
+        FloodAnalyticsFrequencyRepository -> Database: 22. INSERT ... ON CONFLICT DO UPDATE
+        Database --> FloodAnalyticsFrequencyRepository: 23. Success
+        FloodAnalyticsFrequencyRepository --> FrequencyAggregationHandler: 24. Success
+        deactivate FloodAnalyticsFrequencyRepository
+    end
+end
+
+FrequencyAggregationHandler -> Cache: 25. InvalidateCache("analytics:frequency:*")
+activate Cache
+Cache --> FrequencyAggregationHandler: 26. Cache invalidated
+deactivate Cache
+
+FrequencyAggregationHandler -> AnalyticsJobRunRepository: 27. UpdateStatus(jobRunId, "SUCCESS")
+activate AnalyticsJobRunRepository
+AnalyticsJobRunRepository -> Database: 28. UPDATE analytics_job_runs SET status = 'SUCCESS', finished_at = NOW()
+Database --> AnalyticsJobRunRepository: 29. Updated
+AnalyticsJobRunRepository --> FrequencyAggregationHandler: 30. Success
+deactivate AnalyticsJobRunRepository
+
+FrequencyAggregationHandler --> MediatR: 31. Response {success: true, jobRunId}
+deactivate FrequencyAggregationHandler
+MediatR --> FrequencyAggregationEndpoint: 32. Response
+deactivate MediatR
+FrequencyAggregationEndpoint --> Admin: 33. HTTP 202 Accepted {jobRunId, status: "RUNNING"}
+deactivate FrequencyAggregationEndpoint
+
+@enduml
+

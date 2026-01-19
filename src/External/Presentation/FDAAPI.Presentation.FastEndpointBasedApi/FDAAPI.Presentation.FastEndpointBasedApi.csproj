@@ -21,6 +21,9 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
     <PackageReference Include="Scalar.AspNetCore" Version="2.11.0" />
     <PackageReference Include="StackExchange.Redis" Version="2.10.1" />
+    <PackageReference Include="Hangfire.Core" Version="1.8.17" />
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.8.17" />
+    <PackageReference Include="Hangfire.PostgreSql" Version="1.20.7" />
   </ItemGroup>
 
   <ItemGroup>
@@ -65,6 +68,23 @@
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG35_AreaGet\FDAAPI.App.FeatG35_AreaGet.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG36_AreaUpdate\FDAAPI.App.FeatG36_AreaUpdate.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG37_AreaDelete\FDAAPI.App.FeatG37_AreaDelete.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG47_FrequencyAggregation\FDAAPI.App.FeatG47_FrequencyAggregation.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG48_SeverityAggregation\FDAAPI.App.FeatG48_SeverityAggregation.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG49_HotspotAggregation\FDAAPI.App.FeatG49_HotspotAggregation.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG50_GetJobStatus\FDAAPI.App.FeatG50_GetJobStatus.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG51_GetFrequencyAnalytics\FDAAPI.App.FeatG51_GetFrequencyAnalytics.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG52_GetSeverityAnalytics\FDAAPI.App.FeatG52_GetSeverityAnalytics.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG53_GetHotspotRankings\FDAAPI.App.FeatG53_GetHotspotRankings.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG57_AdministrativeAreaCreate\FDAAPI.App.FeatG57_AdministrativeAreaCreate.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG58_AdministrativeAreaList\FDAAPI.App.FeatG58_AdministrativeAreaList.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG59_AdministrativeAreaGet\FDAAPI.App.FeatG59_AdministrativeAreaGet.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG60_AdministrativeAreaUpdate\FDAAPI.App.FeatG60_AdministrativeAreaUpdate.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG61_AdministrativeAreaDelete\FDAAPI.App.FeatG61_AdministrativeAreaDelete.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG62_FloodEventCreate\FDAAPI.App.FeatG62_FloodEventCreate.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG63_FloodEventList\FDAAPI.App.FeatG63_FloodEventList.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG64_FloodEventGet\FDAAPI.App.FeatG64_FloodEventGet.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG65_FloodEventUpdate\FDAAPI.App.FeatG65_FloodEventUpdate.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG66_FloodEventDelete\FDAAPI.App.FeatG66_FloodEventDelete.csproj" />
   </ItemGroup>
 
 </Project>
