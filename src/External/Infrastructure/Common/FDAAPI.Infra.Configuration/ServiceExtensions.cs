@@ -136,7 +136,14 @@ namespace FDAAPI.Infra.Configuration
             // 4. Cấu hình DbContext
             services.AddDbContext<AppDbContext>(options =>
             {
-                options.UseNpgsql(connectionString);
+                options.UseNpgsql(connectionString, x =>
+                {
+                    // Nếu là môi trường UAT, chỉ định bảng Migration nằm trong uat_schema
+                    if (env.IsEnvironment("UAT"))
+                    {
+                        x.MigrationsHistoryTable("__EFMigrationsHistory", "uat_schema");
+                    }
+                });
             });
 
             // Nếu đây là Development hoặc Staging, hãy tự động chạy Migration
@@ -261,9 +268,18 @@ namespace FDAAPI.Infra.Configuration
         {
             // Try multiple ways to get connection string (same as AddInfraConfiguration)
             var connectionString = configuration.GetConnectionString("PostgreSQLConnection");
+            var envName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
             services.AddDbContext<AppDbContext>(options =>
-                options.UseNpgsql(connectionString));
+            {
+                options.UseNpgsql(connectionString, x =>
+                {
+                    if (envName == "UAT")
+                    {
+                        x.MigrationsHistoryTable("__EFMigrationsHistory", "uat_schema");
+                    }
+                });
+            });
 
             services.AddScoped<ISensorReadingRepository, PgsqlSensorReadingRepository>();
             services.AddScoped<IStationRepository, PgslStationRepository>();
