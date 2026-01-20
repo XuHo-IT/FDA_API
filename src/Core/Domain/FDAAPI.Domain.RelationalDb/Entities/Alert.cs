@@ -7,12 +7,12 @@ namespace FDAAPI.Domain.RelationalDb.Entities
 {
     public class Alert : EntityWithId<Guid>, ICreatedEntity<Guid>, IUpdatedEntity<Guid>
     {
-        public Guid AlertRuleId { get; set; }
+        public Guid? AlertRuleId { get; set; }
         public Guid StationId { get; set; }
         public DateTime TriggeredAt { get; set; }
         public DateTime? ResolvedAt { get; set; }
         public string Status { get; set; } = "open"; // open, resolved
-        public string Severity { get; set; } = "info"; // info, warning, critical
+        public string Severity { get; set; } = "info"; // info, caution, warning, critical
         public NotificationPriority Priority { get; set; } = NotificationPriority.Low;
         public decimal CurrentValue { get; set; }
         public string Message { get; set; } = string.Empty;

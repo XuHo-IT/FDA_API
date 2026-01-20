@@ -20,7 +20,12 @@ namespace FDAAPI.Domain.RelationalDb.Repositories
 
         // Get rules by area
         //Task<IEnumerable<AlertRule>> GetByAreaIdAsync(
-        //    Guid areaId,
-        //    CancellationToken ct = default);
+        //   Guid areaId,
+        //   CancellationToken ct = default);
+
+        // Get active rules by station (for hybrid threshold logic)
+        Task<IEnumerable<AlertRule>> GetActiveRulesByStationAsync(
+            Guid stationId,
+            CancellationToken ct = default);
     }
 }

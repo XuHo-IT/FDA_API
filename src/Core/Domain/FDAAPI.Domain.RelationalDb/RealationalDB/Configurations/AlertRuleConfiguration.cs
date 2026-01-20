@@ -39,6 +39,11 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB.Configurations
                 .IsRequired()
                 .HasDefaultValue(true);
 
+            // NEW: IsGlobalDefault property
+            builder.Property(x => x.IsGlobalDefault)
+                .IsRequired()
+                .HasDefaultValue(false);
+
             // Enum stored as string
             builder.Property(x => x.MinTierRequired)
                 .HasConversion<string>()

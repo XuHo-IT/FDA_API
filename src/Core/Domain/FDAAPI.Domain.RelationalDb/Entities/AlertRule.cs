@@ -16,6 +16,7 @@ namespace FDAAPI.Domain.RelationalDb.Entities
         public int? DurationMin { get; set; } // Optional: must exceed threshold for X minutes
         public string Severity { get; set; } = "warning"; // info, caution, warning, critical
         public bool IsActive { get; set; } = true;
+        public bool IsGlobalDefault { get; set; } = false;
         public SubscriptionTier MinTierRequired { get; set; } = SubscriptionTier.Free;
         public Guid CreatedBy { get; set; }
         public DateTime CreatedAt { get; set; }

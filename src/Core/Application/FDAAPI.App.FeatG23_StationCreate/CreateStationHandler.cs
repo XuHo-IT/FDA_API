@@ -1,15 +1,9 @@
 ﻿using FDAAPI.App.Common.Models.Stations;
 using FDAAPI.App.Common.Services.Mapping;
-using FDAAPI.App.FeatG23_StationCreate;
 using FDAAPI.Domain.RelationalDb.Entities;
 using FDAAPI.Domain.RelationalDb.Repositories;
-using FluentValidation;
+using FDAAPI.Infra.Services.Alerts;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FDAAPI.App.FeatG23_StationCreate
 {
@@ -17,13 +11,19 @@ namespace FDAAPI.App.FeatG23_StationCreate
     {
         private readonly IStationRepository _stationRepository;
         private readonly IStationMapper _stationMapper;
+        private readonly IAlertRuleRepository _alertRuleRepository;
+        private readonly IGlobalThresholdService _globalThresholdService;
 
         public CreateStationHandler(
             IStationRepository stationRepository,
-            IStationMapper stationMapper)
+            IStationMapper stationMapper,
+            IAlertRuleRepository alertRuleRepository,
+            IGlobalThresholdService globalThresholdService)
         {
             _stationRepository = stationRepository;
             _stationMapper = stationMapper;
+            _alertRuleRepository = alertRuleRepository;
+            _globalThresholdService = globalThresholdService;
         }
 
         public async Task<CreateStationResponse> Handle(CreateStationRequest request, CancellationToken cancellationToken)
@@ -53,10 +53,34 @@ namespace FDAAPI.App.FeatG23_StationCreate
 
                 await _stationRepository.CreateAsync(station, cancellationToken);
 
+                // ===== AUTO-CREATE DEFAULT ALERT RULES =====
+                // Create global default AlertRules for caution, warning, critical
+                var severities = new[] { "caution", "warning", "critical" };
+                foreach (var severity in severities)
+                {
+                    var threshold = _globalThresholdService.GetThresholdForSeverity(severity);
+                    var rule = new AlertRule
+                    {
+                        Id = Guid.NewGuid(),
+                        StationId = station.Id,
+                        Name = $"Global {severity} threshold",
+                        RuleType = "threshold",
+                        ThresholdValue = threshold,
+                        Severity = severity,
+                        IsActive = true,
+                        IsGlobalDefault = true, // Mark as auto-generated from global config
+                        CreatedBy = request.AdminId,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedBy = request.AdminId,
+                        UpdatedAt = DateTime.UtcNow
+                    };
+                    await _alertRuleRepository.CreateAsync(rule, cancellationToken);
+                }
+
                 return new CreateStationResponse
                 {
                     Success = true,
-                    Message = "Station created successfully",
+                    Message = "Station created successfully with default alert rules",
                     StatusCode = StationStatusCode.Success,
                     Data = _stationMapper.MapToDto(station)
                 };

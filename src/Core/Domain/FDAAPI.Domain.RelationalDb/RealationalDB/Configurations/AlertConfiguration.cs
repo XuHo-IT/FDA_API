@@ -12,7 +12,8 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB.Configurations
 
             // Properties
             builder.Property(x => x.AlertRuleId)
-                .IsRequired();
+                .IsRequired(false); // Nullable for global threshold alerts
+            
             builder.Property(x => x.StationId)
                 .IsRequired();
             builder.Property(x => x.TriggeredAt)
@@ -37,7 +38,7 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB.Configurations
                 .IsRequired()
                 .HasColumnType("text");
 
-            // ADD: Notification tracking fields
+            // Notification tracking fields
             builder.Property(x => x.NotificationSent)
                 .IsRequired()
                 .HasDefaultValue(false);
