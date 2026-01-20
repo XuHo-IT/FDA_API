@@ -1,579 +1,450 @@
-# Frontend Documentation - FE-12: Alert Preferences & Management
+# FE-12: Alert Notification System - Frontend Documentation
 
-> **Target Audience**: Frontend Developers (Mobile & Web)  
-> **Backend Dependencies**: FeatG39, G40, G41 (Alert APIs)  
-> **Priority**: HIGH  
-> **Estimated Effort**: 5-7 days
+## Overview
+Hệ thống cảnh báo ngập lụt tự động gửi thông báo cho người dùng khi mực nước vượt ngưỡng nguy hiểm. Người dùng có thể tùy chỉnh cách nhận thông báo qua Push, Email, hoặc SMS.
 
 ---
 
-## 📋 TABLE OF CONTENTS
+## User Flows
 
-1. [Overview](#1-overview)
-2. [API Endpoints Reference](#2-api-endpoints-reference)
-3. [User Flows](#3-user-flows)
-4. [UI Components to Build](#4-ui-components-to-build)
-5. [Sample Code Implementation](#5-sample-code-implementation)
-6. [Error Handling](#6-error-handling)
-7. [Testing Checklist](#7-testing-checklist)
-8. [Design Guidelines](#8-design-guidelines)
+### Flow 1: Đăng ký nhận cảnh báo cho một khu vực
+**Mục đích**: Người dùng bật/tắt cảnh báo cho một Area đã tạo trước đó
 
----
+**Steps**:
+1. User tạo Area (đã có ở FE trước)
+2. Hệ thống tự động tạo subscription với cài đặt mặc định (không cần gọi API)
+3. User có thể cập nhật cài đặt cảnh báo (xem Flow 2)
 
-## 1. OVERVIEW
-
-### What is FE-12?
-
-FE-12 là hệ thống **Alert Engine** (backend tự động) giám sát cảm biến nước lũ 24/7 và gửi cảnh báo cho người dùng qua:
-- 📱 **Push Notification** (Firebase Cloud Messaging)
-- 📧 **Email** (SMTP)
-- 💬 **SMS** (Twilio/other providers)
-
-### Your Responsibilities (Frontend Team)
-
-Bạn **KHÔNG CẦN** xử lý logic gửi thông báo (backend tự động làm). Nhiệm vụ của bạn là:
-
-✅ **Build UI để user cấu hình:**
-- Đăng ký nhận cảnh báo cho khu vực cụ thể
-- Chọn kênh nhận thông báo (Push/Email/SMS)
-- Đặt mức độ nghiêm trọng tối thiểu (Warning, Critical)
-
-✅ **Build UI để user xem:**
-- Lịch sử cảnh báo đã nhận
-- Trạng thái gửi thông báo (Sent, Failed)
-
-✅ **Build Admin UI:**
-- Xem danh sách user đã đăng ký
-- Xem cài đặt thông báo của từng user
-- Thống kê hiệu suất gửi thông báo
+**Note**: Subscription được tạo tự động khi user tạo Area, không cần subscribe thủ công.
 
 ---
 
-## 2. API ENDPOINTS REFERENCE
+### Flow 2: Cập nhật cài đặt cảnh báo
+**Mục đích**: Thay đổi kênh thông báo (Push/Email/SMS), mức độ nghiêm trọng tối thiểu, giờ im lặng
 
-### 2.1. Subscribe to Alerts (Đăng Ký Cảnh Báo)
+**Steps**:
+1. User vào màn hình "My Areas"
+2. Chọn một Area → Nhấn "Alert Settings"
+3. Cập nhật:
+   - Min Severity (caution/warning/critical)
+   - Channels (Push ✅, Email ✅, SMS ❌)
+   - Quiet Hours (22:00 - 06:00)
+4. Nhấn "Save"
+5. Gọi API: `PUT /api/v1/areas/{areaId}/alert-preferences`
 
-**Endpoint**: `POST /api/v1/alerts/subscriptions `  
-**Auth**: Required (JWT Bearer Token)  
-**Role**: User, Admin
+---
 
-**Request Body**:
+### Flow 3: Xem lịch sử cảnh báo
+**Mục đích**: Xem các cảnh báo đã nhận trong quá khứ
+
+**Steps**:
+1. User vào màn hình "Alert History"
+2. Hệ thống gọi API: `GET /api/v1/alerts/history`
+3. Hiển thị danh sách alerts với:
+   - Station name, water level, severity
+   - Thời gian trigger và resolve
+   - Trạng thái gửi notification (sent/failed)
+
+---
+
+### Flow 4: Admin xem tổng quan subscriptions
+**Mục đích**: Admin theo dõi người dùng đã đăng ký nhận cảnh báo
+
+**Steps**:
+1. Admin vào trang "User Subscriptions"
+2. Gọi API: `GET /api/v1/admin/alerts/subscriptions`
+3. Hiển thị danh sách users và cài đặt của họ
+
+---
+
+## APIs Documentation
+
+### 1. Update Alert Preferences (G41)
+**Endpoint**: `PUT /api/v1/areas/{areaId}/alert-preferences`
+
+**Auth**: Required (JWT Bearer Token)
+
+**Request**:
+```json
 {
-  "stationId": "uuid-of-station",
-  "areaId": "uuid-of-area",
   "minSeverity": "warning",
   "enablePush": true,
-  "enableEmail": true,
-  "enableSms": false
-}**Field Descriptions**:
+  "enableEmail": false,
+  "enableSms": false,
+  "quietHoursStart": "22:00:00",
+  "quietHoursEnd": "06:00:00"
+}
+```
+
+**Request Fields**:
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `stationId` | UUID | ✅ | ID của trạm cảm biến (từ API GET /api/v1/stations) |
-| `areaId` | UUID | ❌ | ID khu vực người dùng (từ API GET /api/v1/areas/me) |
-| `minSeverity` | String | ✅ | Mức độ tối thiểu: `"info"`, `"caution"`, `"warning"`, `"critical"` |
-| `enablePush` | Boolean | ✅ | Bật/tắt Push Notification |
-| `enableEmail` | Boolean | ✅ | Bật/tắt Email |
-| `enableSms` | Boolean | ✅ | Bật/tắt SMS |
+| `minSeverity` | string | No | Mức nghiêm trọng tối thiểu để nhận thông báo. Values: `"caution"`, `"warning"`, `"critical"`. Default: `"warning"` |
+| `enablePush` | boolean | No | Bật/tắt thông báo Push (Firebase). Default: `true` |
+| `enableEmail` | boolean | No | Bật/tắt thông báo Email. Default: `false` |
+| `enableSms` | boolean | No | Bật/tắt thông báo SMS (Twilio). Default: `false` |
+| `quietHoursStart` | TimeSpan | No | Giờ bắt đầu chế độ im lặng (không gửi thông báo). Format: `"HH:mm:ss"` |
+| `quietHoursEnd` | TimeSpan | No | Giờ kết thúc chế độ im lặng. Format: `"HH:mm:ss"` |
 
-**Success Response (201 Created)**:
+**Response**:
+```json
 {
   "success": true,
-  "message": "Subscription created successfully",
-  "statusCode": 201,
-  "data": {
-    "subscriptionId": "uuid-123",
-    "userId": "uuid-456",
-    "stationId": "uuid-789",
-    "stationName": "Trạm 1 - Nguyễn Văn Linh",
-    "minSeverity": "warning",
-    "channels": ["Push", "Email"],
-    "createdAt": "2026-01-19T10:30:00Z"
-  }
-}**Error Response (400 Bad Request)**:
-{
-  "success": false,
-  "message": "Station not found",
-  "statusCode": 400
-}**Error Response (409 Conflict)**:
-{
-  "success": false,
-  "message": "You have already subscribed to this station",
-  "statusCode": 409,
-  "data": {
-    "existingSubscriptionId": "uuid-existing"
-  }
-}---
+  "message": "Alert preferences updated successfully"
+}
+```
 
-### 2.2. Get My Subscriptions (Danh Sách Đăng Ký Của Tôi)
+**Response Fields**:
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | `true` nếu update thành công, `false` nếu có lỗi |
+| `message` | string | Thông báo kết quả hoặc lỗi |
 
-**Endpoint**: `GET /api/v1/alerts/subscriptions/me`  
-**Auth**: Required (JWT Bearer Token)  
-**Role**: User, Admin
+**Status Codes**:
+- `200 OK`: Update thành công
+- `400 Bad Request`: Invalid input (severity không hợp lệ)
+- `401 Unauthorized`: Chưa đăng nhập
+- `404 Not Found`: Area không tồn tại hoặc không thuộc về user
 
-**Query Parameters**: None
+---
 
-**Success Response (200 OK)**:
+### 2. Get My Subscriptions (G67)
+**Endpoint**: `GET /api/v1/alerts/subscriptions/me`
+
+**Auth**: Required (JWT Bearer Token)
+
+**Response**:
+```json
 {
   "success": true,
-  "message": "Retrieved successfully",
-  "statusCode": 200,
-  "data": {
-    "subscriptions": [
-      {
-        "subscriptionId": "uuid-1",
-        "stationId": "uuid-station-1",
-        "stationName": "Trạm 1 - Nguyễn Văn Linh",
-        "areaId": "uuid-area-1",
-        "areaName": "Nhà tôi - Quận 7",
-        "minSeverity": "warning",
-        "enablePush": true,
-        "enableEmail": true,
-        "enableSms": false,
-        "isActive": true,
-        "createdAt": "2026-01-15T08:00:00Z"
-      },
-      {
-        "subscriptionId": "uuid-2",
-        "stationId": "uuid-station-2",
-        "stationName": "Trạm 2 - Võ Văn Kiệt",
-        "areaId": null,
-        "areaName": null,
-        "minSeverity": "critical",
-        "enablePush": true,
-        "enableEmail": false,
-        "enableSms": true,
-        "isActive": true,
-        "createdAt": "2026-01-16T09:30:00Z"
-      }
-    ],
-    "totalCount": 2
-  }
-}---
-
-### 2.3. Update Alert Preferences (Cập Nhật Cài Đặt)
-
-**Endpoint**: `PUT /api/v1/alerts/preferences/{subscriptionId}`  
-**Auth**: Required (JWT Bearer Token)  
-**Role**: User, Admin
-
-**Path Parameter**:
-- `subscriptionId`: UUID của subscription cần update
-
-**Request Body**:
-{
-  "minSeverity": "critical",
-  "enablePush": true,
-  "enableEmail": false,
-  "enableSms": true
-}**Success Response (200 OK)**:
-{
-  "success": true,
-  "message": "Preferences updated successfully",
-  "statusCode": 200,
-  "data": {
-    "subscriptionId": "uuid-123",
-    "minSeverity": "critical",
-    "channels": ["Push", "SMS"],
-    "updatedAt": "2026-01-19T11:00:00Z"
-  }
-}---
-
-### 2.4. Delete Subscription (Hủy Đăng Ký)
-
-**Endpoint**: `DELETE /api/v1/alerts/subscriptions/{subscriptionId}`  
-**Auth**: Required (JWT Bearer Token)  
-**Role**: User, Admin
-
-**Success Response (200 OK)**:
-{
-  "success": true,
-  "message": "Subscription deleted successfully",
-  "statusCode": 200
-}---
-
-### 2.5. Get Alert History (Lịch Sử Cảnh Báo)
-
-**Endpoint**: `GET /api/v1/alerts/history`  
-**Auth**: Required (JWT Bearer Token)  
-**Role**: User, Admin
-
-**Query Parameters**:
-| Parameter | Type | Required | Description | Example |
-|-----------|------|----------|-------------|---------|
-| `page` | Integer | ❌ | Số trang (default: 1) | `1` |
-| `pageSize` | Integer | ❌ | Số item/trang (default: 20, max: 100) | `20` |
-| `severity` | String | ❌ | Lọc theo mức độ | `warning` |
-| `stationId` | UUID | ❌ | Lọc theo trạm | `uuid-123` |
-| `fromDate` | ISO8601 | ❌ | Từ ngày | `2026-01-01T00:00:00Z` |
-| `toDate` | ISO8601 | ❌ | Đến ngày | `2026-01-19T23:59:59Z` |
-
-**Success Response (200 OK)**:
-{
-  "success": true,
-  "message": "Retrieved successfully",
-  "statusCode": 200,
-  "data": {
-    "alerts": [
-      {
-        "alertId": "uuid-alert-1",
-        "stationId": "uuid-station-1",
-        "stationName": "Trạm 1 - Nguyễn Văn Linh",
-        "severity": "warning",
-        "priority": "Medium",
-        "message": "Water level exceeded 2.5m threshold",
-        "currentValue": 2.8,
-        "unit": "m",
-        "triggeredAt": "2026-01-19T10:30:00Z",
-        "resolvedAt": null,
-        "status": "open",
-        "notifications": [
-          {
-            "channel": "Push",
-            "status": "sent",
-            "sentAt": "2026-01-19T10:30:15Z",
-            "deliveredAt": "2026-01-19T10:30:18Z"
-          },
-          {
-            "channel": "Email",
-            "status": "sent",
-            "sentAt": "2026-01-19T10:30:20Z",
-            "deliveredAt": "2026-01-19T10:30:45Z"
-          }
-        ]
-      },
-      {
-        "alertId": "uuid-alert-2",
-        "stationId": "uuid-station-2",
-        "stationName": "Trạm 2 - Võ Văn Kiệt",
-        "severity": "critical",
-        "priority": "High",
-        "message": "Water level exceeded 3.5m threshold - CRITICAL",
-        "currentValue": 3.9,
-        "unit": "m",
-        "triggeredAt": "2026-01-18T14:00:00Z",
-        "resolvedAt": "2026-01-18T18:30:00Z",
-        "status": "resolved",
-        "notifications": [
-          {
-            "channel": "Push",
-            "status": "sent",
-            "sentAt": "2026-01-18T14:00:10Z",
-            "deliveredAt": "2026-01-18T14:00:12Z"
-          },
-          {
-            "channel": "SMS",
-            "status": "failed",
-            "sentAt": "2026-01-18T14:00:15Z",
-            "deliveredAt": null,
-            "errorMessage": "Phone number not verified",
-            "retryCount": 3
-          }
-        ]
-      }
-    ],
-    "pagination": {
-      "currentPage": 1,
-      "pageSize": 20,
-      "totalPages": 3,
-      "totalCount": 45
+  "message": "Retrieved 3 subscriptions",
+  "subscriptions": [
+    {
+      "subscriptionId": "sub-uuid-1",
+      "areaId": "area-uuid-1",
+      "areaName": "Khu vực nhà tôi",
+      "stationId": null,
+      "minSeverity": "warning",
+      "enablePush": true,
+      "enableEmail": false,
+      "enableSms": false,
+      "quietHoursStart": "22:00:00",
+      "quietHoursEnd": "06:00:00"
     }
-  }
-}---
+  ]
+}
+```
 
-### 2.6. Admin: Get All User Subscriptions
+**Response Fields**:
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | Trạng thái thành công |
+| `message` | string | Thông báo kết quả |
+| `subscriptions` | array | Danh sách subscriptions của user |
+| `subscriptions[].subscriptionId` | GUID | ID của subscription |
+| `subscriptions[].areaId` | GUID? | ID của Area (nếu subscribe theo area) |
+| `subscriptions[].areaName` | string | Tên Area |
+| `subscriptions[].stationId` | GUID? | ID của Station (nếu subscribe trực tiếp station - chỉ admin) |
+| `subscriptions[].minSeverity` | string | Mức nghiêm trọng tối thiểu (`"caution"`, `"warning"`, `"critical"`) |
+| `subscriptions[].enablePush` | boolean | Có bật Push notification không |
+| `subscriptions[].enableEmail` | boolean | Có bật Email không |
+| `subscriptions[].enableSms` | boolean | Có bật SMS không |
+| `subscriptions[].quietHoursStart` | TimeSpan? | Giờ bắt đầu im lặng |
+| `subscriptions[].quietHoursEnd` | TimeSpan? | Giờ kết thúc im lặng |
 
-**Endpoint**: `GET /api/v1/admin/alerts/subscriptions`  
-**Auth**: Required (JWT Bearer Token)  
-**Role**: Admin only
+**Status Codes**:
+- `200 OK`: Thành công
+- `401 Unauthorized`: Chưa đăng nhập
 
-**Query Parameters**:
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `page` | Integer | Số trang |
-| `pageSize` | Integer | Số item/trang |
-| `userId` | UUID | Lọc theo user ID |
-| `stationId` | UUID | Lọc theo trạm |
+---
 
-**Success Response (200 OK)**:
-{
-  "success": true,
-  "message": "Retrieved successfully",
-  "statusCode": 200,
-  "data": {
-    "subscriptions": [
-      {
-        "subscriptionId": "uuid-1",
-        "userId": "uuid-user-1",
-        "userEmail": "user1@example.com",
-        "userPhone": "+84901234567",
-        "stationId": "uuid-station-1",
-        "stationName": "Trạm 1 - Nguyễn Văn Linh",
-        "minSeverity": "warning",
-        "enablePush": true,
-        "enableEmail": true,
-        "enableSms": false,
-        "isActive": true,
-        "totalAlertsReceived": 15,
-        "lastAlertAt": "2026-01-19T10:30:00Z",
-        "createdAt": "2026-01-10T08:00:00Z"
-      }
-    ],
-    "pagination": {
-      "currentPage": 1,
-      "pageSize": 50,
-      "totalPages": 10,
-      "totalCount": 487
-    }
-  }
-}---
+### 3. Get Alert History (G40)
+**Endpoint**: `GET /api/v1/alerts/history`
 
-### 2.7. Admin: Get Notification Statistics
-
-**Endpoint**: `GET /api/v1/admin/alerts/stats`  
-**Auth**: Required (JWT Bearer Token)  
-**Role**: Admin only
+**Auth**: Required (JWT Bearer Token)
 
 **Query Parameters**:
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `fromDate` | ISO8601 | Từ ngày (default: 24h trước) |
-| `toDate` | ISO8601 | Đến ngày (default: hiện tại) |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `areaId` | GUID | No | Lọc theo Area cụ thể |
+| `severity` | string | No | Lọc theo mức nghiêm trọng (`caution`, `warning`, `critical`) |
+| `fromDate` | DateTime | No | Lọc từ ngày (ISO 8601: `2026-01-01T00:00:00Z`) |
+| `toDate` | DateTime | No | Lọc đến ngày |
+| `pageNumber` | int | No | Trang hiện tại (default: `1`) |
+| `pageSize` | int | No | Số items mỗi trang (default: `10`) |
 
-**Success Response (200 OK)**:
+**Request Example**:
+```
+GET /api/v1/alerts/history?areaId=area-uuid-1&severity=warning&pageNumber=1&pageSize=20
+```
+
+**Response**:
+```json
 {
   "success": true,
-  "message": "Retrieved successfully",
-  "statusCode": 200,
-  "data": {
-    "period": {
-      "from": "2026-01-18T12:00:00Z",
-      "to": "2026-01-19T12:00:00Z"
-    },
-    "alerts": {
-      "total": 45,
-      "bySeverity": {
-        "info": 10,
-        "caution": 15,
-        "warning": 18,
-        "critical": 2
-      },
-      "byStatus": {
-        "open": 12,
-        "resolved": 33
-      }
-    },
-    "notifications": {
-      "totalCreated": 135,
-      "totalSent": 128,
-      "totalFailed": 7,
-      "totalPending": 0,
-      "byChannel": {
-        "Push": {
-          "sent": 45,
-          "failed": 0,
-          "successRate": 100
+  "message": "Retrieved 15 alerts",
+  "alerts": [
+    {
+      "alertId": "alert-uuid-1",
+      "stationId": "station-uuid-1",
+      "stationName": "Trạm Lê Lợi - Pasteur",
+      "stationCode": "STN-001",
+      "severity": "warning",
+      "priority": "Medium",
+      "waterLevel": 25.5,
+      "message": "Water level exceeded warning threshold",
+      "triggeredAt": "2026-01-20T10:30:00Z",
+      "resolvedAt": "2026-01-20T12:00:00Z",
+      "status": "resolved",
+      "notifications": [
+        {
+          "notificationId": "notif-uuid-1",
+          "channel": "Push",
+          "status": "sent",
+          "sentAt": "2026-01-20T10:31:00Z",
+          "deliveredAt": "2026-01-20T10:31:05Z",
+          "errorMessage": null
         },
-        "Email": {
-          "sent": 42,
-          "failed": 3,
-          "successRate": 93.3
-        },
-        "SMS": {
-          "sent": 41,
-          "failed": 4,
-          "successRate": 91.1
+        {
+          "notificationId": "notif-uuid-2",
+          "channel": "Email",
+          "status": "failed",
+          "sentAt": "2026-01-20T10:31:00Z",
+          "deliveredAt": null,
+          "errorMessage": "SMTP connection timeout"
         }
-      },
-      "avgDeliveryTimeSeconds": 2.5,
-      "pendingRetries": 0
-    },
-    "users": {
-      "totalSubscribers": 487,
-      "activeSubscribers": 465,
-      "newSubscribers24h": 12
+      ]
     }
+  ],
+  "totalCount": 45,
+  "pageNumber": 1,
+  "pageSize": 20,
+  "totalPages": 3
+}
+```
+
+**Response Fields**:
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | Trạng thái thành công |
+| `message` | string | Thông báo kết quả |
+| `alerts` | array | Danh sách cảnh báo |
+| `alerts[].alertId` | GUID | ID của alert |
+| `alerts[].stationName` | string | Tên trạm đo |
+| `alerts[].stationCode` | string | Mã trạm (VD: `STN-001`) |
+| `alerts[].severity` | string | Mức độ nghiêm trọng (`caution`, `warning`, `critical`) |
+| `alerts[].priority` | enum | Priority level (`Low`, `Medium`, `High`, `Critical`) |
+| `alerts[].waterLevel` | decimal | Mực nước (cm) |
+| `alerts[].message` | string | Nội dung cảnh báo |
+| `alerts[].triggeredAt` | DateTime | Thời điểm kích hoạt cảnh báo |
+| `alerts[].resolvedAt` | DateTime? | Thời điểm mực nước trở về bình thường (null nếu chưa giải quyết) |
+| `alerts[].status` | string | Trạng thái (`open`, `resolved`) |
+| `alerts[].notifications` | array | Danh sách notifications đã gửi |
+| `alerts[].notifications[].channel` | enum | Kênh gửi (`Push`, `Email`, `SMS`, `InApp`) |
+| `alerts[].notifications[].status` | string | Trạng thái gửi (`pending`, `sent`, `failed`, `delivered`) |
+| `alerts[].notifications[].sentAt` | DateTime? | Thời điểm gửi |
+| `alerts[].notifications[].deliveredAt` | DateTime? | Thời điểm nhận được (nếu có confirmation) |
+| `alerts[].notifications[].errorMessage` | string? | Thông báo lỗi nếu gửi thất bại |
+| `totalCount` | int | Tổng số alerts (tất cả trang) |
+| `pageNumber` | int | Trang hiện tại |
+| `pageSize` | int | Số items mỗi trang |
+| `totalPages` | int | Tổng số trang |
+
+**Status Codes**:
+- `200 OK`: Thành công
+- `401 Unauthorized`: Chưa đăng nhập
+
+---
+
+### 4. Delete Subscription (G68)
+**Endpoint**: `DELETE /api/v1/alerts/subscriptions/{subscriptionId}`
+
+**Auth**: Required (JWT Bearer Token)
+
+**Response**:
+```json
+{
+  "success": true,
+  "message": "Subscription deleted successfully"
+}
+```
+
+**Status Codes**:
+- `200 OK`: Xóa thành công
+- `401 Unauthorized`: Chưa đăng nhập
+- `403 Forbidden`: Subscription không thuộc về user
+- `404 Not Found`: Subscription không tồn tại
+
+---
+
+### 5. Admin: Get All Subscriptions (G69)
+**Endpoint**: `GET /api/v1/admin/alerts/subscriptions`
+
+**Auth**: Required (Role: Admin, Authority)
+
+**Query Parameters**:
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `userId` | GUID | No | Lọc theo user cụ thể |
+| `areaId` | GUID | No | Lọc theo area |
+| `pageNumber` | int | No | Trang hiện tại (default: `1`) |
+| `pageSize` | int | No | Số items mỗi trang (default: `20`) |
+
+**Response**:
+```json
+{
+  "success": true,
+  "message": "Retrieved 50 subscriptions",
+  "subscriptions": [
+    {
+      "subscriptionId": "sub-uuid-1",
+      "userId": "user-uuid-1",
+      "userEmail": "user@example.com",
+      "areaId": "area-uuid-1",
+      "areaName": "Khu vực Q1",
+      "minSeverity": "warning",
+      "enablePush": true,
+      "enableEmail": false,
+      "enableSms": false,
+      "createdAt": "2026-01-15T08:00:00Z"
+    }
+  ],
+  "totalCount": 120,
+  "pageNumber": 1,
+  "pageSize": 20,
+  "totalPages": 6
+}
+```
+
+**Status Codes**:
+- `200 OK`: Thành công
+- `401 Unauthorized`: Chưa đăng nhập
+- `403 Forbidden`: Không có quyền Admin
+
+---
+
+### 6. Admin: Get Alert Statistics (G70)
+**Endpoint**: `GET /api/v1/admin/alerts/stats`
+
+**Auth**: Required (Role: Admin, Authority)
+
+**Response**:
+```json
+{
+  "success": true,
+  "message": "Statistics retrieved successfully",
+  "stats": {
+    "totalAlerts": 150,
+    "activeAlerts": 5,
+    "resolvedAlerts": 145,
+    "totalNotifications": 450,
+    "notificationsSent": 420,
+    "notificationsFailed": 30,
+    "alertsBySeverity": {
+      "caution": 80,
+      "warning": 60,
+      "critical": 10
+    },
+    "notificationsByChannel": {
+      "Push": 300,
+      "Email": 120,
+      "SMS": 30
+    },
+    "totalSubscriptions": 75,
+    "activeSubscriptions": 70
   }
-}---
+}
+```
 
-## 3. USER FLOWS
+**Status Codes**:
+- `200 OK`: Thành công
+- `401 Unauthorized`: Chưa đăng nhập
+- `403 Forbidden`: Không có quyền Admin
 
-### 3.1. Flow: User Đăng Ký Cảnh Báo
-┌─────────────────────────────────────────────────────────────┐
-│ SCREEN 1: Chọn Khu Vực/Trạm Muốn Giám Sát                   │
-├─────────────────────────────────────────────────────────────┤
-│ 1. User mở app/web                                          │
-│ 2. Navigate to "Alert Settings" hoặc "Cảnh Báo"            │
-│ 3. Tap "Thêm Cảnh Báo Mới" (+)                             │
-│ 4. Hiển thị map hoặc list danh sách trạm                   │
-│ 5. User chọn trạm (có thể link với khu vực đã tạo)        │
-└──────────────────────────┬──────────────────────────────────┘
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│ SCREEN 2: Cấu Hình Thông Báo                                │
-├─────────────────────────────────────────────────────────────┤
-│ Form:                                                       │
-│ ┌────────────────────────────────────────────────────────┐ │
-│ │ Trạm: Trạm 1 - Nguyễn Văn Linh                        │ │
-│ │                                                         │ │
-│ │ Mức Độ Tối Thiểu:                                      │ │
-│ │ ○ Info (Thông tin)                                     │ │
-│ │ ○ Caution (Cẩn trọng)                                  │ │
-│ │ ● Warning (Cảnh báo) ← Selected                        │ │
-│ │ ○ Critical (Khẩn cấp)                                  │ │
-│ │                                                         │ │
-│ │ Kênh Nhận Thông Báo:                                   │ │
-│ │ ☑ Push Notification (Khuyến nghị)                      │ │
-│ │ ☑ Email (abc@example.com)                              │ │
-│ │ ☐ SMS (+84901234567) [Yêu cầu xác thực số điện thoại] │ │
-│ │                                                         │ │
-│ │ [ Hủy ]           [ Lưu Cài Đặt ]                      │ │
-│ └────────────────────────────────────────────────────────┘ │
-└──────────────────────────┬──────────────────────────────────┘
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│ ACTION: API Call                                            │
-├─────────────────────────────────────────────────────────────┤
-│ POST /api/v1/alerts/subscriptions                           │
-│ {                                                           │
-│   "stationId": "uuid-station-1",                           │
-│   "minSeverity": "warning",                                │
-│   "enablePush": true,                                      │
-│   "enableEmail": true,                                     │
-│   "enableSms": false                                       │
-│ }                                                           │
-└──────────────────────────┬──────────────────────────────────┘
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│ SUCCESS: Show Confirmation                                  │
-├─────────────────────────────────────────────────────────────┤
-│ ✅ "Đã đăng ký cảnh báo thành công!"                       │
-│                                                             │
-│ Bạn sẽ nhận thông báo qua:                                 │
-│ • Push Notification                                        │
-│ • Email (abc@example.com)                                  │
-│                                                             │
-│ Khi mực nước vượt mức Cảnh báo (Warning) trở lên.         │
-│                                                             │
-│ [ OK ]                                                      │
-└─────────────────────────────────────────────────────────────┘
+---
 
-### 3.2. Flow: User Xem & Chỉnh Sửa Cài Đặt
-┌─────────────────────────────────────────────────────────────┐
-│ SCREEN: Danh Sách Cảnh Báo Đã Đăng Ký                       │
-├─────────────────────────────────────────────────────────────┤
-│ API: GET /api/v1/alerts/subscriptions/me                   │
-│                                                             │
-│ ┌─────────────────────────────────────────────────────────┐ │
-│ │ 📍 Trạm 1 - Nguyễn Văn Linh                            │ │
-│ │    Khu vực: Nhà tôi - Quận 7                           │ │
-│ │    Mức độ: ⚠️ Warning                                  │ │
-│ │    Kênh: 📱 Push, 📧 Email                             │ │
-│ │    [Chỉnh Sửa] [Xóa]                                   │ │
-│ └─────────────────────────────────────────────────────────┘ │
-│                                                             │
-│ ┌─────────────────────────────────────────────────────────┐ │
-│ │ 📍 Trạm 2 - Võ Văn Kiệt                                │ │
-│ │    Khu vực: Không có                                   │ │
-│ │    Mức độ: 🚨 Critical                                 │ │
-│ │    Kênh: 📱 Push, 💬 SMS                               │ │
-│ │    [Chỉnh Sửa] [Xóa]                                   │ │
-│ └─────────────────────────────────────────────────────────┘ │
-│                                                             │
-│ [ + Thêm Cảnh Báo Mới ]                                     │
-└─────────────────────────────────────────────────────────────┘
-                           │
-                           │ User tap [Chỉnh Sửa]
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│ MODAL: Chỉnh Sửa Cài Đặt                                    │
-├─────────────────────────────────────────────────────────────┤
-│ Trạm: Trạm 1 - Nguyễn Văn Linh (không thể đổi)             │
-│                                                             │
-│ Mức Độ Tối Thiểu:                                          │
-│ ○ Info  ○ Caution  ● Warning  ○ Critical                   │
-│                                                             │
-│ Kênh Nhận Thông Báo:                                       │
-│ ☑ Push Notification                                        │
-│ ☐ Email                                                     │
-│ ☑ SMS                                                       │
-│                                                             │
-│ [ Hủy ]           [ Lưu Thay Đổi ]                         │
-└──────────────────────────┬──────────────────────────────────┘
-                           ▼
-                   PUT /api/v1/alerts/subscriptions/{id}
-                           ▼
-                   ✅ "Đã cập nhật thành công!"
+## UI/UX Guidelines
 
+### 1. Alert Settings Screen
+**Components**:
+- Toggle switches cho Push/Email/SMS
+- Dropdown cho Min Severity (Caution/Warning/Critical)
+- Time pickers cho Quiet Hours
+- Save button
 
-### 3.3. Flow: User Xem Lịch Sử Cảnh Báo
-┌─────────────────────────────────────────────────────────────┐
-│ SCREEN: Lịch Sử Cảnh Báo                                    │
-├─────────────────────────────────────────────────────────────┤
-│ API: GET /api/v1/alerts/history?page=1&pageSize=20         │
-│                                                             │
-│ [Filter: All Severity ▼] [Station: All ▼] [Date Range]    │
-│                                                             │
-│ ┌─────────────────────────────────────────────────────────┐ │
-│ │ ⚠️ WARNING · 19/01/2026 10:30                          │ │
-│ │ Trạm 1 - Nguyễn Văn Linh                               │ │
-│ │ Mực nước: 2.8m (Vượt ngưỡng 2.5m)                      │ │
-│ │ Đã gửi: 📱 Push ✅ · 📧 Email ✅                        │ │
-│ │ Trạng thái: 🟢 Đang diễn ra                            │ │
-│ │ [Xem Chi Tiết]                                          │ │
-│ └─────────────────────────────────────────────────────────┘ │
-│                                                             │
-│ ┌─────────────────────────────────────────────────────────┐ │
-│ │ 🚨 CRITICAL · 18/01/2026 14:00                         │ │
-│ │ Trạm 2 - Võ Văn Kiệt                                   │ │
-│ │ Mực nước: 3.9m (Vượt ngưỡng 3.5m)                      │ │
-│ │ Đã gửi: 📱 Push ✅ · 💬 SMS ❌ (Thất bại)              │ │
-│ │ Trạng thái: ✅ Đã giải quyết (18:30)                   │ │
-│ │ [Xem Chi Tiết]                                          │ │
-│ └─────────────────────────────────────────────────────────┘ │
-│                                                             │
-│ [Previous] Page 1 of 3 [Next]                              │
-└─────────────────────────────────────────────────────────────┘
+**Sample**:
+```
+┌─────────────────────────────────────┐
+│  Alert Settings - Khu vực Q1       │
+├─────────────────────────────────────┤
+│                                     │
+│  Notification Channels:             │
+│  🔔 Push Notification      [✓]      │
+│  📧 Email                  [ ]      │
+│  📱 SMS                    [ ]      │
+│                                     │
+│  Minimum Severity:                  │
+│  [Warning ▼]                        │
+│                                     │
+│  Quiet Hours:                       │
+│  From: [22:00] To: [06:00]          │
+│                                     │
+│  [Save Changes]                     │
+└─────────────────────────────────────┘
+```
 
-9. FIREBASE CLOUD MESSAGING (FCM) SETUP
-9.1. Initialize FCM (Web)
-// firebase-config.ts
-import { initializeApp } from 'firebase/app';
-import { getMessaging, getToken, onMessage } from 'firebase/messaging';
+### 2. Alert History Screen
+**Components**:
+- List view with cards
+- Filters (Severity, Date Range)
+- Pagination
+- Status badges (Open/Resolved)
 
-const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
-  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.REACT_APP_FIREBASE_APP_ID
-};
+**Sample Card**:
+```
+┌─────────────────────────────────────┐
+│ 🔴 WARNING                          │
+│ Trạm Lê Lợi - Pasteur              │
+│ Water Level: 25.5 cm               │
+│ Jan 20, 2026 10:30 AM               │
+│                                     │
+│ Notifications:                      │
+│ ✓ Push (Sent)                       │
+│ ✗ Email (Failed: Timeout)           │
+│                                     │
+│ Status: Resolved at 12:00 PM        │
+└─────────────────────────────────────┘
+```
 
-const app = initializeApp(firebaseConfig);
-export const messaging = getMessaging(app);
+---
 
-11. DEPLOYMENT CHECKLIST
-11.1. Environment Variables
-# Frontend .env
-REACT_APP_API_BASE_URL=https://api.floodwarning.com
-REACT_APP_FIREBASE_API_KEY=xxx
-REACT_APP_FIREBASE_AUTH_DOMAIN=xxx
-REACT_APP_FIREBASE_PROJECT_ID=xxx
-REACT_APP_FIREBASE_MESSAGING_SENDER_ID=xxx
-REACT_APP_FIREBASE_APP_ID=xxx
-REACT_APP_FIREBASE_VAPID_KEY=xxx
+## Testing Checklist
 
-Most Used APIs
-# Get my subscriptions
-GET /api/v1/alerts/subscriptions/me
+### For Mobile App Team:
+- [ ] Integrate Firebase FCM SDK
+- [ ] Handle Push notification payload
+- [ ] Display in-app notification UI
+- [ ] Navigate to Alert History on notification tap
 
-# Create subscription
-POST /api/v1/alerts/subscriptions 
+### For Web Team:
+- [ ] Implement Alert Settings form
+- [ ] Implement Alert History table with filters
+- [ ] Add pagination controls
+- [ ] Test time zone conversions (UTC to local)
 
-# Update preferences
-PUT /api/v1/alerts/subscriptions/{id}
+### Common:
+- [ ] Handle 401 Unauthorized (redirect to login)
+- [ ] Show loading states
+- [ ] Display error messages
+- [ ] Validate Min Severity enum values
 
-# Delete subscription
-DELETE /api/v1/alerts/subscriptions/{id}
+---
 
-# Get alert history
-GET /api/v1/alerts/history?page=1&pageSize=20
+## Common Errors
+
+| Error | Status | Cause | Solution |
+|-------|--------|-------|----------|
+| "Unauthorized" | 401 | JWT token expired | Refresh token and retry |
+| "Area not found" | 404 | Area đã bị xóa | Refresh area list |
+| "Invalid severity" | 400 | Truyền severity không hợp lệ | Chỉ dùng: `caution`, `warning`, `critical` |
+| "No subscription found" | 404 | Area chưa có subscription | Auto-tạo khi tạo Area |

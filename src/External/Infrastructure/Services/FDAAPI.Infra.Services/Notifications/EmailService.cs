@@ -1,37 +1,46 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using FDAAPI.Infra.Services.Notifications;
+using MailKit.Net.Smtp;
+using MailKit.Security;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using MimeKit;
 
-namespace FDAAPI.Infra.Services.Notifications
+public class EmailService : IEmailService
 {
-    public class EmailService : IEmailService
+    private readonly IConfiguration _config;
+    private readonly ILogger<EmailService> _logger;
+
+    public async Task<bool> SendEmailAsync(string toEmail, string subject, string body, CancellationToken ct)
     {
-        private readonly ILogger<EmailService> _logger;
-
-        public EmailService(ILogger<EmailService> logger)
+        try
         {
-            _logger = logger;
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress(
+                _config["Smtp:FromName"],
+                _config["Smtp:FromEmail"]));
+            message.To.Add(MailboxAddress.Parse(toEmail));
+            message.Subject = subject;
+
+            message.Body = new TextPart("html") { Text = body };
+
+            using var smtp = new SmtpClient();
+            await smtp.ConnectAsync(
+                _config["Smtp:Host"],
+                int.Parse(_config["Smtp:Port"]),
+                SecureSocketOptions.StartTls,
+                ct);
+
+            await smtp.AuthenticateAsync(_config["Smtp:Username"], _config["Smtp:Password"], ct);
+            await smtp.SendAsync(message, ct);
+            await smtp.DisconnectAsync(true, ct);
+
+            _logger.LogInformation("Email sent to {Email}", toEmail);
+            return true;
         }
-
-        public async Task<bool> SendEmailAsync(
-            string toEmail,
-            string subject,
-            string body,
-            CancellationToken ct = default)
+        catch (Exception ex)
         {
-            try
-            {
-                _logger.LogInformation("Sending email to {Email}, Subject: {Subject}", toEmail, subject);
-
-                // TODO: Implement SMTP or SendGrid/AWS SES integration
-                await Task.Delay(200, ct);
-
-                _logger.LogInformation("Email sent successfully");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to send email to {Email}", toEmail);
-                return false;
-            }
+            _logger.LogError(ex, "Failed to send email");
+            return false;
         }
     }
 }

@@ -104,6 +104,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using Polly;
+using Polly.Extensions.Http;
 using Quartz;
 using System.Reflection;
 using System.Text;
@@ -463,6 +465,27 @@ namespace FDAAPI.Infra.Configuration
             return services;
         }
 
+        public static void AddNotificationServices(this IServiceCollection services)
+        {
+            // Define Polly retry policy
+            var retryPolicy = HttpPolicyExtensions
+                .HandleTransientHttpError() // 5xx, 408
+                .Or<TimeoutException>()
+                .WaitAndRetryAsync(
+                    retryCount: 3,
+                    sleepDurationProvider: retryAttempt => TimeSpan.FromMinutes(Math.Pow(3, retryAttempt) * 5), // 5min, 15min, 45min
+                    onRetry: (outcome, timespan, retryCount, context) =>
+                    {
+                        Console.WriteLine($"Retry {retryCount} after {timespan.TotalMinutes}min");
+                    });
+
+            // Apply policy to HttpClient
+            services.AddHttpClient<ISmsService, SmsService>()
+                .AddPolicyHandler(retryPolicy);
+
+            services.AddHttpClient<IEmailService, EmailService>()
+                .AddPolicyHandler(retryPolicy);
+        }
     }
 }
 
