@@ -45,6 +45,11 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            if (env == "UAT")
+            {
+                modelBuilder.HasDefaultSchema("uat_schema");
+            }
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         }
     }
