@@ -5,6 +5,7 @@ using FDAAPI.Infra.Configuration;
 using FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.Feat54_MqttIngestion.Services;
 using FDAAPI.Presentation.FastEndpointBasedApi.Hubs;
 using FDAAPI.Presentation.FastEndpointBasedApi.Middleware;
+using FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.Analytics;
 using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
@@ -42,6 +43,9 @@ builder.Services
 builder.Services.AddHostedService<FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.Feat42_ProcessAlerts.AlertProcessingJob>();
 builder.Services.AddHostedService<FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.Feat43_DispatchNotifications.NotificationDispatchJob>();
 builder.Services.AddHostedService<FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.Feat54_MqttIngestion.MqttIngestionJob>();
+builder.Services.AddTransient<FrequencyAggregationRunner>();
+builder.Services.AddTransient<SeverityAggregationRunner>();
+builder.Services.AddTransient<HotspotAggregationRunner>();
 
 // FastEndpoints
 builder.Services
@@ -147,6 +151,9 @@ app.UseHangfireDashboard("/hangfire", new Hangfire.DashboardOptions
     Authorization = new[] { new FDAAPI.Presentation.FastEndpointBasedApi.HangfireAuthorizationFilter() },
     DashboardTitle = "FDA API Background Jobs"
 });
+
+// 5.6. Register recurring analytics jobs (after app startup)
+app.RegisterAnalyticsRecurringJobs();
 
 // 6. FastEndpoints (MUST be after Auth middleware)
 app.UseFastEndpoints(config =>
