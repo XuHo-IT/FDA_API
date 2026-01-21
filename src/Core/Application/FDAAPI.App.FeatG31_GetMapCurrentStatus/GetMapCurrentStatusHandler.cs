@@ -109,8 +109,8 @@ namespace FDAAPI.App.FeatG31_GetMapCurrentStatus
                             Properties = new
                             {
                                 // Station info
-                                stationId = status.StationId,
-                                stationCode = status.StationCode,
+                                id = status.StationId,
+                                code = status.StationCode,
                                 stationName = status.StationName,
                                 locationDesc = status.LocationDesc,
                                 roadName = status.RoadName,
