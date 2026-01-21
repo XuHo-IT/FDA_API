@@ -60,7 +60,7 @@ Hệ thống cảnh báo ngập lụt tự động gửi thông báo cho ngườ
 ## APIs Documentation
 
 ### 1. Update Alert Preferences (G41)
-**Endpoint**: `PUT /api/v1/areas/{areaId}/alert-preferences`
+**Endpoint**: `PUT /api/v1/alerts/subscriptions/{id}`
 
 **Auth**: Required (JWT Bearer Token)
 
@@ -448,3 +448,4 @@ GET /api/v1/alerts/history?areaId=area-uuid-1&severity=warning&pageNumber=1&page
 | "Area not found" | 404 | Area đã bị xóa | Refresh area list |
 | "Invalid severity" | 400 | Truyền severity không hợp lệ | Chỉ dùng: `caution`, `warning`, `critical` |
 | "No subscription found" | 404 | Area chưa có subscription | Auto-tạo khi tạo Area |
+
