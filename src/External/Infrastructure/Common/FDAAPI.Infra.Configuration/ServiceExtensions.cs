@@ -82,6 +82,7 @@ using FDAAPI.App.FeatG65_FloodEventUpdate;
 using FDAAPI.App.FeatG66_FloodEventDelete;
 using FDAAPI.App.FeatG67_GetMySubscriptions;
 using FDAAPI.App.FeatG68_DeleteSubscription;
+using FDAAPI.App.FeatG69_AdminGetAllSubscriptions;
 using FDAAPI.App.FeatG7_AuthLogin;
 using FDAAPI.App.FeatG70_AdminGetAlertStats;
 using FDAAPI.App.FeatG8_AuthRefreshToken;
@@ -257,6 +258,7 @@ namespace FDAAPI.Infra.Configuration
                 typeof(GetMySubscriptionsRequest).Assembly,
                 typeof(DeleteSubscriptionRequest).Assembly,
                 typeof(AdminGetAlertStatsRequest).Assembly,
+                typeof(AdminGetAllSubscriptionsRequest).Assembly,
             };
 
             // Register MediatR with all feature assemblies and ValidationBehavior

@@ -63,6 +63,7 @@
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG64_FloodEventGet\FDAAPI.App.FeatG64_FloodEventGet.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG65_FloodEventUpdate\FDAAPI.App.FeatG65_FloodEventUpdate.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG66_FloodEventDelete\FDAAPI.App.FeatG66_FloodEventDelete.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG69_AdminGetAllSubscriptions\FDAAPI.App.FeatG69_AdminGetAllSubscriptions.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG6_AuthSendOtp\FDAAPI.App.FeatG6_AuthSendOtp.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG70_AdminGetAlertStats\FDAAPI.App.FeatG70_AdminGetAlertStats.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG7_AuthLogin\FDAAPI.App.FeatG7_AuthLogin.csproj" />
