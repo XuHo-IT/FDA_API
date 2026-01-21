@@ -39,6 +39,8 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB
         public DbSet<AnalyticsJob> AnalyticsJobs { get; set; } = null!;
         public DbSet<AnalyticsJobRun> AnalyticsJobRuns { get; set; } = null!;
         public DbSet<FloodEvent> FloodEvents { get; set; } = null!;
+        public DbSet<AlertCooldownConfig> AlertCooldownConfigs { get; set; } = null!;
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

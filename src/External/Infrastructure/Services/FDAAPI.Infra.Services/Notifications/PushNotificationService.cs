@@ -1,49 +1,69 @@
-﻿using FDAAPI.Domain.RelationalDb.Enums;
+﻿using FDAAPI.Infra.Services.Notifications;
+using FirebaseAdmin;
+using FirebaseAdmin.Messaging;
+using Google.Apis.Auth.OAuth2;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace FDAAPI.Infra.Services.Notifications
+public class PushNotificationService : IPushNotificationService
 {
-    public class PushNotificationService : IPushNotificationService
+    private readonly FirebaseMessaging _messaging;
+    private readonly ILogger<PushNotificationService> _logger;
+
+    public PushNotificationService(ILogger<PushNotificationService> logger, IConfiguration config)
     {
-        private readonly ILogger<PushNotificationService> _logger;
-        private readonly IConfiguration _configuration;
+        _logger = logger;
 
-        public PushNotificationService(
-            ILogger<PushNotificationService> logger,
-            IConfiguration configuration)
+        // Initialize Firebase Admin SDK
+        if (FirebaseApp.DefaultInstance == null)
         {
-            _logger = logger;
-            _configuration = configuration;
+            FirebaseApp.Create(new AppOptions()
+            {
+                Credential = GoogleCredential.FromFile(config["Firebase:ServiceAccountKeyPath"])
+            });
         }
+        _messaging = FirebaseMessaging.DefaultInstance;
+    }
 
-        public async Task<bool> SendPushNotificationAsync(
-            string deviceToken,
-            string title,
-            string body,
-            Dictionary<string, string>? data = null,
-            CancellationToken ct = default)
+    public async Task<bool> SendPushNotificationAsync(
+        string deviceToken,
+        string title,
+        string body,
+        Dictionary<string, string>? data,
+        CancellationToken ct)
+    {
+        try
         {
-            try
+            var message = new Message()
             {
-                // TODO: Implement actual push notification logic
-                // Using Firebase Cloud Messaging (FCM) or Apple Push Notification Service (APNS)
+                Token = deviceToken,
+                Notification = new Notification()
+                {
+                    Title = title,
+                    Body = body
+                },
+                Data = data,
+                Android = new AndroidConfig()
+                {
+                    Priority = Priority.High
+                },
+                Apns = new ApnsConfig()
+                {
+                    Aps = new Aps()
+                    {
+                        Sound = "default"
+                    }
+                }
+            };
 
-                _logger.LogInformation(
-                    "Sending push notification to device: {DeviceToken}, Title: {Title}",
-                    deviceToken, title);
-
-                // Placeholder: Mock successful send
-                await Task.Delay(100, ct); // Simulate network call
-
-                _logger.LogInformation("Push notification sent successfully");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to send push notification to {DeviceToken}", deviceToken);
-                return false;
-            }
+            string response = await _messaging.SendAsync(message, ct);
+            _logger.LogInformation("FCM sent successfully. MessageId: {MessageId}", response);
+            return true;
+        }
+        catch (FirebaseMessagingException ex)
+        {
+            _logger.LogError(ex, "FCM error: {ErrorCode}", ex.MessagingErrorCode);
+            return false;
         }
     }
 }

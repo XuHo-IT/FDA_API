@@ -15,24 +15,43 @@ using FDAAPI.App.FeatG18_MediaUploadImage;
 using FDAAPI.App.FeatG19_ProfileVerifyUpdatePhone;
 using FDAAPI.App.FeatG2_SensorReadingUpdate;
 using FDAAPI.App.FeatG20_UserCreate;
+using FDAAPI.App.FeatG20_UserCreate;
+using FDAAPI.App.FeatG21_UserList;
 using FDAAPI.App.FeatG21_UserList;
 using FDAAPI.App.FeatG22_UserUpdate;
+using FDAAPI.App.FeatG22_UserUpdate;
+using FDAAPI.App.FeatG23_StationCreate;
 using FDAAPI.App.FeatG23_StationCreate;
 using FDAAPI.App.FeatG24_StationUpdate;
+using FDAAPI.App.FeatG24_StationUpdate;
+using FDAAPI.App.FeatG25_StationList;
 using FDAAPI.App.FeatG25_StationList;
 using FDAAPI.App.FeatG26_StationGet;
+using FDAAPI.App.FeatG26_StationGet;
+using FDAAPI.App.FeatG27_StationDelete;
 using FDAAPI.App.FeatG27_StationDelete;
 using FDAAPI.App.FeatG28_GetMapPreferences;
+using FDAAPI.App.FeatG28_GetMapPreferences;
+using FDAAPI.App.FeatG29_UpdateMapPreferences;
 using FDAAPI.App.FeatG29_UpdateMapPreferences;
 using FDAAPI.App.FeatG3_SensorReadingGet;
 using FDAAPI.App.FeatG30_GetFloodSeverityLayer;
+using FDAAPI.App.FeatG30_GetFloodSeverityLayer;
+using FDAAPI.App.FeatG31_GetMapCurrentStatus;
 using FDAAPI.App.FeatG31_GetMapCurrentStatus;
 using FDAAPI.App.FeatG32_AreaCreate;
+using FDAAPI.App.FeatG32_AreaCreate;
+using FDAAPI.App.FeatG33_AreaListByUser;
 using FDAAPI.App.FeatG33_AreaListByUser;
 using FDAAPI.App.FeatG34_AreaStatusEvaluate;
+using FDAAPI.App.FeatG34_AreaStatusEvaluate;
+using FDAAPI.App.FeatG35_AreaGet;
 using FDAAPI.App.FeatG35_AreaGet;
 using FDAAPI.App.FeatG36_AreaUpdate;
+using FDAAPI.App.FeatG36_AreaUpdate;
 using FDAAPI.App.FeatG37_AreaDelete;
+using FDAAPI.App.FeatG37_AreaDelete;
+using FDAAPI.App.FeatG38_AreaList;
 using FDAAPI.App.FeatG38_AreaList;
 using FDAAPI.App.FeatG39_SubscribeToAlerts;
 using FDAAPI.App.FeatG4_SensorReadingDelete;
@@ -40,51 +59,6 @@ using FDAAPI.App.FeatG40_GetAlertHistory;
 using FDAAPI.App.FeatG41_UpdateAlertPreferences;
 using FDAAPI.App.FeatG42_ProcessAlerts;
 using FDAAPI.App.FeatG43_DispatchNotifications;
-using FDAAPI.App.FeatG6_AuthSendOtp;
-using FDAAPI.App.FeatG7_AuthLogin;
-using FDAAPI.App.FeatG8_AuthRefreshToken;
-using FDAAPI.App.FeatG9_AuthLogout;
-using FDAAPI.Domain.RelationalDb.RealationalDB;
-using FDAAPI.Domain.RelationalDb.Repositories;
-using FDAAPI.Infra.Persistence.Repositories;
-using FDAAPI.Infra.Services.Auth;
-using FDAAPI.Infra.Services.Cache;
-using FDAAPI.Infra.Services.Notifications;
-using FDAAPI.Infra.Services.OAuth;
-using FluentValidation;
-using Hangfire;
-using Hangfire.PostgreSql;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Tokens;
-using System.Reflection;
-using System.Text;
-using FDAAPI.App.FeatG23_StationCreate;
-using FDAAPI.App.FeatG21_UserList;
-using FDAAPI.App.FeatG25_StationList;
-using FDAAPI.App.FeatG22_UserUpdate;
-using FDAAPI.App.FeatG20_UserCreate;
-using FDAAPI.App.FeatG24_StationUpdate;
-using FDAAPI.App.FeatG26_StationGet;
-using FDAAPI.App.FeatG27_StationDelete;
-using FDAAPI.App.FeatG28_GetMapPreferences;
-using FDAAPI.App.FeatG29_UpdateMapPreferences;
-using FDAAPI.App.FeatG30_GetFloodSeverityLayer;
-using FDAAPI.App.FeatG31_GetMapCurrentStatus;
-using FDAAPI.App.FeatG32_AreaCreate;
-
-using FDAAPI.App.FeatG34_AreaStatusEvaluate;
-
-using FDAAPI.App.FeatG36_AreaUpdate;
-using FDAAPI.App.FeatG37_AreaDelete;
-using FDAAPI.App.FeatG35_AreaGet;
-using FDAAPI.App.FeatG33_AreaListByUser;
-using FDAAPI.App.FeatG38_AreaList;
-using Quartz;
-using FDAAPI.Infra.Services.Aggregation;
 using FDAAPI.App.FeatG44_GetFloodHistory;
 using FDAAPI.App.FeatG45_GetFloodTrends;
 using FDAAPI.App.FeatG46_GetFloodStatistics;
@@ -98,6 +72,7 @@ using FDAAPI.App.FeatG53_GetHotspotRankings;
 using FDAAPI.App.FeatG57_AdministrativeAreaCreate;
 using FDAAPI.App.FeatG58_AdministrativeAreaList;
 using FDAAPI.App.FeatG59_AdministrativeAreaGet;
+using FDAAPI.App.FeatG6_AuthSendOtp;
 using FDAAPI.App.FeatG60_AdministrativeAreaUpdate;
 using FDAAPI.App.FeatG61_AdministrativeAreaDelete;
 using FDAAPI.App.FeatG62_FloodEventCreate;
@@ -105,6 +80,35 @@ using FDAAPI.App.FeatG63_FloodEventList;
 using FDAAPI.App.FeatG64_FloodEventGet;
 using FDAAPI.App.FeatG65_FloodEventUpdate;
 using FDAAPI.App.FeatG66_FloodEventDelete;
+using FDAAPI.App.FeatG67_GetMySubscriptions;
+using FDAAPI.App.FeatG68_DeleteSubscription;
+using FDAAPI.App.FeatG7_AuthLogin;
+using FDAAPI.App.FeatG70_AdminGetAlertStats;
+using FDAAPI.App.FeatG8_AuthRefreshToken;
+using FDAAPI.App.FeatG9_AuthLogout;
+using FDAAPI.Domain.RelationalDb.RealationalDB;
+using FDAAPI.Domain.RelationalDb.Repositories;
+using FDAAPI.Infra.Persistence.Repositories;
+using FDAAPI.Infra.Services.Aggregation;
+using FDAAPI.Infra.Services.Alerts;
+using FDAAPI.Infra.Services.Auth;
+using FDAAPI.Infra.Services.Cache;
+using FDAAPI.Infra.Services.Notifications;
+using FDAAPI.Infra.Services.OAuth;
+using FluentValidation;
+using Hangfire;
+using Hangfire.PostgreSql;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
+using Polly;
+using Polly.Extensions.Http;
+using Quartz;
+using System.Reflection;
+using System.Text;
 
 namespace FDAAPI.Infra.Configuration
 {
@@ -179,6 +183,7 @@ namespace FDAAPI.Infra.Configuration
             services.AddScoped<IFloodHistoryMapper, FloodHistoryMapper>();
             services.AddScoped<IAdministrativeAreaMapper, AdministrativeAreaMapper>();
             services.AddScoped<IFloodEventMapper, FloodEventMapper>();
+            services.AddScoped<IGlobalThresholdService, GlobalThresholdService>();
 
             return services;
         }
@@ -247,7 +252,11 @@ namespace FDAAPI.Infra.Configuration
                 typeof(GetFloodEventsRequest).Assembly,
                 typeof(GetFloodEventRequest).Assembly,
                 typeof(UpdateFloodEventRequest).Assembly,
-                typeof(DeleteFloodEventRequest).Assembly
+                typeof(DeleteFloodEventRequest).Assembly,
+                typeof(GetFloodStatisticsRequest).Assembly,
+                typeof(GetMySubscriptionsRequest).Assembly,
+                typeof(DeleteSubscriptionRequest).Assembly,
+                typeof(AdminGetAlertStatsRequest).Assembly,
             };
 
             // Register MediatR with all feature assemblies and ValidationBehavior
@@ -299,6 +308,8 @@ namespace FDAAPI.Infra.Configuration
             services.AddScoped<IPushNotificationService, PushNotificationService>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<ISmsService, SmsService>();
+            services.AddScoped<IAlertCooldownConfigRepository, PgsqlAlertCooldownConfigRepository>();
+
             // OAuth provider repository
             services.AddScoped<IUserOAuthProviderRepository, PgsqlUserOAuthProviderRepository>();
 
@@ -470,6 +481,27 @@ namespace FDAAPI.Infra.Configuration
             return services;
         }
 
+        public static void AddNotificationServices(this IServiceCollection services)
+        {
+            // Define Polly retry policy
+            var retryPolicy = HttpPolicyExtensions
+                .HandleTransientHttpError() // 5xx, 408
+                .Or<TimeoutException>()
+                .WaitAndRetryAsync(
+                    retryCount: 3,
+                    sleepDurationProvider: retryAttempt => TimeSpan.FromMinutes(Math.Pow(3, retryAttempt) * 5), // 5min, 15min, 45min
+                    onRetry: (outcome, timespan, retryCount, context) =>
+                    {
+                        Console.WriteLine($"Retry {retryCount} after {timespan.TotalMinutes}min");
+                    });
+
+            // Apply policy to HttpClient
+            services.AddHttpClient<ISmsService, SmsService>()
+                .AddPolicyHandler(retryPolicy);
+
+            services.AddHttpClient<IEmailService, EmailService>()
+                .AddPolicyHandler(retryPolicy);
+        }
     }
 }
 

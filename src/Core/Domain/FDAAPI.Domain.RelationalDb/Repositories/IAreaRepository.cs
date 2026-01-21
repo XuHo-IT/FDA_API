@@ -24,6 +24,11 @@ namespace FDAAPI.Domain.RelationalDb.Repositories
 
         // NEW: For duplicate location prevention (Haversine)
         Task<List<Area>> GetUserAreasWithinRadiusAsync(Guid userId, decimal latitude, decimal longitude, int radiusMeters, CancellationToken ct = default);
+        Task<List<Area>> GetAreasContainingStationAsync(
+            Guid stationId,
+            decimal stationLat,
+            decimal stationLng,
+            CancellationToken ct = default);
     }
 }
 

@@ -126,6 +126,46 @@ namespace FDAAPI.Infra.Persistence.Repositories
             // PostGIS alternative can be added later for scale
             return userAreas;
         }
+
+        public async Task<List<Area>> GetAreasContainingStationAsync(
+            Guid stationId,
+            decimal stationLat,
+            decimal stationLng,
+            CancellationToken ct = default)
+                {
+                    var allAreas = await _context.Areas
+                        .Where(a => a.Latitude != 0 && a.Longitude != 0)
+                        .ToListAsync(ct);
+
+                    var areasContainingStation = allAreas
+                        .Where(area =>
+                        {
+                            var distance = CalculateDistance(
+                                (double)area.Latitude, (double)area.Longitude,
+                                (double)stationLat, (double)stationLng) * 1000; // meters
+
+                            return distance <= area.RadiusMeters;
+                        })
+                        .ToList();
+
+                    return areasContainingStation;
+                }
+
+        private double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
+        {
+            const double EarthRadiusKm = 6371.0;
+            var dLat = ToRadians(lat2 - lat1);
+            var dLon = ToRadians(lon2 - lon1);
+
+            var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                    Math.Cos(ToRadians(lat1)) * Math.Cos(ToRadians(lat2)) *
+                    Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+
+            var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+            return EarthRadiusKm * c;
+        }
+
+        private double ToRadians(double degrees) => degrees * Math.PI / 180;
     }
 }
 

@@ -1,70 +1,106 @@
 ﻿using FDAAPI.Domain.RelationalDb.Entities;
 using FDAAPI.Domain.RelationalDb.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace FDAAPI.App.FeatG39_SubscribeToAlerts
 {
     public class SubscribeToAlertsHandler : IRequestHandler<SubscribeToAlertsRequest, SubscribeToAlertsResponse>
     {
         private readonly IUserAlertSubscriptionRepository _subscriptionRepo;
-        private readonly IUserRepository _userRepo;
+        private readonly IAreaRepository _areaRepo;
+        private readonly IStationRepository _stationRepo;
+        private readonly ILogger<SubscribeToAlertsHandler> _logger;
 
         public SubscribeToAlertsHandler(
             IUserAlertSubscriptionRepository subscriptionRepo,
-            IUserRepository userRepo)
+            IAreaRepository areaRepo,
+            IStationRepository stationRepo,
+            ILogger<SubscribeToAlertsHandler> logger)
         {
             _subscriptionRepo = subscriptionRepo;
-            _userRepo = userRepo;
+            _areaRepo = areaRepo;
+            _stationRepo = stationRepo;
+            _logger = logger;
         }
 
-        public async Task<SubscribeToAlertsResponse> Handle(SubscribeToAlertsRequest request, CancellationToken ct)
+        public async Task<SubscribeToAlertsResponse> Handle(
+            SubscribeToAlertsRequest request,
+            CancellationToken ct)
         {
             try
             {
-                // Validate: Must provide either StationId or AreaId
-                if (!request.StationId.HasValue && !request.AreaId.HasValue)
+                // ===== BUSINESS RULE: Phải có AreaId HOẶC StationId (ít nhất 1 trong 2) =====
+                if (!request.AreaId.HasValue && !request.StationId.HasValue)
                 {
                     return new SubscribeToAlertsResponse
                     {
                         Success = false,
-                        Message = "Must provide either StationId or AreaId"
+                        Message = "Either AreaId or StationId must be provided"
                     };
                 }
 
-                // Check if already subscribed
-                if (request.StationId.HasValue)
+                // ===== VALIDATION: Nếu có AreaId, kiểm tra Area tồn tại và thuộc về user =====
+                if (request.AreaId.HasValue)
                 {
-                    var exists = await _subscriptionRepo.IsUserSubscribedAsync(request.UserId, request.StationId.Value, ct);
-                    if (exists)
+                    var area = await _areaRepo.GetByIdAsync(request.AreaId.Value, ct);
+                    if (area == null)
                     {
                         return new SubscribeToAlertsResponse
                         {
                             Success = false,
-                            Message = "Already subscribed to this station"
+                            Message = "Area not found"
+                        };
+                    }
+
+                    if (area.UserId != request.UserId)
+                    {
+                        return new SubscribeToAlertsResponse
+                        {
+                            Success = false,
+                            Message = "You can only subscribe to your own areas"
                         };
                     }
                 }
 
-                // TODO: Check subscription tier limits (Free: 5 stations, Premium: unlimited)
-                var existingCount = (await _subscriptionRepo.GetByUserIdAsync(request.UserId, ct)).Count();
-                // Get user tier from pricing_plans table (placeholder for now)
-                const int FREE_TIER_LIMIT = 5;
-                if (existingCount >= FREE_TIER_LIMIT)
+                // ===== VALIDATION: Nếu có StationId, kiểm tra Station tồn tại =====
+                if (request.StationId.HasValue)
+                {
+                    var station = await _stationRepo.GetByIdAsync(request.StationId.Value, ct);
+                    if (station == null)
+                    {
+                        return new SubscribeToAlertsResponse
+                        {
+                            Success = false,
+                            Message = "Station not found"
+                        };
+                    }
+                }
+
+                // ===== CHECK: Subscription đã tồn tại chưa? =====
+                var existingSubscriptions = await _subscriptionRepo.GetByUserIdAsync(request.UserId, ct);
+
+                var duplicate = existingSubscriptions.FirstOrDefault(s =>
+                    (request.AreaId.HasValue && s.AreaId == request.AreaId) ||
+                    (request.StationId.HasValue && s.StationId == request.StationId));
+
+                if (duplicate != null)
                 {
                     return new SubscribeToAlertsResponse
                     {
                         Success = false,
-                        Message = $"Subscription limit reached ({FREE_TIER_LIMIT}). Upgrade to Premium for unlimited."
+                        Message = request.AreaId.HasValue
+                            ? "You are already subscribed to alerts for this area"
+                            : "You are already subscribed to alerts for this station"
                     };
                 }
 
-                // Create subscription
                 var subscription = new UserAlertSubscription
                 {
                     Id = Guid.NewGuid(),
                     UserId = request.UserId,
-                    StationId = request.StationId,
                     AreaId = request.AreaId,
+                    StationId = request.StationId,
                     MinSeverity = request.MinSeverity,
                     EnablePush = request.EnablePush,
                     EnableEmail = request.EnableEmail,
@@ -75,17 +111,20 @@ namespace FDAAPI.App.FeatG39_SubscribeToAlerts
                     UpdatedAt = DateTime.UtcNow
                 };
 
-                var subscriptionId = await _subscriptionRepo.CreateAsync(subscription, ct);
+                await _subscriptionRepo.CreateAsync(subscription, ct);
 
                 return new SubscribeToAlertsResponse
                 {
                     Success = true,
-                    Message = "Successfully subscribed to alerts",
-                    SubscriptionId = subscriptionId
+                    Message = request.AreaId.HasValue
+                        ? "Successfully subscribed to area alerts"
+                        : "Successfully subscribed to station alerts",
+                    SubscriptionId = subscription.Id
                 };
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error subscribing to alerts");
                 return new SubscribeToAlertsResponse
                 {
                     Success = false,

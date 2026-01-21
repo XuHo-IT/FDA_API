@@ -45,12 +45,14 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat39_SubscribeToA
 
             var command = new SubscribeToAlertsRequest(
                 UserId: userId,
-                StationId: req.StationId,
                 AreaId: req.AreaId,
+                StationId: req.StationId,
                 MinSeverity: req.MinSeverity,
                 EnablePush: req.EnablePush,
                 EnableEmail: req.EnableEmail,
-                EnableSms: req.EnableSms
+                EnableSms: req.EnableSms,
+                QuietHoursStart: req.QuietHoursStart,
+                QuietHoursEnd: req.QuietHoursEnd
             );
 
             var result = await _mediator.Send(command, ct);

@@ -67,16 +67,26 @@ namespace FDAAPI.Infra.Persistence.Repositories
                 .ToListAsync(ct);
         }
 
-        //public async Task<IEnumerable<AlertRule>> GetByAreaIdAsync(
+        // public async Task<IEnumerable<AlertRule>> GetByAreaIdAsync(
         //    Guid areaId,
         //    CancellationToken ct = default)
-        //{
-        //    // FIXED: AlertRule doesn't have AreaId field, so we need to query via Station.AreaId
-        //    //return await _context.AlertRules
-        //    //    .AsNoTracking()
-        //    //    .Include(r => r.Station)
-        //    //    .Where(r => r.Station!.AreaId == areaId && r.IsActive)
-        //    //    .ToListAsync(ct);
-        //}
+        // {
+        //     return await _context.AlertRules
+        //       .AsNoTracking()
+        //       .Include(r => r.Station)
+        //       .Where(r => r.Station!.AreaId == areaId && r.IsActive)
+        //       .ToListAsync(ct);
+        // }
+    
+        public async Task<IEnumerable<AlertRule>> GetActiveRulesByStationAsync(
+            Guid stationId,
+            CancellationToken ct = default)
+        {
+            return await _context.AlertRules
+                .AsNoTracking()
+                .Include(r => r.Station)
+                .Where(r => r.StationId == stationId && r.IsActive)
+                .ToListAsync(ct);
+        }
     }
 }

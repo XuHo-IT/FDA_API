@@ -11,34 +11,42 @@ namespace FDAAPI.App.FeatG43_DispatchNotifications
     {
         private readonly IAlertRepository _alertRepo;
         private readonly IUserAlertSubscriptionRepository _subscriptionRepo;
-        private readonly INotificationLogRepository _notificationLogRepo;
         private readonly IUserRepository _userRepo;
+        private readonly INotificationLogRepository _notificationLogRepo;
         private readonly IPriorityRoutingService _routingService;
         private readonly INotificationTemplateService _templateService;
         private readonly INotificationDispatchService _dispatchService;
         private readonly ILogger<DispatchNotificationsHandler> _logger;
+        private readonly IStationRepository _stationRepo;
+        private readonly IAreaRepository _areaRepo;
 
         public DispatchNotificationsHandler(
             IAlertRepository alertRepo,
             IUserAlertSubscriptionRepository subscriptionRepo,
-            INotificationLogRepository notificationLogRepo,
             IUserRepository userRepo,
+            INotificationLogRepository notificationLogRepo,
             IPriorityRoutingService routingService,
             INotificationTemplateService templateService,
             INotificationDispatchService dispatchService,
+            IStationRepository stationRepo,
+            IAreaRepository areaRepo,
             ILogger<DispatchNotificationsHandler> logger)
         {
             _alertRepo = alertRepo;
             _subscriptionRepo = subscriptionRepo;
-            _notificationLogRepo = notificationLogRepo;
             _userRepo = userRepo;
+            _notificationLogRepo = notificationLogRepo;
             _routingService = routingService;
             _templateService = templateService;
             _dispatchService = dispatchService;
+            _stationRepo = stationRepo;
+            _areaRepo = areaRepo;
             _logger = logger;
         }
 
-        public async Task<DispatchNotificationsResponse> Handle(DispatchNotificationsRequest request, CancellationToken ct)
+        public async Task<DispatchNotificationsResponse> Handle(
+            DispatchNotificationsRequest request,
+            CancellationToken ct)
         {
             int created = 0, sent = 0, failed = 0, alertsProcessed = 0;
 
@@ -55,14 +63,84 @@ namespace FDAAPI.App.FeatG43_DispatchNotifications
                     {
                         alertsProcessed++;
 
-                        // 2. Get subscriptions for this station
-                        var subscriptions = await _subscriptionRepo.GetByStationIdAsync(alert.StationId, ct);
+                        var subscriptions = new List<UserAlertSubscription>();
+
+                        // 2a. Get station details
+                        var station = alert.Station ?? await _stationRepo.GetByIdAsync(alert.StationId, ct);
+                        if (station == null || !station.Latitude.HasValue || !station.Longitude.HasValue)
+                        {
+                            _logger.LogWarning("Station {StationId} not found or missing coordinates", alert.StationId);
+
+                            // Mark alert as notified (no way to find subscribers)
+                            alert.NotificationSent = true;
+                            alert.NotificationCount = 0;
+                            alert.LastNotificationAt = DateTime.UtcNow;
+                            alert.UpdatedAt = DateTime.UtcNow;
+                            await _alertRepo.UpdateAsync(alert, ct);
+                            continue;
+                        }
+
+                        // 2b. Find areas containing this station (AREA-BASED SUBSCRIPTIONS)
+                        var areasContainingStation = await _areaRepo.GetAreasContainingStationAsync(
+                            alert.StationId,
+                            station.Latitude.Value,
+                            station.Longitude.Value,
+                            ct);
+
+                        if (areasContainingStation.Any())
+                        {
+                            var areaIds = areasContainingStation.Select(a => a.Id).ToList();
+                            var areaSubscriptions = await _subscriptionRepo.GetByAreaIdsAsync(areaIds, ct);
+                            subscriptions.AddRange(areaSubscriptions);
+
+                            _logger.LogInformation(
+                                "Found {Count} area-based subscriptions for station {StationId} in {AreaCount} areas",
+                                areaSubscriptions.Count(), alert.StationId, areasContainingStation.Count);
+                        }
+
+                        // 2c. Also get direct station subscriptions (STATION-BASED - for Gov/Admin)
+                        var stationSubscriptions = await _subscriptionRepo.GetByStationIdAsync(alert.StationId, ct);
+                        subscriptions.AddRange(stationSubscriptions);
+
+                        if (stationSubscriptions.Any())
+                        {
+                            _logger.LogInformation(
+                                "Found {Count} direct station subscriptions for station {StationId}",
+                                stationSubscriptions.Count(), alert.StationId);
+                        }
+
+                        // 2d. Deduplicate by UserId (avoid sending duplicate notifications)
+                        subscriptions = subscriptions
+                            .GroupBy(s => s.UserId)
+                            .Select(g => g.First()) // Take first subscription per user
+                            .ToList();
+
+                        if (!subscriptions.Any())
+                        {
+                            _logger.LogDebug("No subscriptions found for station {StationId}", alert.StationId);
+
+                            // Mark alert as notified even if no subscribers
+                            alert.NotificationSent = true;
+                            alert.NotificationCount = 0;
+                            alert.LastNotificationAt = DateTime.UtcNow;
+                            alert.UpdatedAt = DateTime.UtcNow;
+                            await _alertRepo.UpdateAsync(alert, ct);
+                            continue;
+                        }
+
+                        _logger.LogInformation(
+                            "Total {Count} unique subscribers for station {StationId}",
+                            subscriptions.Count, alert.StationId);
 
                         foreach (var subscription in subscriptions)
                         {
                             // 3. Check if user should be notified
                             var user = await _userRepo.GetByIdAsync(subscription.UserId, ct);
-                            if (user == null) continue;
+                            if (user == null)
+                            {
+                                _logger.LogWarning("User {UserId} not found", subscription.UserId);
+                                continue;
+                            }
 
                             // Get user tier (from pricing plan or default to Free)
                             var userTier = SubscriptionTier.Free; // TODO: Get from user_subscriptions table
@@ -70,35 +148,47 @@ namespace FDAAPI.App.FeatG43_DispatchNotifications
                             // Check severity threshold
                             if (!_routingService.ShouldNotifyUser(alert.Severity, userTier, subscription.MinSeverity))
                             {
+                                _logger.LogDebug(
+                                    "User {UserId} severity threshold not met. Alert: {AlertSeverity}, Min: {MinSeverity}",
+                                    user.Id, alert.Severity, subscription.MinSeverity);
                                 continue;
                             }
 
                             // Check quiet hours
                             if (IsInQuietHours(subscription.QuietHoursStart, subscription.QuietHoursEnd))
                             {
-                                _logger.LogDebug("Skipping notification for user {UserId} - quiet hours", user.Id);
+                                _logger.LogDebug("User {UserId} in quiet hours, skipping notification", user.Id);
                                 continue;
                             }
 
-                            // Check if already notified
-                            var alreadyNotified = await _notificationLogRepo.IsUserNotifiedAsync(user.Id, alert.Id, ct);
-                            if (alreadyNotified) continue;
-
                             // 4. Determine priority and channels
                             var priority = _routingService.DeterminePriority(alert.Severity, userTier);
-                            var channels = _routingService.GetChannelsForPriority(priority, userTier);
+                            var availableChannels = _routingService.GetChannelsForPriority(priority, userTier);
 
-                            // Filter channels based on user preferences
-                            channels = FilterChannelsByPreferences(channels, subscription);
+                            // Filter by user preferences
+                            var userChannels = FilterChannelsByPreferences(availableChannels, subscription);
+
+                            if (!userChannels.Any())
+                            {
+                                _logger.LogDebug("No enabled channels for user {UserId}", user.Id);
+                                continue;
+                            }
 
                             // 5. Create notification logs for each channel
-                            foreach (var channel in channels)
+                            foreach (var channel in userChannels)
                             {
                                 var destination = GetDestination(user, channel);
-                                if (string.IsNullOrEmpty(destination)) continue;
+                                if (string.IsNullOrEmpty(destination))
+                                {
+                                    _logger.LogWarning(
+                                        "No destination found for user {UserId}, channel {Channel}",
+                                        user.Id, channel);
+                                    continue;
+                                }
 
-                                var content = _templateService.GenerateBody(alert, alert.Station!, channel);
-                                var title = _templateService.GenerateTitle(alert, priority);
+                                var content = channel == NotificationChannel.SMS
+                                    ? _templateService.GenerateSmsContent(alert, station!)
+                                    : _templateService.GenerateBody(alert, station!, channel);
 
                                 var notificationLog = new NotificationLog
                                 {
@@ -111,8 +201,8 @@ namespace FDAAPI.App.FeatG43_DispatchNotifications
                                     Priority = priority,
                                     Status = "pending",
                                     RetryCount = 0,
-                                    MaxRetries = 3,
-                                    CreatedBy = Guid.Empty, // System
+                                    MaxRetries = 3, // Default max retries
+                                    CreatedBy = Guid.Empty,
                                     CreatedAt = DateTime.UtcNow,
                                     UpdatedBy = Guid.Empty,
                                     UpdatedAt = DateTime.UtcNow
@@ -121,23 +211,89 @@ namespace FDAAPI.App.FeatG43_DispatchNotifications
                                 await _notificationLogRepo.CreateAsync(notificationLog, ct);
                                 created++;
 
-                                // 6. Try to dispatch immediately
-                                var success = await _dispatchService.DispatchNotificationAsync(notificationLog, user, ct);
+                                _logger.LogDebug(
+                                    "Created notification log {LogId} for user {UserId}, channel {Channel}",
+                                    notificationLog.Id, user.Id, channel);
+                            }
+                        }
 
+                        // 6. Dispatch pending notifications (including newly created)
+                        var pendingNotifications = await _notificationLogRepo.GetPendingAndRetryNotificationsAsync(100, ct);
+
+                        foreach (var notificationLog in pendingNotifications.Where(n => n.AlertId == alert.Id))
+                        {
+                            try
+                            {
+                                var user = notificationLog.User ?? await _userRepo.GetByIdAsync(notificationLog.UserId, ct);
+                                if (user == null)
+                                {
+                                    _logger.LogWarning("User {UserId} not found for notification {LogId}",
+                                        notificationLog.UserId, notificationLog.Id);
+                                    continue;
+                                }
+
+                                // Attempt to send notification
+                                bool success = await _dispatchService.DispatchNotificationAsync(
+                                    notificationLog,
+                                    user,
+                                    ct);
+
+                                // ===== RETRY LOGIC ===== ✅ NEW
                                 if (success)
                                 {
                                     notificationLog.Status = "sent";
                                     notificationLog.SentAt = DateTime.UtcNow;
+                                    notificationLog.UpdatedAt = DateTime.UtcNow;
                                     sent++;
+
+                                    _logger.LogInformation(
+                                        "Notification {LogId} sent successfully via {Channel} to {Destination}",
+                                        notificationLog.Id, notificationLog.Channel, notificationLog.Destination);
                                 }
                                 else
                                 {
-                                    notificationLog.Status = "failed";
-                                    notificationLog.ErrorMessage = "Dispatch failed";
+                                    // Send failed - implement retry logic
+                                    notificationLog.RetryCount++;
+
+                                    if (notificationLog.RetryCount < notificationLog.MaxRetries)
+                                    {
+                                        // Calculate exponential backoff: 5min, 15min, 45min
+                                        var retryDelayMinutes = (int)Math.Pow(3, notificationLog.RetryCount) * 5;
+
+                                        notificationLog.Status = "pending_retry";
+                                        notificationLog.ErrorMessage = $"Delivery failed. Retry {notificationLog.RetryCount}/{notificationLog.MaxRetries}";
+                                        notificationLog.UpdatedAt = DateTime.UtcNow.AddMinutes(retryDelayMinutes);
+
+                                        _logger.LogWarning(
+                                            "Notification {LogId} failed. Scheduling retry in {DelayMinutes} minutes. " +
+                                            "Attempt {RetryCount}/{MaxRetries}",
+                                            notificationLog.Id, retryDelayMinutes,
+                                            notificationLog.RetryCount, notificationLog.MaxRetries);
+                                    }
+                                    else
+                                    {
+                                        // Max retries exceeded
+                                        notificationLog.Status = "failed";
+                                        notificationLog.ErrorMessage = $"Delivery failed after {notificationLog.MaxRetries} attempts";
+                                        notificationLog.UpdatedAt = DateTime.UtcNow;
+
+                                        _logger.LogError(
+                                            "Notification {LogId} permanently failed for User {UserId}, Channel {Channel}. " +
+                                            "Max retries ({MaxRetries}) exceeded",
+                                            notificationLog.Id, notificationLog.UserId,
+                                            notificationLog.Channel, notificationLog.MaxRetries);
+                                    }
+
                                     failed++;
                                 }
 
                                 await _notificationLogRepo.UpdateAsync(notificationLog, ct);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex,
+                                    "Error dispatching notification {LogId}",
+                                    notificationLog.Id);
                             }
                         }
 
@@ -153,6 +309,12 @@ namespace FDAAPI.App.FeatG43_DispatchNotifications
                         _logger.LogError(ex, "Error processing alert {AlertId}", alert.Id);
                     }
                 }
+
+                _logger.LogInformation(
+                    "Notification dispatch completed. " +
+                    "Alerts processed: {AlertsProcessed}, " +
+                    "Notifications created: {Created}, Sent: {Sent}, Failed: {Failed}",
+                    alertsProcessed, created, sent, failed);
 
                 return new DispatchNotificationsResponse
                 {
@@ -191,12 +353,12 @@ namespace FDAAPI.App.FeatG43_DispatchNotifications
         }
 
         private List<NotificationChannel> FilterChannelsByPreferences(
-            List<NotificationChannel> channels,
+            List<NotificationChannel> availableChannels,
             UserAlertSubscription subscription)
         {
             var filtered = new List<NotificationChannel>();
 
-            foreach (var channel in channels)
+            foreach (var channel in availableChannels)
             {
                 bool enabled = channel switch
                 {
@@ -207,7 +369,10 @@ namespace FDAAPI.App.FeatG43_DispatchNotifications
                     _ => false
                 };
 
-                if (enabled) filtered.Add(channel);
+                if (enabled)
+                {
+                    filtered.Add(channel);
+                }
             }
 
             return filtered;
@@ -217,11 +382,11 @@ namespace FDAAPI.App.FeatG43_DispatchNotifications
         {
             return channel switch
             {
-                NotificationChannel.Push => "device_token_placeholder", // TODO: Get from user devices table
+                NotificationChannel.Push => user.FcmToken ?? string.Empty,
                 NotificationChannel.Email => user.Email,
-                NotificationChannel.SMS => user.PhoneNumber ?? "",
+                NotificationChannel.SMS => user.PhoneNumber ?? string.Empty,
                 NotificationChannel.InApp => user.Id.ToString(),
-                _ => ""
+                _ => string.Empty
             };
         }
     }

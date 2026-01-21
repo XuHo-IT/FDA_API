@@ -2,7 +2,6 @@
 {
     public class UpdateAlertPreferencesRequestDto
     {
-        public Guid SubscriptionId { get; set; }
         public string? MinSeverity { get; set; }
         public bool? EnablePush { get; set; }
         public bool? EnableEmail { get; set; }
