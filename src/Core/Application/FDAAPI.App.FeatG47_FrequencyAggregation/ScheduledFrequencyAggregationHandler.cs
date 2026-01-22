@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace FDAAPI.App.FeatG47_FrequencyAggregation
 {
-    public class ScheduledFrequencyAggregationHandler : IFeatureHandler<ScheduledFrequencyAggregationCommand, UnitResponse>
+    public class ScheduledFrequencyAggregationHandler : IRequestHandler<ScheduledFrequencyAggregationCommand, UnitResponse>
     {
         private readonly IMediator _mediator;
         private readonly ILogger<ScheduledFrequencyAggregationHandler> _logger;
@@ -21,7 +21,7 @@ namespace FDAAPI.App.FeatG47_FrequencyAggregation
             _logger = logger;
         }
 
-        public async Task<UnitResponse> ExecuteAsync(ScheduledFrequencyAggregationCommand request, CancellationToken cancellationToken)
+        public async Task<UnitResponse> Handle(ScheduledFrequencyAggregationCommand request, CancellationToken cancellationToken)
         {
             var (startUtc, endUtc, bucketType) = CalculateWindow(request.Mode);
 
