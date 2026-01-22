@@ -6,7 +6,7 @@ namespace FDAAPI.App.FeatG41_UpdateAlertPreferences
     {
         public UpdateAlertPreferencesValidator()
         {
-            RuleFor(x => x.SubscriptionId).NotEmpty();
+            RuleFor(x => x.AreaId).NotEmpty();
             RuleFor(x => x.UserId).NotEmpty();
 
             RuleFor(x => x.MinSeverity)

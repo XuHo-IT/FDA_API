@@ -3,9 +3,9 @@
 namespace FDAAPI.App.FeatG41_UpdateAlertPreferences
 {
     public record UpdateAlertPreferencesRequest(
-        Guid SubscriptionId,
-        Guid UserId,                    // For authorization check
-        string? MinSeverity = null,     // Optional updates
+        Guid AreaId,
+        Guid UserId,
+        string? MinSeverity = null,
         bool? EnablePush = null,
         bool? EnableEmail = null,
         bool? EnableSms = null,

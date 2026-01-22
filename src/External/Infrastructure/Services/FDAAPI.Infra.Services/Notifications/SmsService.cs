@@ -1,36 +1,42 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using FDAAPI.Infra.Services.Notifications;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Twilio;
+using Twilio.Rest.Api.V2010.Account;
+using Twilio.Types;
 
-namespace FDAAPI.Infra.Services.Notifications
+public class SmsService : ISmsService
 {
-    public class SmsService : ISmsService
+    private readonly IConfiguration _config;
+    private readonly ILogger<SmsService> _logger;
+
+    public SmsService(IConfiguration config, ILogger<SmsService> logger)
     {
-        private readonly ILogger<SmsService> _logger;
+        _config = config;
+        _logger = logger;
 
-        public SmsService(ILogger<SmsService> logger)
+        TwilioClient.Init(_config["Twilio:AccountSid"], _config["Twilio:AuthToken"]);
+    }
+
+    public async Task<bool> SendSmsAsync(string phoneNumber, string message, CancellationToken ct)
+    {
+        try
         {
-            _logger = logger;
+            var messageResource = await MessageResource.CreateAsync(
+                to: new PhoneNumber(phoneNumber),
+                from: new PhoneNumber(_config["Twilio:PhoneNumber"]),
+                body: message
+            );
+
+            _logger.LogInformation("SMS sent. SID: {Sid}, Status: {Status}",
+                messageResource.Sid, messageResource.Status);
+
+            return messageResource.Status != MessageResource.StatusEnum.Failed;
         }
-
-        public async Task<bool> SendSmsAsync(
-            string phoneNumber,
-            string message,
-            CancellationToken ct = default)
+        catch (Exception ex)
         {
-            try
-            {
-                _logger.LogInformation("Sending SMS to {PhoneNumber}", phoneNumber);
-
-                // TODO: Implement Twilio/AWS SNS integration
-                await Task.Delay(300, ct);
-
-                _logger.LogInformation("SMS sent successfully");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to send SMS to {PhoneNumber}", phoneNumber);
-                return false;
-            }
+            _logger.LogError(ex, "Failed to send SMS");
+            return false;
         }
     }
 }

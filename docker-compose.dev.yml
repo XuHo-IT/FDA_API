@@ -34,3 +34,5 @@ services:
 
 volumes:
   postgres_data:
+    external: true
+    name: fda_api_postgres_data

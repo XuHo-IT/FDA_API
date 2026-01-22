@@ -39,10 +39,17 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB
         public DbSet<AnalyticsJob> AnalyticsJobs { get; set; } = null!;
         public DbSet<AnalyticsJobRun> AnalyticsJobRuns { get; set; } = null!;
         public DbSet<FloodEvent> FloodEvents { get; set; } = null!;
+        public DbSet<AlertCooldownConfig> AlertCooldownConfigs { get; set; } = null!;
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            if (env == "UAT")
+            {
+                modelBuilder.HasDefaultSchema("uat_schema");
+            }
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         }
     }

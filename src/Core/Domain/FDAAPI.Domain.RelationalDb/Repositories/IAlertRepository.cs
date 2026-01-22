@@ -24,5 +24,8 @@ namespace FDAAPI.Domain.RelationalDb.Repositories
         Task<IEnumerable<Alert>> GetUnnotifiedAlertsAsync(
             int take = 100,
             CancellationToken ct = default);
+        Task<int> CountAlertsAsync(DateTime? fromDate, DateTime? toDate, CancellationToken ct = default);
+        Task<Dictionary<string, int>> CountAlertsBySeverityAsync(DateTime? fromDate, DateTime? toDate, CancellationToken ct = default);
+        Task<Dictionary<string, int>> CountAlertsByStatusAsync(DateTime? fromDate, DateTime? toDate, CancellationToken ct = default);
     }
 }
