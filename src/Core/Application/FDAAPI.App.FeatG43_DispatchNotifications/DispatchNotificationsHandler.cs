@@ -19,6 +19,7 @@ namespace FDAAPI.App.FeatG43_DispatchNotifications
         private readonly ILogger<DispatchNotificationsHandler> _logger;
         private readonly IStationRepository _stationRepo;
         private readonly IAreaRepository _areaRepo;
+        private readonly IUserSubscriptionRepository _userSubscriptionRepo;
 
         public DispatchNotificationsHandler(
             IAlertRepository alertRepo,
@@ -30,7 +31,8 @@ namespace FDAAPI.App.FeatG43_DispatchNotifications
             INotificationDispatchService dispatchService,
             IStationRepository stationRepo,
             IAreaRepository areaRepo,
-            ILogger<DispatchNotificationsHandler> logger)
+            ILogger<DispatchNotificationsHandler> logger,
+            IUserSubscriptionRepository userSubscriptionRepo)
         {
             _alertRepo = alertRepo;
             _subscriptionRepo = subscriptionRepo;
@@ -42,6 +44,7 @@ namespace FDAAPI.App.FeatG43_DispatchNotifications
             _stationRepo = stationRepo;
             _areaRepo = areaRepo;
             _logger = logger;
+            _userSubscriptionRepo = userSubscriptionRepo;
         }
 
         public async Task<DispatchNotificationsResponse> Handle(
@@ -143,7 +146,7 @@ namespace FDAAPI.App.FeatG43_DispatchNotifications
                             }
 
                             // Get user tier (from pricing plan or default to Free)
-                            var userTier = SubscriptionTier.Free; // TODO: Get from user_subscriptions table
+                            var userTier = await _userSubscriptionRepo.GetUserTierAsync(user.Id, ct);
 
                             // Check severity threshold
                             if (!_routingService.ShouldNotifyUser(alert.Severity, userTier, subscription.MinSeverity))
@@ -161,12 +164,22 @@ namespace FDAAPI.App.FeatG43_DispatchNotifications
                                 continue;
                             }
 
-                            // 4. Determine priority and channels
+                            // 4. Determine priority and available channels
                             var priority = _routingService.DeterminePriority(alert.Severity, userTier);
-                            var availableChannels = _routingService.GetChannelsForPriority(priority, userTier);
+                            var availableChannels = _routingService.GetAvailableChannelsForTier(userTier);
 
-                            // Filter by user preferences
-                            var userChannels = FilterChannelsByPreferences(availableChannels, subscription);
+                            // Filter by user preferences from UserAlertSubscription
+                            var userChannels = new List<NotificationChannel>();
+                            if (subscription.EnablePush && availableChannels.Contains(NotificationChannel.Push))
+                                userChannels.Add(NotificationChannel.Push);
+                            if (subscription.EnableEmail && availableChannels.Contains(NotificationChannel.Email))
+                                userChannels.Add(NotificationChannel.Email);
+                            if (subscription.EnableSms && availableChannels.Contains(NotificationChannel.SMS))
+                                userChannels.Add(NotificationChannel.SMS);
+
+                            // Always add InApp
+                            if (availableChannels.Contains(NotificationChannel.InApp))
+                                userChannels.Add(NotificationChannel.InApp);
 
                             if (!userChannels.Any())
                             {
@@ -190,22 +203,27 @@ namespace FDAAPI.App.FeatG43_DispatchNotifications
                                     ? _templateService.GenerateSmsContent(alert, station!)
                                     : _templateService.GenerateBody(alert, station!, channel);
 
+                                // Calculate dispatch delay based on tier and priority
+                                var dispatchDelay = _routingService.GetDispatchDelaySeconds(userTier, priority);
+                                var maxRetries = _routingService.GetMaxRetriesForTier(userTier, priority);
+
                                 var notificationLog = new NotificationLog
                                 {
                                     Id = Guid.NewGuid(),
                                     UserId = user.Id,
                                     AlertId = alert.Id,
                                     Channel = channel,
+                                    Priority = priority,
                                     Destination = destination,
                                     Content = content,
-                                    Priority = priority,
+                                    Title = _templateService.GenerateTitle(alert, priority),
                                     Status = "pending",
                                     RetryCount = 0,
-                                    MaxRetries = 3, // Default max retries
+                                    MaxRetries = maxRetries, // Tier-specific retries
                                     CreatedBy = Guid.Empty,
                                     CreatedAt = DateTime.UtcNow,
                                     UpdatedBy = Guid.Empty,
-                                    UpdatedAt = DateTime.UtcNow
+                                    UpdatedAt = DateTime.UtcNow.AddSeconds(dispatchDelay) // Delayed dispatch time
                                 };
 
                                 await _notificationLogRepo.CreateAsync(notificationLog, ct);

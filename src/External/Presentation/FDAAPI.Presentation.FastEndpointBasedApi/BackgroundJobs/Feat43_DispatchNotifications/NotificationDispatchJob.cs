@@ -1,4 +1,5 @@
 ﻿using FDAAPI.App.FeatG43_DispatchNotifications;
+using FDAAPI.Domain.RelationalDb.Repositories;
 using MediatR;
 
 namespace FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.Feat43_DispatchNotifications

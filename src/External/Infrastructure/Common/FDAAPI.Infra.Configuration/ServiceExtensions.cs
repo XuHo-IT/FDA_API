@@ -85,6 +85,9 @@ using FDAAPI.App.FeatG68_DeleteSubscription;
 using FDAAPI.App.FeatG69_AdminGetAllSubscriptions;
 using FDAAPI.App.FeatG7_AuthLogin;
 using FDAAPI.App.FeatG70_AdminGetAlertStats;
+using FDAAPI.App.FeatG71_GetUserSubscription;
+using FDAAPI.App.FeatG72_SubscribeToPlan;
+using FDAAPI.App.FeatG73_CancelSubscription;
 using FDAAPI.App.FeatG8_AuthRefreshToken;
 using FDAAPI.App.FeatG9_AuthLogout;
 using FDAAPI.Domain.RelationalDb.RealationalDB;
@@ -259,6 +262,9 @@ namespace FDAAPI.Infra.Configuration
                 typeof(DeleteSubscriptionRequest).Assembly,
                 typeof(AdminGetAlertStatsRequest).Assembly,
                 typeof(AdminGetAllSubscriptionsRequest).Assembly,
+                typeof(GetUserSubscriptionRequest).Assembly,
+                typeof(SubscribeToPlanRequest).Assembly,
+                typeof(CancelSubscriptionRequest).Assembly
             };
 
             // Register MediatR with all feature assemblies and ValidationBehavior
@@ -311,6 +317,8 @@ namespace FDAAPI.Infra.Configuration
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<ISmsService, SmsService>();
             services.AddScoped<IAlertCooldownConfigRepository, PgsqlAlertCooldownConfigRepository>();
+            services.AddScoped<IUserSubscriptionRepository, PgsqlUserSubscriptionRepository>();
+            services.AddScoped<IPricingPlanRepository, PgsqlPricingPlanRepository>();
 
             // OAuth provider repository
             services.AddScoped<IUserOAuthProviderRepository, PgsqlUserOAuthProviderRepository>();

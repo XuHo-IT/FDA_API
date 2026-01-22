@@ -29,16 +29,21 @@ namespace FDAAPI.Infra.Persistence.Repositories
             return true;
         }
 
-        public async Task<IEnumerable<NotificationLog>> GetPendingNotificationsAsync(
-            int maxRetries = 3,
+        public async Task<List<NotificationLog>> GetPendingAndRetryNotificationsAsync(
+            int limit,
             CancellationToken ct = default)
         {
             return await _context.NotificationLogs
-                .AsNoTracking()
-                .Include(n => n.Alert)
+                .Where(n =>
+                    (n.Status == "pending" && n.UpdatedAt <= DateTime.UtcNow) || // Respect delay
+                    (n.Status == "pending_retry" && n.UpdatedAt <= DateTime.UtcNow)
+                )
+                .OrderByDescending(n => n.Priority)
+                .ThenBy(n => n.CreatedAt)
+                .Take(limit)
                 .Include(n => n.User)
-                .Where(n => n.Status == "pending" && n.RetryCount < maxRetries)
-                .OrderBy(n => n.CreatedAt)
+                .Include(n => n.Alert)
+                    .ThenInclude(a => a!.Station)
                 .ToListAsync(ct);
         }
 
@@ -69,23 +74,21 @@ namespace FDAAPI.Infra.Persistence.Repositories
                 .AnyAsync(n => n.UserId == userId && n.AlertId == alertId, ct);
         }
 
-        public async Task<List<NotificationLog>> GetPendingAndRetryNotificationsAsync(
-            int limit,
+        public async Task<IEnumerable<NotificationLog>> GetPendingNotificationsAsync(
+            int maxRetries = 3,
             CancellationToken ct = default)
-                {
-                    return await _context.NotificationLogs
-                        .Where(n =>
-                            n.Status == "pending" ||
-                            (n.Status == "pending_retry" && n.UpdatedAt <= DateTime.UtcNow)
-                        )
-                        .OrderByDescending(n => n.Priority)
-                        .ThenBy(n => n.CreatedAt)
-                        .Take(limit)
-                        .Include(n => n.User)
-                        .Include(n => n.Alert)
-                        .AsNoTracking()
-                        .ToListAsync(ct);
-                }
+        {
+            return await _context.NotificationLogs
+                .AsNoTracking()
+                .Include(n => n.Alert)
+                .Include(n => n.User)
+                .Where(n => n.Status == "pending" &&
+                            n.RetryCount < maxRetries &&
+                            n.UpdatedAt <= DateTime.UtcNow) // Check delay
+                .OrderByDescending(n => n.Priority) // PRIORITY FIRST
+                .ThenBy(n => n.CreatedAt)
+                .ToListAsync(ct);
+        }
 
         public async Task<int> CountNotificationsAsync(
             DateTime? fromDate,

@@ -1,69 +1,85 @@
-﻿using FDAAPI.Infra.Services.Notifications;
-using FirebaseAdmin;
+﻿using FirebaseAdmin;
 using FirebaseAdmin.Messaging;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-public class PushNotificationService : IPushNotificationService
+namespace FDAAPI.Infra.Services.Notifications
 {
-    private readonly FirebaseMessaging _messaging;
-    private readonly ILogger<PushNotificationService> _logger;
-
-    public PushNotificationService(ILogger<PushNotificationService> logger, IConfiguration config)
+    public class PushNotificationService : IPushNotificationService
     {
-        _logger = logger;
+        private readonly FirebaseMessaging _messaging;
+        private readonly ILogger<PushNotificationService> _logger;
 
-        // Initialize Firebase Admin SDK
-        if (FirebaseApp.DefaultInstance == null)
+        public PushNotificationService(ILogger<PushNotificationService> logger, IConfiguration config)
         {
-            FirebaseApp.Create(new AppOptions()
+            _logger = logger;
+
+            // Initialize Firebase Admin SDK
+            if (FirebaseApp.DefaultInstance == null)
             {
-                Credential = GoogleCredential.FromFile(config["Firebase:ServiceAccountKeyPath"])
-            });
+                FirebaseApp.Create(new AppOptions()
+                {
+                    Credential = GoogleCredential.FromFile(config["Firebase:ServiceAccountKeyPath"])
+                });
+            }
+            _messaging = FirebaseMessaging.DefaultInstance;
         }
-        _messaging = FirebaseMessaging.DefaultInstance;
-    }
 
-    public async Task<bool> SendPushNotificationAsync(
-        string deviceToken,
-        string title,
-        string body,
-        Dictionary<string, string>? data,
-        CancellationToken ct)
-    {
-        try
+        public async Task<bool> SendPushNotificationAsync(
+            string deviceToken,
+            string title,
+            string body,
+            Domain.RelationalDb.Enums.NotificationPriority priority,
+            Dictionary<string, string>? data,
+            CancellationToken ct)
         {
-            var message = new Message()
+            try
             {
-                Token = deviceToken,
-                Notification = new Notification()
+                // Map NotificationPriority to FCM priority
+                var fcmPriority = priority >= Domain.RelationalDb.Enums.NotificationPriority.High
+                    ? FirebaseAdmin.Messaging.Priority.High
+                    : FirebaseAdmin.Messaging.Priority.Normal;
+
+                var apnsPriority = priority >= Domain.RelationalDb.Enums.NotificationPriority.High ? "10" : "5";
+
+                var message = new Message()
                 {
-                    Title = title,
-                    Body = body
-                },
-                Data = data,
-                Android = new AndroidConfig()
-                {
-                    Priority = Priority.High
-                },
-                Apns = new ApnsConfig()
-                {
-                    Aps = new Aps()
+                    Token = deviceToken,
+                    Notification = new Notification()
                     {
-                        Sound = "default"
+                        Title = title,
+                        Body = body
+                    },
+                    Data = data,
+                    Android = new AndroidConfig()
+                    {
+                        Priority = fcmPriority
+                    },
+                    Apns = new ApnsConfig()
+                    {
+                        Headers = new Dictionary<string, string>
+                        {
+                            ["apns-priority"] = apnsPriority
+                        },
+                        Aps = new Aps()
+                        {
+                            Sound = priority >= Domain.RelationalDb.Enums.NotificationPriority.High ? "critical.wav" : "default"
+                        }
                     }
-                }
-            };
+                };
 
-            string response = await _messaging.SendAsync(message, ct);
-            _logger.LogInformation("FCM sent successfully. MessageId: {MessageId}", response);
-            return true;
-        }
-        catch (FirebaseMessagingException ex)
-        {
-            _logger.LogError(ex, "FCM error: {ErrorCode}", ex.MessagingErrorCode);
-            return false;
+                string response = await _messaging.SendAsync(message, ct);
+                _logger.LogInformation(
+                    "FCM sent with {Priority} priority. MessageId: {MessageId}",
+                    fcmPriority, response);
+                return true;
+            }
+            catch (FirebaseMessagingException ex)
+            {
+                _logger.LogError(ex, "FCM error: {ErrorCode}", ex.MessagingErrorCode);
+                return false;
+            }
         }
     }
-}
+} // ADD THIS CLOSING BRACE

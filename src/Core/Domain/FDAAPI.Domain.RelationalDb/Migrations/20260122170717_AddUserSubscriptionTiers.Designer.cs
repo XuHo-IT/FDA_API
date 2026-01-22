@@ -3,6 +3,7 @@ using System;
 using FDAAPI.Domain.RelationalDb.RealationalDB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FDAAPI.Domain.RelationalDb.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260122170717_AddUserSubscriptionTiers")]
+    partial class AddUserSubscriptionTiers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -207,52 +210,52 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111111"),
                             CooldownMinutes = 30,
-                            CreatedAt = new DateTime(2026, 1, 22, 18, 17, 7, 712, DateTimeKind.Utc).AddTicks(9740),
+                            CreatedAt = new DateTime(2026, 1, 22, 17, 7, 16, 63, DateTimeKind.Utc).AddTicks(2295),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
                             Description = "Low priority alerts - 30 min cooldown",
                             IsActive = true,
                             MaxNotificationsPerHour = 2,
                             Severity = "info",
-                            UpdatedAt = new DateTime(2026, 1, 22, 18, 17, 7, 712, DateTimeKind.Utc).AddTicks(9740),
+                            UpdatedAt = new DateTime(2026, 1, 22, 17, 7, 16, 63, DateTimeKind.Utc).AddTicks(2295),
                             UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
                         },
                         new
                         {
                             Id = new Guid("22222222-2222-2222-2222-222222222222"),
                             CooldownMinutes = 20,
-                            CreatedAt = new DateTime(2026, 1, 22, 18, 17, 7, 712, DateTimeKind.Utc).AddTicks(9740),
+                            CreatedAt = new DateTime(2026, 1, 22, 17, 7, 16, 63, DateTimeKind.Utc).AddTicks(2295),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
                             Description = "Caution alerts - 20 min cooldown",
                             IsActive = true,
                             MaxNotificationsPerHour = 3,
                             Severity = "caution",
-                            UpdatedAt = new DateTime(2026, 1, 22, 18, 17, 7, 712, DateTimeKind.Utc).AddTicks(9740),
+                            UpdatedAt = new DateTime(2026, 1, 22, 17, 7, 16, 63, DateTimeKind.Utc).AddTicks(2295),
                             UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
                         },
                         new
                         {
                             Id = new Guid("33333333-3333-3333-3333-333333333333"),
                             CooldownMinutes = 10,
-                            CreatedAt = new DateTime(2026, 1, 22, 18, 17, 7, 712, DateTimeKind.Utc).AddTicks(9740),
+                            CreatedAt = new DateTime(2026, 1, 22, 17, 7, 16, 63, DateTimeKind.Utc).AddTicks(2295),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
                             Description = "Warning alerts - 10 min cooldown",
                             IsActive = true,
                             MaxNotificationsPerHour = 6,
                             Severity = "warning",
-                            UpdatedAt = new DateTime(2026, 1, 22, 18, 17, 7, 712, DateTimeKind.Utc).AddTicks(9740),
+                            UpdatedAt = new DateTime(2026, 1, 22, 17, 7, 16, 63, DateTimeKind.Utc).AddTicks(2295),
                             UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
                         },
                         new
                         {
                             Id = new Guid("44444444-4444-4444-4444-444444444444"),
                             CooldownMinutes = 5,
-                            CreatedAt = new DateTime(2026, 1, 22, 18, 17, 7, 712, DateTimeKind.Utc).AddTicks(9740),
+                            CreatedAt = new DateTime(2026, 1, 22, 17, 7, 16, 63, DateTimeKind.Utc).AddTicks(2295),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
                             Description = "Critical alerts - 5 min cooldown",
                             IsActive = true,
                             MaxNotificationsPerHour = 12,
                             Severity = "critical",
-                            UpdatedAt = new DateTime(2026, 1, 22, 18, 17, 7, 712, DateTimeKind.Utc).AddTicks(9740),
+                            UpdatedAt = new DateTime(2026, 1, 22, 17, 7, 16, 63, DateTimeKind.Utc).AddTicks(2295),
                             UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
                         });
                 });
@@ -710,12 +713,6 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
                         .HasDefaultValue("pending");
-
-                    b.Property<string>("Title")
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasDefaultValue("Flood Notification");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");

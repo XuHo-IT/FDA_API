@@ -89,10 +89,12 @@ namespace FDAAPI.App.FeatG40_GetAlertHistory
                         {
                             NotificationId = n.Id,
                             Channel = n.Channel,
+                            Priority = n.Priority,
                             Status = n.Status,
                             SentAt = n.SentAt,
                             DeliveredAt = n.DeliveredAt,
-                            ErrorMessage = n.ErrorMessage
+                            ErrorMessage = n.ErrorMessage,
+                            Title = n.Title
                         }).ToList()
                     };
 
