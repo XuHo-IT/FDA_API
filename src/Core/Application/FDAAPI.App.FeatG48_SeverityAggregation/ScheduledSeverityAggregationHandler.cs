@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace FDAAPI.App.FeatG48_SeverityAggregation
 {
-    public class ScheduledSeverityAggregationHandler : IFeatureHandler<ScheduledSeverityAggregationCommand, UnitResponse>
+    public class ScheduledSeverityAggregationHandler : IRequestHandler<ScheduledSeverityAggregationCommand, UnitResponse>
     {
         private readonly IMediator _mediator;
         private readonly ILogger<ScheduledSeverityAggregationHandler> _logger;
@@ -21,7 +21,7 @@ namespace FDAAPI.App.FeatG48_SeverityAggregation
             _logger = logger;
         }
 
-        public async Task<UnitResponse> ExecuteAsync(ScheduledSeverityAggregationCommand request, CancellationToken cancellationToken)
+        public async Task<UnitResponse> Handle(ScheduledSeverityAggregationCommand request, CancellationToken cancellationToken)
         {
             var (startUtc, endUtc, bucketType) = CalculateWindow(request.Mode);
 
