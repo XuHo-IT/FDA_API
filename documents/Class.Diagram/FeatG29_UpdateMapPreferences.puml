@@ -1,0 +1,176 @@
+@startuml FeatG29_UpdateMapPreferences_ClassDiagram
+!define RECTANGLE class
+
+skinparam backgroundColor #FEFEFE
+skinparam classBackgroundColor #FFFFFF
+skinparam classBorderColor #000000
+skinparam packageBackgroundColor #E8E8E8
+skinparam packageBorderColor #666666
+skinparam stereotypeCBackgroundColor #ADD1B2
+skinparam arrowColor #333333
+
+title FeatG29_UpdateMapPreferences - Class Diagram\n(Domain-Centric Architecture + CQRS Pattern)
+
+' ============================================
+' PRESENTATION LAYER
+' ============================================
+package "PRESENTATION LAYER" #E1D5E7 {
+  class UpdateMapPreferencesEndpoint <<Endpoint>> {
+    - _mediator: IMediator
+    --
+    + Configure(): void
+    + HandleAsync(req: UpdateMapPreferencesRequestDto, ct: CancellationToken): Task
+  }
+
+  class UpdateMapPreferencesRequestDto <<DTO>> {
+    + BaseMap: string
+    + Overlays: OverlaySettings
+    + Opacity: OpacitySettings
+  }
+
+  class UpdateMapPreferencesResponseDto <<DTO>> {
+    + Success: bool
+    + Message: string
+  }
+
+  UpdateMapPreferencesEndpoint --> UpdateMapPreferencesRequestDto : uses
+  UpdateMapPreferencesEndpoint --> UpdateMapPreferencesResponseDto : returns
+}
+
+' ============================================
+' APPLICATION LAYER
+' ============================================
+package "APPLICATION LAYER" #D5E8D4 {
+  class UpdateMapPreferencesRequest <<Record>> {
+    + UserId: Guid
+    + Settings: MapLayerSettings
+  }
+
+  class UpdateMapPreferencesResponse <<Response>> {
+    + Success: bool
+    + Message: string
+    + StatusCode: UpdateMapPreferencesResponseStatusCode
+  }
+
+  class UpdateMapPreferencesHandler <<Handler>> {
+    - _preferenceRepository: IUserPreferenceRepository
+    --
+    + Handle(request: UpdateMapPreferencesRequest, ct): Task<UpdateMapPreferencesResponse>
+    - ValidateSettings(settings: MapLayerSettings): string?
+  }
+
+  class UpdateMapPreferencesRequestValidator <<Validator>> {
+    --
+    + UpdateMapPreferencesRequestValidator()
+  }
+
+  interface IRequestHandler {
+    + Handle(request, ct): Task<Response>
+  }
+
+  enum UpdateMapPreferencesResponseStatusCode <<Enumeration>> {
+    Success
+    ValidationFailed
+    UnknownError
+  }
+
+  class MapLayerSettings <<DTO>> {
+    + BaseMap: string
+    + Overlays: OverlaySettings
+    + Opacity: OpacitySettings
+  }
+
+  class OverlaySettings <<DTO>> {
+    + Flood: bool
+    + Traffic: bool
+    + Weather: bool
+  }
+
+  class OpacitySettings <<DTO>> {
+    + Flood: int
+    + Weather: int
+  }
+
+  UpdateMapPreferencesHandler ..|> IRequestHandler : implements
+  UpdateMapPreferencesHandler --> UpdateMapPreferencesRequest : handles
+  UpdateMapPreferencesHandler --> UpdateMapPreferencesResponse : returns
+  UpdateMapPreferencesResponse --> UpdateMapPreferencesResponseStatusCode : contains
+  UpdateMapPreferencesRequestValidator --> UpdateMapPreferencesRequest : validates
+}
+
+' ============================================
+' DOMAIN LAYER - Entities
+' ============================================
+package "DOMAIN LAYER - Entities" #F8CECC {
+  class UserPreference <<Entity>> {
+    + Id: Guid
+    + UserId: Guid
+    + PreferenceKey: string
+    + PreferenceValue: string
+    + CreatedAt: DateTime
+    + CreatedBy: Guid
+    + UpdatedAt: DateTime
+    + UpdatedBy: Guid
+  }
+}
+
+' ============================================
+' DOMAIN LAYER - Repositories
+' ============================================
+package "DOMAIN LAYER - Repositories" #FFE6CC {
+  interface IUserPreferenceRepository <<Interface>> {
+    + GetByUserAndKeyAsync(userId: Guid, key: string, ct): Task<UserPreference?>
+    + CreateAsync(pref: UserPreference, ct): Task
+    + UpdateAsync(pref: UserPreference, ct): Task<bool>
+  }
+}
+
+' ============================================
+' COMMON SERVICES
+' ============================================
+package "COMMON SERVICES" #E1D5E7 {
+  interface IMediator <<Interface>> {
+    + Send<TResponse>(request, ct): Task<TResponse>
+  }
+
+  interface IFeatureRequest <<Interface>> { }
+  interface IFeatureResponse <<Interface>> { }
+
+  UpdateMapPreferencesRequest ..|> IFeatureRequest
+  UpdateMapPreferencesResponse ..|> IFeatureResponse
+}
+
+' ============================================
+' RELATIONSHIPS
+' ============================================
+UpdateMapPreferencesEndpoint ..> IMediator : uses
+UpdateMapPreferencesEndpoint ..> UpdateMapPreferencesRequest : sends
+
+UpdateMapPreferencesHandler ..> IUserPreferenceRepository : uses
+
+UpdateMapPreferencesRequestDto ..> MapLayerSettings : builds
+UpdateMapPreferencesRequestDto ..> UpdateMapPreferencesRequest : maps to
+UpdateMapPreferencesResponseDto ..> UpdateMapPreferencesResponse : maps from
+
+UserPreference "1" *-- "1" MapLayerSettings : stored as JSON
+
+' ============================================
+' LEGEND
+' ============================================
+legend bottom left
+  | Color | Layer |
+  | #E1D5E7 | Presentation Layer & Common Services |
+  | #D5E8D4 | Application Layer |
+  | #F8CECC | Domain Entities |
+  | #FFE6CC | Domain Repositories |
+  | | |
+  | Line Style | Meaning |
+  | --> | Dependency |
+  | ..> | Uses/Sends |
+  | ..\|> | Implements |
+  | *-- | Composition |
+  | | |
+  | Note: Endpoint requires JWT authentication |
+endlegend
+
+@enduml

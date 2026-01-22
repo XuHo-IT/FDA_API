@@ -1,0 +1,333 @@
+@startuml FeatG32-37_AreaCRUD_ClassDiagram
+!define RECTANGLE class
+
+skinparam backgroundColor #FEFEFE
+skinparam classBackgroundColor #FFFFFF
+skinparam classBorderColor #000000
+skinparam packageBackgroundColor #E8E8E8
+skinparam packageBorderColor #666666
+skinparam stereotypeCBackgroundColor #ADD1B2
+skinparam arrowColor #333333
+
+title FeatG32-37 - Area Management CRUD\n(Domain-Centric Architecture + CQRS Pattern)
+
+' ============================================
+' APPLICATION LAYER - CREATE (G32)
+' ============================================
+package "APPLICATION LAYER - CREATE (G32)" #D5E8D4 {
+  class CreateAreaRequest <<Record>> {
+    + UserId: Guid
+    + Name: string
+    + Latitude: decimal
+    + Longitude: decimal
+    + RadiusMeters: int
+    + AddressText: string
+  }
+
+  class CreateAreaResponse <<Response>> {
+    + Success: bool
+    + Message: string
+    + StatusCode: AreaStatusCode
+    + Data: AreaDto?
+  }
+
+  class CreateAreaHandler <<Handler>> {
+    - _areaRepository: IAreaRepository
+    - _areaMapper: IAreaMapper
+    --
+    + Handle(request, ct): Task<CreateAreaResponse>
+    - CalculateHaversineDistance(): double
+  }
+
+  class CreateAreaRequestValidator <<Validator>> {
+  }
+}
+
+' ============================================
+' APPLICATION LAYER - LIST (G33)
+' ============================================
+package "APPLICATION LAYER - LIST (G33)" #D5E8D4 {
+  class AreaListByUserRequest <<Record>> {
+    + UserId: Guid
+    + SearchTerm: string?
+    + PageNumber: int
+    + PageSize: int
+  }
+
+  class AreaListByUserResponse <<Response>> {
+    + Success: bool
+    + Message: string
+    + StatusCode: AreaStatusCode
+    + Areas: List<AreaDto>
+    + TotalCount: int
+  }
+
+  class AreaListByUserHandler <<Handler>> {
+    - _areaRepository: IAreaRepository
+    - _areaMapper: IAreaMapper
+    --
+    + Handle(request, ct): Task<AreaListByUserResponse>
+  }
+
+  class AreaListByUserRequestValidator <<Validator>> {
+  }
+}
+
+' ============================================
+' APPLICATION LAYER - GET (G35)
+' ============================================
+package "APPLICATION LAYER - GET (G35)" #D5E8D4 {
+  class AreaGetRequest <<Record>> {
+    + Id: Guid
+  }
+
+  class AreaGetResponse <<Response>> {
+    + Success: bool
+    + Message: string
+    + StatusCode: AreaStatusCode
+    + Area: AreaDto?
+  }
+
+  class AreaGetHandler <<Handler>> {
+    - _areaRepository: IAreaRepository
+    - _areaMapper: IAreaMapper
+    --
+    + Handle(request, ct): Task<AreaGetResponse>
+  }
+
+  class AreaGetRequestValidator <<Validator>> {
+  }
+}
+
+' ============================================
+' APPLICATION LAYER - UPDATE (G36)
+' ============================================
+package "APPLICATION LAYER - UPDATE (G36)" #D5E8D4 {
+  class UpdateAreaRequest <<Record>> {
+    + Id: Guid
+    + UserId: Guid
+    + UserRole: string
+    + Name: string
+    + Latitude: decimal
+    + Longitude: decimal
+    + RadiusMeters: int
+    + AddressText: string
+  }
+
+  class UpdateAreaResponse <<Response>> {
+    + Success: bool
+    + Message: string
+    + StatusCode: AreaStatusCode
+    + Data: AreaDto?
+  }
+
+  class UpdateAreaHandler <<Handler>> {
+    - _areaRepository: IAreaRepository
+    - _areaMapper: IAreaMapper
+    --
+    + Handle(request, ct): Task<UpdateAreaResponse>
+  }
+
+  class UpdateAreaRequestValidator <<Validator>> {
+  }
+}
+
+' ============================================
+' APPLICATION LAYER - DELETE (G37)
+' ============================================
+package "APPLICATION LAYER - DELETE (G37)" #D5E8D4 {
+  class DeleteAreaRequest <<Record>> {
+    + Id: Guid
+    + UserId: Guid
+    + UserRole: string
+  }
+
+  class DeleteAreaResponse <<Response>> {
+    + Success: bool
+    + Message: string
+    + StatusCode: AreaStatusCode
+  }
+
+  class DeleteAreaHandler <<Handler>> {
+    - _areaRepository: IAreaRepository
+    --
+    + Handle(request, ct): Task<DeleteAreaResponse>
+  }
+
+  class DeleteAreaRequestValidator <<Validator>> {
+  }
+}
+
+' ============================================
+' SHARED APPLICATION COMPONENTS
+' ============================================
+package "SHARED - APPLICATION" #D5E8D4 {
+  interface IRequestHandler {
+    + Handle(request, ct): Task<Response>
+  }
+
+  enum AreaStatusCode <<Enumeration>> {
+    Success
+    Created
+    NotFound
+    Conflict
+    TooManyRequests
+    Forbidden
+    InternalServerError
+  }
+
+  class AreaDto <<DTO>> {
+    + Id: Guid
+    + UserId: Guid
+    + Name: string
+    + Latitude: decimal
+    + Longitude: decimal
+    + RadiusMeters: int
+    + AddressText: string
+    + CreatedAt: DateTime
+    + UpdatedAt: DateTime
+  }
+
+  CreateAreaHandler ..|> IRequestHandler
+  AreaListByUserHandler ..|> IRequestHandler
+  AreaGetHandler ..|> IRequestHandler
+  UpdateAreaHandler ..|> IRequestHandler
+  DeleteAreaHandler ..|> IRequestHandler
+
+  CreateAreaResponse --> AreaStatusCode
+  AreaListByUserResponse --> AreaStatusCode
+  AreaGetResponse --> AreaStatusCode
+  UpdateAreaResponse --> AreaStatusCode
+  DeleteAreaResponse --> AreaStatusCode
+}
+
+' ============================================
+' DOMAIN LAYER - Entities
+' ============================================
+package "DOMAIN LAYER - Entities" #F8CECC {
+  class Area <<Entity>> {
+    + Id: Guid
+    + UserId: Guid
+    + Name: string
+    + Latitude: decimal
+    + Longitude: decimal
+    + RadiusMeters: int
+    + AddressText: string
+    + CreatedBy: Guid
+    + CreatedAt: DateTime
+    + UpdatedBy: Guid
+    + UpdatedAt: DateTime
+  }
+
+  class User <<Entity>> {
+    + Id: Guid
+    + Email: string
+    + FullName: string
+  }
+
+  User "1" *-- "many" Area : owns
+}
+
+' ============================================
+' DOMAIN LAYER - Repositories
+' ============================================
+package "DOMAIN LAYER - Repositories" #FFE6CC {
+  interface IAreaRepository <<Interface>> {
+    + CreateAsync(area: Area, ct): Task
+    + GetByIdAsync(id: Guid, ct): Task<Area?>
+    + GetByUserIdAsync(userId, search, page, size, ct): Task<(List<Area>, int)>
+    + UpdateAsync(area: Area, ct): Task<bool>
+    + DeleteAsync(id: Guid, ct): Task<bool>
+    + CountByUserIdAsync(userId: Guid, ct): Task<int>
+    + GetByUserIdAndNameAsync(userId: Guid, name: string, ct): Task<Area?>
+    + GetUserAreasWithinRadiusAsync(userId, lat, lon, radius, ct): Task<List<Area>>
+  }
+}
+
+' ============================================
+' COMMON SERVICES
+' ============================================
+package "COMMON SERVICES" #E1D5E7 {
+  interface IMediator <<Interface>> {
+    + Send<TResponse>(request, ct): Task<TResponse>
+  }
+
+  interface IAreaMapper <<Interface>> {
+    + MapToDto(area: Area): AreaDto
+    + MapToDtoList(areas: List<Area>): List<AreaDto>
+  }
+
+  interface IFeatureRequest <<Interface>> { }
+  interface IFeatureResponse <<Interface>> { }
+
+  CreateAreaRequest ..|> IFeatureRequest
+  CreateAreaResponse ..|> IFeatureResponse
+  AreaListByUserRequest ..|> IFeatureRequest
+  AreaListByUserResponse ..|> IFeatureResponse
+  AreaGetRequest ..|> IFeatureRequest
+  AreaGetResponse ..|> IFeatureResponse
+  UpdateAreaRequest ..|> IFeatureRequest
+  UpdateAreaResponse ..|> IFeatureResponse
+  DeleteAreaRequest ..|> IFeatureRequest
+  DeleteAreaResponse ..|> IFeatureResponse
+}
+
+' ============================================
+' RELATIONSHIPS
+' ============================================
+CreateAreaHandler --> CreateAreaRequest : handles
+CreateAreaHandler --> CreateAreaResponse : returns
+CreateAreaHandler ..> IAreaRepository : uses
+CreateAreaHandler ..> IAreaMapper : uses
+
+AreaListByUserHandler --> AreaListByUserRequest : handles
+AreaListByUserHandler --> AreaListByUserResponse : returns
+AreaListByUserHandler ..> IAreaRepository : uses
+AreaListByUserHandler ..> IAreaMapper : uses
+
+AreaGetHandler --> AreaGetRequest : handles
+AreaGetHandler --> AreaGetResponse : returns
+AreaGetHandler ..> IAreaRepository : uses
+AreaGetHandler ..> IAreaMapper : uses
+
+UpdateAreaHandler --> UpdateAreaRequest : handles
+UpdateAreaHandler --> UpdateAreaResponse : returns
+UpdateAreaHandler ..> IAreaRepository : uses
+UpdateAreaHandler ..> IAreaMapper : uses
+
+DeleteAreaHandler --> DeleteAreaRequest : handles
+DeleteAreaHandler --> DeleteAreaResponse : returns
+DeleteAreaHandler ..> IAreaRepository : uses
+
+CreateAreaResponse *-- AreaDto
+AreaListByUserResponse *-- AreaDto
+AreaGetResponse *-- AreaDto
+UpdateAreaResponse *-- AreaDto
+
+AreaDto ..> Area : represents
+
+' ============================================
+' LEGEND
+' ============================================
+legend bottom left
+  | Color | Layer |
+  | #E1D5E7 | Common Services |
+  | #D5E8D4 | Application Layer (CQRS Handlers) |
+  | #F8CECC | Domain Entities |
+  | #FFE6CC | Domain Repositories |
+  | | |
+  | Line Style | Meaning |
+  | --> | Dependency |
+  | ..> | Uses/Sends |
+  | ..\|> | Implements |
+  | *-- | Composition |
+  | | |
+  | Features: |
+  | G32 - Create Area (with business rules) |
+  | G33 - List Areas by User (pagination) |
+  | G35 - Get Area by ID |
+  | G36 - Update Area (with authorization) |
+  | G37 - Delete Area (with authorization) |
+endlegend
+
+@enduml
