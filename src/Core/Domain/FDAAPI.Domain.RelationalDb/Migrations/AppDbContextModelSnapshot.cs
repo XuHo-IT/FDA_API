@@ -207,52 +207,52 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111111"),
                             CooldownMinutes = 30,
-                            CreatedAt = new DateTime(2026, 1, 20, 15, 40, 41, 137, DateTimeKind.Utc).AddTicks(4737),
+                            CreatedAt = new DateTime(2026, 1, 22, 18, 17, 7, 712, DateTimeKind.Utc).AddTicks(9740),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
                             Description = "Low priority alerts - 30 min cooldown",
                             IsActive = true,
                             MaxNotificationsPerHour = 2,
                             Severity = "info",
-                            UpdatedAt = new DateTime(2026, 1, 20, 15, 40, 41, 137, DateTimeKind.Utc).AddTicks(4737),
+                            UpdatedAt = new DateTime(2026, 1, 22, 18, 17, 7, 712, DateTimeKind.Utc).AddTicks(9740),
                             UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
                         },
                         new
                         {
                             Id = new Guid("22222222-2222-2222-2222-222222222222"),
                             CooldownMinutes = 20,
-                            CreatedAt = new DateTime(2026, 1, 20, 15, 40, 41, 137, DateTimeKind.Utc).AddTicks(4737),
+                            CreatedAt = new DateTime(2026, 1, 22, 18, 17, 7, 712, DateTimeKind.Utc).AddTicks(9740),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
                             Description = "Caution alerts - 20 min cooldown",
                             IsActive = true,
                             MaxNotificationsPerHour = 3,
                             Severity = "caution",
-                            UpdatedAt = new DateTime(2026, 1, 20, 15, 40, 41, 137, DateTimeKind.Utc).AddTicks(4737),
+                            UpdatedAt = new DateTime(2026, 1, 22, 18, 17, 7, 712, DateTimeKind.Utc).AddTicks(9740),
                             UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
                         },
                         new
                         {
                             Id = new Guid("33333333-3333-3333-3333-333333333333"),
                             CooldownMinutes = 10,
-                            CreatedAt = new DateTime(2026, 1, 20, 15, 40, 41, 137, DateTimeKind.Utc).AddTicks(4737),
+                            CreatedAt = new DateTime(2026, 1, 22, 18, 17, 7, 712, DateTimeKind.Utc).AddTicks(9740),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
                             Description = "Warning alerts - 10 min cooldown",
                             IsActive = true,
                             MaxNotificationsPerHour = 6,
                             Severity = "warning",
-                            UpdatedAt = new DateTime(2026, 1, 20, 15, 40, 41, 137, DateTimeKind.Utc).AddTicks(4737),
+                            UpdatedAt = new DateTime(2026, 1, 22, 18, 17, 7, 712, DateTimeKind.Utc).AddTicks(9740),
                             UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
                         },
                         new
                         {
                             Id = new Guid("44444444-4444-4444-4444-444444444444"),
                             CooldownMinutes = 5,
-                            CreatedAt = new DateTime(2026, 1, 20, 15, 40, 41, 137, DateTimeKind.Utc).AddTicks(4737),
+                            CreatedAt = new DateTime(2026, 1, 22, 18, 17, 7, 712, DateTimeKind.Utc).AddTicks(9740),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
                             Description = "Critical alerts - 5 min cooldown",
                             IsActive = true,
                             MaxNotificationsPerHour = 12,
                             Severity = "critical",
-                            UpdatedAt = new DateTime(2026, 1, 20, 15, 40, 41, 137, DateTimeKind.Utc).AddTicks(4737),
+                            UpdatedAt = new DateTime(2026, 1, 22, 18, 17, 7, 712, DateTimeKind.Utc).AddTicks(9740),
                             UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
                         });
                 });
@@ -711,6 +711,12 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         .HasColumnType("character varying(20)")
                         .HasDefaultValue("pending");
 
+                    b.Property<string>("Title")
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasDefaultValue("Flood Notification");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -785,6 +791,109 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                     b.HasIndex("PhoneNumber");
 
                     b.ToTable("OtpCodes");
+                });
+
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.PricingPlan", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<decimal>("PriceMonth")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("PriceYear")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Tier")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("PricingPlans", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
+                            Code = "FREE",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            Description = "Basic flood alerts with push and email notifications",
+                            IsActive = true,
+                            Name = "Free Plan",
+                            PriceMonth = 0m,
+                            PriceYear = 0m,
+                            SortOrder = 1,
+                            Tier = 0,
+                            UpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
+                            Code = "PREMIUM",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            Description = "Priority alerts with SMS, Email, and Push - faster delivery",
+                            IsActive = true,
+                            Name = "Premium Plan",
+                            PriceMonth = 9.99m,
+                            PriceYear = 99.99m,
+                            SortOrder = 2,
+                            Tier = 1,
+                            UpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("33333333-3333-3333-3333-333333333333"),
+                            Code = "MONITOR",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            Description = "For monitoring agencies - all channels, immediate delivery",
+                            IsActive = true,
+                            Name = "Monitor Access",
+                            PriceMonth = 0m,
+                            PriceYear = 0m,
+                            SortOrder = 3,
+                            Tier = 2,
+                            UpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        });
                 });
 
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.RefreshToken", b =>
@@ -1350,6 +1459,55 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                     b.ToTable("UserRoles");
                 });
 
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.UserSubscription", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CancelReason")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("PlanId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RenewMode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlanId");
+
+                    b.HasIndex("UserId", "Status");
+
+                    b.ToTable("UserSubscriptions", (string)null);
+                });
+
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.SensorReading", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1638,6 +1796,25 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.UserSubscription", b =>
+                {
+                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.PricingPlan", "Plan")
+                        .WithMany("UserSubscriptions")
+                        .HasForeignKey("PlanId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Plan");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.SensorReading", b =>
                 {
                     b.HasOne("FDAAPI.Domain.RelationalDb.Entities.Station", "Station")
@@ -1664,6 +1841,11 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.AlertRule", b =>
                 {
                     b.Navigation("Alerts");
+                });
+
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.PricingPlan", b =>
+                {
+                    b.Navigation("UserSubscriptions");
                 });
 
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.Role", b =>

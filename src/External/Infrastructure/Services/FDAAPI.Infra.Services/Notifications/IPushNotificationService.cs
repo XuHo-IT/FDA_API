@@ -8,6 +8,7 @@ namespace FDAAPI.Infra.Services.Notifications
             string deviceToken,
             string title,
             string body,
+            NotificationPriority priority,
             Dictionary<string, string>? data = null,
             CancellationToken ct = default);
     }

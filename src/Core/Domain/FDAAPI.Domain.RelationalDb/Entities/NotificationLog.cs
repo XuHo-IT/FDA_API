@@ -12,6 +12,7 @@ namespace FDAAPI.Domain.RelationalDb.Entities
         public NotificationChannel Channel { get; set; }
         public string Destination { get; set; } = string.Empty; // phone/email/device_token
         public string Content { get; set; } = string.Empty;
+        public string? Title { get; set; }
         public NotificationPriority Priority { get; set; }
         public int RetryCount { get; set; } = 0;
         public int MaxRetries { get; set; } = 3;

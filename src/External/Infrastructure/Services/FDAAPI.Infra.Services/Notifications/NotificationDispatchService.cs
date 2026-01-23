@@ -38,8 +38,9 @@ namespace FDAAPI.Infra.Services.Notifications
                         // Destination should be device token
                         success = await _pushService.SendPushNotificationAsync(
                             notificationLog.Destination,
-                            "Flood Alert", // TODO: Get from template
+                            "Flood Alert",
                             notificationLog.Content,
+                            notificationLog.Priority,
                             null,
                             ct);
                         break;

@@ -6,7 +6,7 @@ namespace FDAAPI.Infra.Services.Notifications
     {
         public NotificationPriority DeterminePriority(string severity, SubscriptionTier userTier)
         {
-            if (userTier == SubscriptionTier.Authority)
+            if (userTier == SubscriptionTier.Monitor)
             {
                 return severity.ToLower() switch
                 {
@@ -26,6 +26,7 @@ namespace FDAAPI.Infra.Services.Notifications
                 };
             }
 
+            // Free users
             return severity.ToLower() switch
             {
                 "critical" => NotificationPriority.Medium,
@@ -34,7 +35,7 @@ namespace FDAAPI.Infra.Services.Notifications
             };
         }
 
-        public List<NotificationChannel> GetChannelsForPriority(NotificationPriority priority, SubscriptionTier userTier)
+        public List<NotificationChannel> GetAvailableChannelsForTier(SubscriptionTier userTier)
         {
             var channels = new List<NotificationChannel>
             {
@@ -42,10 +43,12 @@ namespace FDAAPI.Infra.Services.Notifications
                 NotificationChannel.InApp
             };
 
-            if (userTier >= SubscriptionTier.Premium)
+            // Free users can use Email
+            if (userTier >= SubscriptionTier.Free)
                 channels.Add(NotificationChannel.Email);
 
-            if (priority >= NotificationPriority.High && userTier >= SubscriptionTier.Premium)
+            // Premium and Monitor can use SMS
+            if (userTier >= SubscriptionTier.Premium)
                 channels.Add(NotificationChannel.SMS);
 
             return channels;
@@ -65,6 +68,36 @@ namespace FDAAPI.Infra.Services.Notifications
             var minLevel = severityLevels.GetValueOrDefault(minSeverity.ToLower(), 0);
 
             return currentLevel >= minLevel;
+        }
+
+        public int GetDispatchDelaySeconds(SubscriptionTier userTier, NotificationPriority priority)
+        {
+            // Monitor - immediate for high priority, 10s for low
+            if (userTier == SubscriptionTier.Monitor)
+            {
+                return priority >= NotificationPriority.High ? 0 : 10;
+            }
+
+            // Premium - immediate for high priority, 20s for low
+            if (userTier == SubscriptionTier.Premium)
+            {
+                return priority >= NotificationPriority.High ? 0 : 20;
+            }
+
+            // Free - 60s for high priority, 120s for low
+            return priority >= NotificationPriority.High ? 60 : 120;
+        }
+
+        public int GetMaxRetriesForTier(SubscriptionTier userTier, NotificationPriority priority)
+        {
+            if (userTier == SubscriptionTier.Monitor && priority >= NotificationPriority.High)
+                return 5; // More retries for critical monitoring alerts
+
+            if (userTier == SubscriptionTier.Premium)
+                return 3;
+
+            // Free users - limited retries
+            return priority >= NotificationPriority.High ? 1 : 0;
         }
     }
 }

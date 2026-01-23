@@ -18,7 +18,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat40_GetAlertHist
         public override void Configure()
         {
             Get("/api/v1/alerts/history");
-            Policies("User", "Admin", "Authority");
+            Policies("User");
             Summary(s =>
             {
                 s.Summary = "Get alert history for current user";

@@ -97,8 +97,8 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.Feat54_MqttIng
                 var payload = args.ApplicationMessage.ConvertPayloadToString();
                 var topic = args.ApplicationMessage.Topic;
 
-                _logger.LogInformation("Received MQTT message from topic: {Topic}", topic);
-                _logger.LogDebug("Payload: {Payload}", payload);
+                //_logger.LogInformation("Received MQTT message from topic: {Topic}", topic);
+                //_logger.LogDebug("Payload: {Payload}", payload);
 
                 // Parse JSON payload
                 var options = new JsonSerializerOptions
@@ -144,16 +144,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.Feat54_MqttIng
                     // Send request via MediatR (will save to database)
                     var result = await mediator.Send(request);
 
-                    if (result.Success)
-                    {
-                        _logger.LogInformation(
-                            "Successfully saved sensor reading. Station: {StationId}, Water Level: {WaterLevel}cm, Status: {Status}",
-                            stationId,
-                            sensorData.WaterLevel,
-                            sensorData.Status == 1 ? "WARNING" : "NORMAL"
-                        );
-                    }
-                    else
+                    if (!result.Success)
                     {
                         _logger.LogError(
                             "Failed to save sensor reading. Station: {StationId}, Error: {Message}",
