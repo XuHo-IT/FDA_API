@@ -18,8 +18,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat71_GetUserSubsc
         {
             Get("/api/v1/plan/subscription/current");
             AuthSchemes(JwtBearerDefaults.AuthenticationScheme);
-            AllowAnonymous();
-            //Policies("User", "Admin", "Authority");
+            Policies("User");
             Summary(s =>
             {
                 s.Summary = "Get current user's subscription tier and plan";

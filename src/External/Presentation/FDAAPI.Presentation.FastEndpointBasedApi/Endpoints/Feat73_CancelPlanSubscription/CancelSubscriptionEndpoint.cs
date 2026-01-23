@@ -18,8 +18,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat73_CancelSubscr
         {
             Delete("/api/v1/plan/subscription/cancel");
             AuthSchemes(JwtBearerDefaults.AuthenticationScheme);
-            AllowAnonymous();
-            //Policies("User", "Admin", "Authority");
+            Policies("User");
             Summary(s =>
             {
                 s.Summary = "Cancel current subscription";
