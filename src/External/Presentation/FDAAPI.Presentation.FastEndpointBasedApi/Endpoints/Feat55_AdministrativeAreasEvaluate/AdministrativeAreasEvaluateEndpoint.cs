@@ -1,5 +1,6 @@
 using FastEndpoints;
 using FDAAPI.App.FeatG55_AdministrativeAreasEvaluate;
+using FDAAPI.App.Common.Models.Areas;
 using FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat55_AdministrativeAreasEvaluate.DTOs;
 using MediatR;
 using System;
@@ -24,8 +25,8 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat55_Administrati
             AllowAnonymous();
             Summary(s =>
             {
-                s.Summary = "Evaluate and return flood status for an administrative area";
-                s.Description = "Calculate flood status based on stations in the administrative area, includes GeoJSON and full area information";
+                s.Summary = "Evaluate and return flood status for a district or city";
+                s.Description = "Calculate flood status for District or City level administrative areas. District aggregates all stations from child wards. City aggregates highest readings from each ward across all districts. Includes GeoJSON and full area information with ward/district details in contributing stations. Ward level is not supported.";
             });
             Tags("AdministrativeArea");
         }
@@ -88,7 +89,9 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat55_Administrati
             }
             else
             {
-                await SendAsync(response, 404, ct);
+                // Return 400 for BadRequest (ward level, unsupported level), 404 for NotFound
+                var statusCode = result.StatusCode == AreaStatusCode.BadRequest ? 400 : 404;
+                await SendAsync(response, statusCode, ct);
             }
         }
     }

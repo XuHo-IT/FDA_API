@@ -66,14 +66,23 @@ namespace FDAAPI.App.FeatG55_AdministrativeAreasEvaluate
                     }
                 }
 
-                // 2. Process based on level
+                // 2. Validate level - only district and city are supported
+                var level = administrativeArea.Level.ToLower();
+                if (level == "ward")
+                {
+                    return new AdministrativeAreasEvaluateResponse
+                    {
+                        Success = false,
+                        Message = "Ward level is not supported. This API only supports District and City levels.",
+                        StatusCode = AreaStatusCode.BadRequest
+                    };
+                }
+
+                // 3. Process based on level
                 AdministrativeAreasEvaluateResponse response;
                 
-                switch (administrativeArea.Level.ToLower())
+                switch (level)
                 {
-                    case "ward":
-                        response = await EvaluateWardAsync(administrativeArea, ct);
-                        break;
                     case "district":
                         response = await EvaluateDistrictAsync(administrativeArea, ct);
                         break;
@@ -84,7 +93,7 @@ namespace FDAAPI.App.FeatG55_AdministrativeAreasEvaluate
                         return new AdministrativeAreasEvaluateResponse
                         {
                             Success = false,
-                            Message = $"Unsupported administrative area level: {administrativeArea.Level}",
+                            Message = $"Unsupported administrative area level: {administrativeArea.Level}. Only 'district' and 'city' are supported.",
                             StatusCode = AreaStatusCode.BadRequest
                         };
                 }
