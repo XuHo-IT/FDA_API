@@ -26,8 +26,7 @@ namespace FDAAPI.App.FeatG40_GetAlertHistory
                 // Build query: Get alerts that user was notified about
                 var query = _dbContext.NotificationLogs
                     .Where(n => n.UserId == request.UserId)
-                    .Include(n => n.Alert)
-                        .ThenInclude(a => a!.Station)
+                    .Where(n => n.Status == "sent" || n.Status == "delivered")
                     .AsQueryable();
 
                 // Apply filters
@@ -51,16 +50,34 @@ namespace FDAAPI.App.FeatG40_GetAlertHistory
                     query = query.Where(n => n.Status.ToString().ToLower() == request.Status.ToLower());
                 }
 
-                // Get total count before pagination
+                // Get total count before pagination (count distinct alerts)
                 var totalCount = await query.Select(n => n.AlertId).Distinct().CountAsync(ct);
 
-                // Group by alert and get latest notification per channel
-                var alertGroups = await query
+                // Step 1: Get paginated list of AlertIds (ordered by latest notification)
+                var alertIds = await query
                     .GroupBy(n => n.AlertId)
-                    .OrderByDescending(g => g.Max(n => n.CreatedAt))
+                    .Select(g => new
+                    {
+                        AlertId = g.Key,
+                        LatestCreatedAt = g.Max(n => n.CreatedAt)
+                    })
+                    .OrderByDescending(x => x.LatestCreatedAt)
                     .Skip((request.PageNumber - 1) * request.PageSize)
                     .Take(request.PageSize)
+                    .Select(x => x.AlertId)
                     .ToListAsync(ct);
+
+                // Step 2: Get all notifications for these alerts
+                var notifications = await _dbContext.NotificationLogs
+                    .Where(n => alertIds.Contains(n.AlertId))
+                    .Include(n => n.Alert)
+                        .ThenInclude(a => a!.Station)
+                    .ToListAsync(ct);
+
+                // Step 3: Group in memory and build DTOs
+                var alertGroups = notifications
+                    .GroupBy(n => n.AlertId)
+                    .OrderByDescending(g => g.Max(n => n.CreatedAt));
 
                 // Build response DTOs
                 var alerts = new List<AlertHistoryDto>();
@@ -89,10 +106,12 @@ namespace FDAAPI.App.FeatG40_GetAlertHistory
                         {
                             NotificationId = n.Id,
                             Channel = n.Channel,
+                            Priority = n.Priority,
                             Status = n.Status,
                             SentAt = n.SentAt,
                             DeliveredAt = n.DeliveredAt,
-                            ErrorMessage = n.ErrorMessage
+                            ErrorMessage = n.ErrorMessage,
+                            Title = n.Title
                         }).ToList()
                     };
 

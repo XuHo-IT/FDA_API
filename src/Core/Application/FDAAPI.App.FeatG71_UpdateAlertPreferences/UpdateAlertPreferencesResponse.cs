@@ -1,8 +1,0 @@
-﻿namespace FDAAPI.App.FeatG71_UpdateAlertPreferences
-{
-    public class UpdateAlertPreferencesResponse
-    {
-        public bool Success { get; set; }
-        public string Message { get; set; } = string.Empty;
-    }
-}

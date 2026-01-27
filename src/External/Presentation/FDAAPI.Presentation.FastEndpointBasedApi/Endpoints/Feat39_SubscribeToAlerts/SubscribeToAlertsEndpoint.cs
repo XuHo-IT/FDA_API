@@ -18,7 +18,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat39_SubscribeToA
         public override void Configure()
         {
             Post("/api/v1/alerts/subscriptions");
-            Policies("User", "Admin", "Authority");
+            Policies("User");
             Summary(s =>
             {
                 s.Summary = "Subscribe to alerts for a station or area";

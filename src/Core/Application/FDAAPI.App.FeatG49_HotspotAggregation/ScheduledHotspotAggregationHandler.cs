@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace FDAAPI.App.FeatG49_HotspotAggregation
 {
-    public class ScheduledHotspotAggregationHandler : IFeatureHandler<ScheduledHotspotAggregationCommand, UnitResponse>
+    public class ScheduledHotspotAggregationHandler : IRequestHandler<ScheduledHotspotAggregationCommand, UnitResponse>
     {
         private readonly IMediator _mediator;
         private readonly ILogger<ScheduledHotspotAggregationHandler> _logger;
@@ -21,7 +21,7 @@ namespace FDAAPI.App.FeatG49_HotspotAggregation
             _logger = logger;
         }
 
-        public async Task<UnitResponse> ExecuteAsync(ScheduledHotspotAggregationCommand request, CancellationToken cancellationToken)
+        public async Task<UnitResponse> Handle(ScheduledHotspotAggregationCommand request, CancellationToken cancellationToken)
         {
             if (request.Mode != AggregationMode.Weekly)
             {

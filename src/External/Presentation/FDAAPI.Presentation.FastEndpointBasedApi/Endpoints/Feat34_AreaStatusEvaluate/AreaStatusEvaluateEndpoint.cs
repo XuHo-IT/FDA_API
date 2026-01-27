@@ -18,7 +18,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat34_AreaStatusEv
         public override void Configure()
         {
             Get("/api/v1/area/areas/{id}/status");
-            Policies("User");
+            AllowAnonymous();
             Summary(s =>
             {
                 s.Summary = "Evaluate and return flood status for an area";

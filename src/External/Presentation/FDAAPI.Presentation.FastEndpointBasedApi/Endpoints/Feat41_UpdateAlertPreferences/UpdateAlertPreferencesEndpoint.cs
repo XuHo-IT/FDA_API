@@ -50,7 +50,6 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat41_UpdateAlertP
                 return;
             }
 
-            // ✅ Get AREA ID from route (thay vì subscription ID)
             var areaIdStr = Route<string>("areaId");
             if (string.IsNullOrEmpty(areaIdStr) || !Guid.TryParse(areaIdStr, out var areaId))
             {
@@ -62,9 +61,8 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat41_UpdateAlertP
                 return;
             }
 
-            // ✅ Request với AreaId
             var command = new UpdateAlertPreferencesRequest(
-                AreaId: areaId,           // ✅ Truyền AreaId
+                AreaId: areaId,
                 UserId: userId,
                 MinSeverity: req.MinSeverity,
                 EnablePush: req.EnablePush,

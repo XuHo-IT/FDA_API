@@ -31,6 +31,11 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB.Configurations
                 .IsRequired()
                 .HasColumnType("text");
 
+            builder.Property(x => x.Title)
+                .HasMaxLength(500)
+                .IsRequired(false)
+                .HasDefaultValue("Flood Notification");
+
             builder.Property(x => x.Priority)
                 .HasConversion<string>()
                 .IsRequired()
