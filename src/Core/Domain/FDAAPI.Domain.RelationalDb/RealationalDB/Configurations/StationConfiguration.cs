@@ -29,9 +29,18 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB.Configurations
             builder.HasIndex(x => new { x.Latitude, x.Longitude })
                 .HasDatabaseName("ix_station_geo");
 
+            builder.HasIndex(x => x.Type)
+                .HasDatabaseName("ix_station_type");
+
             builder.Property(x => x.Code)
                 .IsRequired()
                 .HasMaxLength(50);
+
+            builder.Property(x => x.Type)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasDefaultValue("urban_lowland")
+                .HasComment("Station type: urban_river, urban_lowland, coastal, industrial, mountain, highland");
 
             builder.Property(x => x.Name)
                 .HasMaxLength(255);
