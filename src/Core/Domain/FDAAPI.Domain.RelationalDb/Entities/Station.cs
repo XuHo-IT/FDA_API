@@ -15,7 +15,8 @@ namespace FDAAPI.Domain.RelationalDb.Entities
     public class Station : EntityWithId<Guid>, ICreatedEntity<Guid>, IUpdatedEntity<Guid>
     {
         public Guid Id { get; set; }
-        public string Code { get; set; } 
+        public string Code { get; set; }
+        public string Type { get; set; } = "urban_lowland";
         public string Name { get; set; }
         public string LocationDesc { get; set; }
         public decimal? Latitude { get; set; }
