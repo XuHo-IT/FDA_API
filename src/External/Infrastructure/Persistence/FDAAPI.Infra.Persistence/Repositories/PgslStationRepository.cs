@@ -90,5 +90,60 @@ namespace FDAAPI.Infra.Persistence.Repositories
                 .AsNoTracking()
                 .ToListAsync(ct);
         }
+
+        public async Task<List<Station>> GetStationsWithinRadiusAsync(
+            decimal latitude,
+            decimal longitude,
+            int radiusMeters,
+            CancellationToken ct = default)
+        {
+            // Get all active stations with valid coordinates
+            var allStations = await _context.Stations
+                .AsNoTracking()
+                .Where(s => s.Latitude.HasValue && s.Longitude.HasValue)
+                .Where(s => s.Status == "active" || s.Status == "Active")
+                .ToListAsync(ct);
+
+            // Filter by distance using Haversine formula
+            var stationsWithinRadius = new List<Station>();
+
+            foreach (var station in allStations)
+            {
+                var distance = CalculateHaversineDistance(
+                    latitude, longitude,
+                    station.Latitude!.Value, station.Longitude!.Value);
+
+                if (distance <= radiusMeters)
+                {
+                    stationsWithinRadius.Add(station);
+                }
+            }
+
+            return stationsWithinRadius;
+        }
+
+        // Haversine Distance Calculation
+        private double CalculateHaversineDistance(
+            decimal lat1, decimal lon1, decimal lat2, decimal lon2)
+        {
+            const double R = 6371000; // Earth radius in meters
+
+            var dLat = ToRadians((double)(lat2 - lat1));
+            var dLon = ToRadians((double)(lon2 - lon1));
+
+            var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                    Math.Cos(ToRadians((double)lat1)) *
+                    Math.Cos(ToRadians((double)lat2)) *
+                    Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+
+            var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+
+            return R * c; // Distance in meters
+        }
+
+        private double ToRadians(double degrees)
+        {
+            return degrees * Math.PI / 180.0;
+        }
     }
 }
