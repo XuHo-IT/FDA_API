@@ -61,8 +61,8 @@ jobs:
             
             # Check container status
             echo "📊 Checking container status..."
-            docker ps | grep fdaapi || docker ps | grep uat
-            
+            docker ps --filter "name=fdaapi_uat" --format "table {{.Names}}\t{{.Status}}"
+           
             # Show recent logs
             echo "📋 Recent logs:"
             docker compose -p fda_uat -f docker-compose.uat.yml logs --tail=50
