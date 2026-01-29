@@ -1,36 +1,35 @@
-version: "3.9"
-
 services:
   fdaapi:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: fda_api_dev
     ports:
       - "5232:8080"
-    env_file:
-      - .env
+    env_file: .env
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ASPNETCORE_URLS: http://0.0.0.0:8080
       ConnectionStrings__PostgreSQLConnection: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};
     depends_on:
       - postgres
-    restart: unless-stopped
+    networks:
+      - fda_api_default
+
   postgres:
+    container_name: fda_postgres_shared
     image: postgres:16
-    env_file:
-      - .env
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    env_file: .env
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    restart: unless-stopped
+    networks:
+      - fda_api_default
+
+networks:
+  fda_api_default:
+    name: fda_api_shared_network
 
 volumes:
   postgres_data:
-    external: true
     name: fda_api_postgres_data
