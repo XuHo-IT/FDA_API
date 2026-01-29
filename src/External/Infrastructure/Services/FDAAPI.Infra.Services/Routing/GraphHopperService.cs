@@ -70,7 +70,8 @@ namespace FDAAPI.Infra.Services.Routing
                 ghRequest["alternative_route"] = new
                 {
                     max_paths = request.AlternativeRoute.MaxPaths,
-                    max_weight_factor = request.AlternativeRoute.MaxWeightFactor
+                    max_weight_factor = request.AlternativeRoute.MaxWeightFactor,
+                    max_share_factor = request.AlternativeRoute.MaxShareFactor
                 };
             }
 
