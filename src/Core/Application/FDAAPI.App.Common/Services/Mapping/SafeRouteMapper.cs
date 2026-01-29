@@ -1,42 +1,96 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FDAAPI.App.Common.DTOs;
+﻿using FDAAPI.App.Common.DTOs;
 using FDAAPI.App.Common.Models.Routing;
 
-namespace FDAAPI.App.Common.Services.Mapping
+namespace FDAAPI.App.Common.Services.Mapping;
+
+public class SafeRouteMapper : ISafeRouteMapper
 {
-    public class SafeRouteMapper : ISafeRouteMapper
+    public object BuildRouteFeature(
+        GraphHopperPath path,
+        List<FloodWarningDto> warnings,
+        string featureName)
     {
-        public RouteDto MapToRouteDto(GraphHopperPath path, List<FloodWarningDto> warnings)
+        return new
         {
-            return new RouteDto
+            type = "Feature",
+            geometry = new
             {
-                Geometry = path.ToGeoJsonGeometry(),
-                DistanceMeters = (decimal)path.Distance,
-                DurationSeconds = (int)(path.Time / 1000),
-                Instructions = path.Instructions.Select(i => new RouteInstructionDto
+                type = "LineString",
+                coordinates = To2DCoordinates(path.Points.Coordinates)
+            },
+            properties = new
+            {
+                name = featureName,
+                distanceMeters = path.Distance,
+                durationSeconds = (int)(path.Time / 1000),
+                floodRiskScore = CalculateFloodRiskScore(warnings),
+                instructions = path.Instructions.Select(i => new
                 {
-                    Distance = (decimal)i.Distance,
-                    Time = i.Time,
-                    Text = i.Text
-                }).ToList(),
-                FloodRiskScore = CalculateFloodRiskScore(warnings)
-            };
-        }
+                    distance = i.Distance,
+                    time = i.Time,
+                    text = i.Text
+                }).ToArray()
+            }
+        };
+    }
 
-        private decimal CalculateFloodRiskScore(List<FloodWarningDto> warnings)
+    public object BuildFloodZoneFeature(FloodWarningDto warning)
+    {
+        return new
         {
-            if (!warnings.Any()) return 0;
+            type = "Feature",
+            geometry = new
+            {
+                type = "Polygon",
+                coordinates = new[] { FlatToPolygonRing(warning.FloodPolygon.Coordinates) }
+            },
+            properties = new
+            {
+                name = "floodZone",
+                stationId = warning.StationId,
+                stationCode = warning.StationCode,
+                stationName = warning.StationName,
+                severity = warning.Severity,
+                severityLevel = warning.SeverityLevel,
+                waterLevel = warning.WaterLevel,
+                unit = warning.Unit,
+                latitude = warning.Latitude,
+                longitude = warning.Longitude,
+                distanceFromRouteMeters = warning.DistanceFromRouteMeters
+            }
+        };
+    }
 
-            var criticalCount = warnings.Count(w => w.Severity == "critical");
-            var warningCount = warnings.Count(w => w.Severity == "warning");
-            var cautionCount = warnings.Count(w => w.Severity == "caution");
+    /// <summary>
+    /// Convert GraphHopper double[][] to GeoJSON 2D: [[lng, lat], ...]
+    /// </summary>
+    private double[][] To2DCoordinates(double[][] coords)
+    {
+        return coords.Select(c => new[] { c[0], c[1] }).ToArray();
+    }
 
-            var score = (criticalCount * 40) + (warningCount * 20) + (cautionCount * 10);
-            return Math.Min(100, score);
+    /// <summary>
+    /// Convert flat decimal[] [lng,lat,lng,lat,...] to polygon ring [[lng,lat], ...]
+    /// </summary>
+    private decimal[][] FlatToPolygonRing(decimal[] flat)
+    {
+        var ring = new List<decimal[]>();
+        for (int i = 0; i < flat.Length - 1; i += 2)
+        {
+            ring.Add(new[] { flat[i], flat[i + 1] });
         }
+        return ring.ToArray();
+    }
+
+    private decimal CalculateFloodRiskScore(List<FloodWarningDto> warnings)
+    {
+        if (!warnings.Any()) return 0;
+
+        var criticalCount = warnings.Count(w => w.Severity == "critical");
+        var warningCount = warnings.Count(w => w.Severity == "warning");
+        var cautionCount = warnings.Count(w => w.Severity == "caution");
+
+        var score = (criticalCount * 40) + (warningCount * 20) + (cautionCount * 10);
+        return Math.Min(100, score);
     }
 }
