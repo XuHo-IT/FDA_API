@@ -39,6 +39,5 @@ jobs:
             git fetch origin
             git reset --hard origin/dev
             docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
-            docker compose -f docker-compose.dev.yml down
-            docker compose -f docker-compose.dev.yml up -d --build
+            docker compose -p fda_dev -f docker-compose.dev.yml up -d --build --remove-orphans
             docker image prune -f

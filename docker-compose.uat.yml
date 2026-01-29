@@ -1,20 +1,15 @@
-version: "3.9"
-
 services:
-  fdaapi:
+  fdaapi_uat:
     image: xuhoit/fda_api-fdaapi:uat
     container_name: fdaapi_uat 
     ports:
       - "7097:8080"
-    env_file:
-      - .env
+    env_file: .env
     pull_policy: always
     environment:
-      # Giữ lại các biến này để định danh môi trường và cấu hình API
       ASPNETCORE_ENVIRONMENT: UAT
       ASPNETCORE_URLS: http://0.0.0.0:8080
       ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
-      # Chuỗi kết nối bảo mật: dùng biến từ .env và trỏ vào host nội bộ postgres_dev
       ConnectionStrings__PostgreSQLConnection: >
         Host=postgres_dev;
         Port=5432;
@@ -22,11 +17,12 @@ services:
         Username=${POSTGRES_USER};
         Password=${POSTGRES_PASSWORD};
         SearchPath=uat_schema
+      GraphHopper__BaseUrl: http://graphhopper_dev:8989
     networks:
       - fda_api_default
     restart: unless-stopped
 
-# Bắt buộc thêm đoạn này để fdaapi_uat "thấy" được postgres_dev
 networks:
   fda_api_default:
     external: true
+    name: fda_api_shared_network

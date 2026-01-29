@@ -1,22 +1,22 @@
-version: "3.9"
-
 services:
   fdaapi:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: fda_api_dev
     ports:
       - "5232:8080"
-    env_file:
-      - .env
+    env_file: .env
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://0.0.0.0:8080
-      ConnectionStrings__PostgreSQLConnection: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};
-      GraphHopper__BaseUrl: http://graphhopper:8989
+      ConnectionStrings__PostgreSQLConnection: Host=postgres_dev;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};
+      GraphHopper__BaseUrl: http://graphhopper_dev:8989
     depends_on:
       - postgres
       - graphhopper
+    networks:
+      - fda_api_default
     restart: unless-stopped
 
   graphhopper:
@@ -33,12 +33,16 @@ services:
       -o /data/vietnam-gh
       --host 0.0.0.0
       --port 8989
+    networks:
+      fda_api_default:
+        aliases:
+          - graphhopper_dev
     restart: unless-stopped
 
   postgres:
     image: postgres:16
-    env_file:
-      - .env
+    container_name: fda_postgres_shared
+    env_file: .env
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -47,7 +51,15 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      fda_api_default:
+        aliases:
+          - postgres_dev
     restart: unless-stopped
+
+networks:
+  fda_api_default:
+    name: fda_api_shared_network 
 
 volumes:
   postgres_data:
