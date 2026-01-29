@@ -44,6 +44,8 @@ namespace FDAAPI.Domain.RelationalDb.Repositories
             int pageNumber,
             int pageSize,
             CancellationToken ct = default);
+
+        Task<List<FloodEvent>> GetActiveFloodEventsAsync(CancellationToken ct = default);
     }
 }
 

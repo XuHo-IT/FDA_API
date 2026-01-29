@@ -15,43 +15,24 @@ using FDAAPI.App.FeatG18_MediaUploadImage;
 using FDAAPI.App.FeatG19_ProfileVerifyUpdatePhone;
 using FDAAPI.App.FeatG2_SensorReadingUpdate;
 using FDAAPI.App.FeatG20_UserCreate;
-using FDAAPI.App.FeatG20_UserCreate;
-using FDAAPI.App.FeatG21_UserList;
 using FDAAPI.App.FeatG21_UserList;
 using FDAAPI.App.FeatG22_UserUpdate;
-using FDAAPI.App.FeatG22_UserUpdate;
-using FDAAPI.App.FeatG23_StationCreate;
 using FDAAPI.App.FeatG23_StationCreate;
 using FDAAPI.App.FeatG24_StationUpdate;
-using FDAAPI.App.FeatG24_StationUpdate;
-using FDAAPI.App.FeatG25_StationList;
 using FDAAPI.App.FeatG25_StationList;
 using FDAAPI.App.FeatG26_StationGet;
-using FDAAPI.App.FeatG26_StationGet;
-using FDAAPI.App.FeatG27_StationDelete;
 using FDAAPI.App.FeatG27_StationDelete;
 using FDAAPI.App.FeatG28_GetMapPreferences;
-using FDAAPI.App.FeatG28_GetMapPreferences;
-using FDAAPI.App.FeatG29_UpdateMapPreferences;
 using FDAAPI.App.FeatG29_UpdateMapPreferences;
 using FDAAPI.App.FeatG3_SensorReadingGet;
 using FDAAPI.App.FeatG30_GetFloodSeverityLayer;
-using FDAAPI.App.FeatG30_GetFloodSeverityLayer;
-using FDAAPI.App.FeatG31_GetMapCurrentStatus;
 using FDAAPI.App.FeatG31_GetMapCurrentStatus;
 using FDAAPI.App.FeatG32_AreaCreate;
-using FDAAPI.App.FeatG32_AreaCreate;
-using FDAAPI.App.FeatG33_AreaListByUser;
 using FDAAPI.App.FeatG33_AreaListByUser;
 using FDAAPI.App.FeatG34_AreaStatusEvaluate;
-using FDAAPI.App.FeatG34_AreaStatusEvaluate;
-using FDAAPI.App.FeatG35_AreaGet;
 using FDAAPI.App.FeatG35_AreaGet;
 using FDAAPI.App.FeatG36_AreaUpdate;
-using FDAAPI.App.FeatG36_AreaUpdate;
 using FDAAPI.App.FeatG37_AreaDelete;
-using FDAAPI.App.FeatG37_AreaDelete;
-using FDAAPI.App.FeatG38_AreaList;
 using FDAAPI.App.FeatG38_AreaList;
 using FDAAPI.App.FeatG39_SubscribeToAlerts;
 using FDAAPI.App.FeatG4_SensorReadingDelete;
@@ -114,6 +95,8 @@ using Polly.Extensions.Http;
 using Quartz;
 using System.Reflection;
 using System.Text;
+using FDAAPI.App.FeatG74_RequestSafeRoute;
+using FDAAPI.Infra.Services.Routing;
 
 namespace FDAAPI.Infra.Configuration
 {
@@ -189,6 +172,10 @@ namespace FDAAPI.Infra.Configuration
             services.AddScoped<IAdministrativeAreaMapper, AdministrativeAreaMapper>();
             services.AddScoped<IFloodEventMapper, FloodEventMapper>();
             services.AddScoped<IGlobalThresholdService, GlobalThresholdService>();
+
+            services.AddHttpClient<IGraphHopperService, GraphHopperService>();
+            services.AddScoped<IRouteFloodAnalyzer, RouteFloodAnalyzer>();
+            services.AddScoped<ISafeRouteMapper, SafeRouteMapper>();
 
             return services;
         }
@@ -266,7 +253,8 @@ namespace FDAAPI.Infra.Configuration
                 typeof(GetUserSubscriptionRequest).Assembly,
                 typeof(SubscribeToPlanRequest).Assembly,
                 typeof(CancelSubscriptionRequest).Assembly,
-                typeof(AdministrativeAreasEvaluateRequest).Assembly
+                typeof(AdministrativeAreasEvaluateRequest).Assembly,
+                typeof(CreateSafeRouteRequest).Assembly
             };
 
             // Register MediatR with all feature assemblies and ValidationBehavior
