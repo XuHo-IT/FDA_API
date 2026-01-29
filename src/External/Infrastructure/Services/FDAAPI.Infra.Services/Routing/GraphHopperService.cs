@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
+using FDAAPI.App.Common.DTOs;
 using FDAAPI.App.Common.Models.Routing;
 using FDAAPI.App.Common.Services;
 using Microsoft.Extensions.Configuration;
@@ -65,26 +66,50 @@ namespace FDAAPI.Infra.Services.Routing
                     max_paths = request.AlternativeRoute.MaxPaths,
                     max_weight_factor = request.AlternativeRoute.MaxWeightFactor
                 } : null,
-                avoid_polygons = request.AvoidPolygons?.Select(p => new
-                {
-                    type = p.Type,
-                    coordinates = ConvertCoordinatesToArray(p.Coordinates)
-                }).ToList()
+                avoid_polygons = BuildAvoidPolygons(request.AvoidPolygons)
             };
 
             return ghRequest;
         }
 
-        private decimal[][][] ConvertCoordinatesToArray(decimal[] coords)
+        /// <summary>
+        /// GraphHopper expects avoid_polygons as a single GeoJSON geometry object.
+        /// Multiple polygons → MultiPolygon with coordinates: [ [ring1], [ring2], ... ]
+        /// Single polygon → Polygon with coordinates: [ [ring] ]
+        /// </summary>
+        private object? BuildAvoidPolygons(List<GeoJsonGeometry>? polygons)
         {
-            // Convert flat coordinate array to polygon format
-            // Assuming coords is [lng1, lat1, lng2, lat2, ...]
+            if (polygons == null || !polygons.Any())
+                return null;
+
+            var rings = polygons
+                .Select(p => FlatToRing(p.Coordinates))
+                .ToList();
+
+            if (rings.Count == 1)
+            {
+                return new
+                {
+                    type = "Polygon",
+                    coordinates = new[] { rings[0] }
+                };
+            }
+
+            return new
+            {
+                type = "MultiPolygon",
+                coordinates = rings.Select(r => new[] { r }).ToArray()
+            };
+        }
+
+        private decimal[][] FlatToRing(decimal[] coords)
+        {
             var points = new List<decimal[]>();
             for (int i = 0; i < coords.Length; i += 2)
             {
                 points.Add(new[] { coords[i], coords[i + 1] });
             }
-            return new[] { points.ToArray() };
+            return points.ToArray();
         }
     }
 
