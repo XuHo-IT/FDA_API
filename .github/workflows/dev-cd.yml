@@ -39,7 +39,5 @@ jobs:
             git fetch origin
             git reset --hard origin/dev
             docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
-            # Sử dụng -p fda_dev để tách biệt hoàn toàn với UAT
-            # Dùng up -d --build trực tiếp thay vì down để Postgres không bị ngắt quãng
             docker compose -p fda_dev -f docker-compose.dev.yml up -d --build --remove-orphans
             docker image prune -f

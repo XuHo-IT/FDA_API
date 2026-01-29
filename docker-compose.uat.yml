@@ -3,13 +3,24 @@ services:
     image: xuhoit/fda_api-fdaapi:uat
     container_name: fdaapi_uat 
     ports:
-      - "7097:8080" 
+      - "7097:8080"
     env_file: .env
+    pull_policy: always
     environment:
       ASPNETCORE_ENVIRONMENT: UAT
-      ConnectionStrings__PostgreSQLConnection: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};SearchPath=uat_schema
+      ASPNETCORE_URLS: http://0.0.0.0:8080
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      ConnectionStrings__PostgreSQLConnection: >
+        Host=postgres_dev;
+        Port=5432;
+        Database=${POSTGRES_DB};
+        Username=${POSTGRES_USER};
+        Password=${POSTGRES_PASSWORD};
+        SearchPath=uat_schema
+      GraphHopper__BaseUrl: http://graphhopper_dev:8989
     networks:
       - fda_api_default
+    restart: unless-stopped
 
 networks:
   fda_api_default:
