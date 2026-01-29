@@ -103,7 +103,8 @@ namespace FDAAPI.App.FeatG74_RequestSafeRoute
 
                 // 6. Analyze route safety
                 var primaryRoute = routeResponse.Paths.First();
-                var floodWarnings = _floodAnalyzer.AnalyzeRoute(primaryRoute.Geometry, floodPolygons);
+                var primaryGeometry = primaryRoute.ToGeoJsonGeometry();
+                var floodWarnings = _floodAnalyzer.AnalyzeRoute(primaryGeometry, floodPolygons);
                 var safetyStatus = _floodAnalyzer.CalculateSafetyStatus(floodWarnings);
 
                 // 7. Build response using mapper
@@ -117,7 +118,7 @@ namespace FDAAPI.App.FeatG74_RequestSafeRoute
                         PrimaryRoute = _mapper.MapToRouteDto(primaryRoute, floodWarnings),
                         AlternativeRoutes = routeResponse.Paths.Skip(1)
                             .Select(p => _mapper.MapToRouteDto(
-                                p, _floodAnalyzer.AnalyzeRoute(p.Geometry, floodPolygons)))
+                                p, _floodAnalyzer.AnalyzeRoute(p.ToGeoJsonGeometry(), floodPolygons)))
                             .ToList(),
                         FloodWarnings = floodWarnings,
                         SafetyStatus = safetyStatus
