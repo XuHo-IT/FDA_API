@@ -15,9 +15,9 @@ namespace FDAAPI.Infra.Services.Routing
     public class RouteFloodAnalyzer : IRouteFloodAnalyzer
     {
         // Radius (meters) for avoid polygon around flooded station
-        private const double CRITICAL_RADIUS_METERS = 500;
-        private const double WARNING_RADIUS_METERS = 300;
-        private const double CAUTION_RADIUS_METERS = 150;
+        private const double CRITICAL_RADIUS_METERS = 150;
+        private const double WARNING_RADIUS_METERS = 100;
+        private const double CAUTION_RADIUS_METERS = 50;
 
         // Number of points to approximate circle polygon
         private const int CIRCLE_POINTS = 32;
