@@ -1,0 +1,16 @@
+services:
+  graphhopper:
+    image: israelhikingmap/graphhopper:latest
+    container_name: fda_graphhopper
+    volumes:
+      - ./graphhopper-data:/data
+    ports:
+      - "8989:8989"
+    environment:
+      - JAVA_OPTS=-Xmx4g -Xms2g
+    command: >
+      --input /data/vietnam-260128.osm.pbf
+      -o /data/vietnam-gh
+      --host 0.0.0.0
+      --port 8989
+    restart: unless-stopped
