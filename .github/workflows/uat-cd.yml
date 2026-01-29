@@ -86,6 +86,8 @@ jobs:
             set -e
             echo "🏥 Running health checks..."
             
+            cd /home/dev/FDA_API
+
             # Check if container is running
             CONTAINER_STATUS=$(docker ps --filter "name=fdaapi" --filter "name=uat" --format "{{.Status}}" | head -1)
             if [ -z "$CONTAINER_STATUS" ]; then
