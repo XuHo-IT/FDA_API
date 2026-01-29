@@ -55,50 +55,69 @@ namespace FDAAPI.Infra.Services.Routing
 
         private object BuildGraphHopperRequest(GraphHopperRouteRequest request)
         {
-            var ghRequest = new
+            var hasAvoidPolygons = request.AvoidPolygons != null && request.AvoidPolygons.Any();
+
+            var ghRequest = new Dictionary<string, object?>
             {
-                points = request.Points,
-                profile = request.Profile,
-                points_encoded = request.PointsEncoded,
-                instructions = request.Instructions,
-                alternative_route = request.AlternativeRoute != null ? new
+                ["points"] = request.Points,
+                ["profile"] = request.Profile,
+                ["points_encoded"] = request.PointsEncoded,
+                ["instructions"] = request.Instructions
+            };
+
+            if (request.AlternativeRoute != null)
+            {
+                ghRequest["alternative_route"] = new
                 {
                     max_paths = request.AlternativeRoute.MaxPaths,
                     max_weight_factor = request.AlternativeRoute.MaxWeightFactor
-                } : null,
-                avoid_polygons = BuildAvoidPolygons(request.AvoidPolygons)
-            };
+                };
+            }
+
+            // GraphHopper uses custom_model with areas to avoid polygons.
+            // Requires ch.disable=true (flexible/hybrid mode).
+            if (hasAvoidPolygons)
+            {
+                ghRequest["ch.disable"] = true;
+                ghRequest["custom_model"] = BuildCustomModel(request.AvoidPolygons!);
+            }
 
             return ghRequest;
         }
 
         /// <summary>
-        /// GraphHopper expects avoid_polygons as a single GeoJSON geometry object.
-        /// Multiple polygons → MultiPolygon with coordinates: [ [ring1], [ring2], ... ]
-        /// Single polygon → Polygon with coordinates: [ [ring] ]
+        /// Build GraphHopper custom_model with areas for flood avoidance.
+        /// Format: { "priority": [{ "if": "in_flood_zone", "multiply_by": 0 }],
+        ///           "areas": { "flood_zone": { "type": "Feature", "geometry": {...} } } }
         /// </summary>
-        private object? BuildAvoidPolygons(List<GeoJsonGeometry>? polygons)
+        private object BuildCustomModel(List<GeoJsonGeometry> polygons)
         {
-            if (polygons == null || !polygons.Any())
-                return null;
-
             var rings = polygons
                 .Select(p => FlatToRing(p.Coordinates))
-                .ToList();
+                .ToArray();
 
-            if (rings.Count == 1)
-            {
-                return new
-                {
-                    type = "Polygon",
-                    coordinates = new[] { rings[0] }
-                };
-            }
-
-            return new
+            // Combine all flood polygons into a single MultiPolygon
+            var geometry = new
             {
                 type = "MultiPolygon",
                 coordinates = rings.Select(r => new[] { r }).ToArray()
+            };
+
+            return new
+            {
+                priority = new[]
+                {
+                    new { @if = "in_flood_zone", multiply_by = 0.0 }
+                },
+                areas = new Dictionary<string, object>
+                {
+                    ["flood_zone"] = new
+                    {
+                        type = "Feature",
+                        geometry,
+                        properties = new { }
+                    }
+                }
             };
         }
 
