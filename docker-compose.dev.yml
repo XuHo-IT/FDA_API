@@ -5,7 +5,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: fdaapi_dev
     ports:
       - "5232:8080"
     env_file:
@@ -38,7 +37,6 @@ services:
 
   postgres:
     image: postgres:16
-    container_name: postgres_dev
     env_file:
       - .env
     environment:
