@@ -107,21 +107,45 @@ namespace FDAAPI.App.FeatG74_RequestSafeRoute
                 var floodWarnings = _floodAnalyzer.AnalyzeRoute(primaryGeometry, floodPolygons);
                 var safetyStatus = _floodAnalyzer.CalculateSafetyStatus(floodWarnings);
 
-                // 7. Build response using mapper
+                // 7. Build GeoJSON FeatureCollection response
+                var features = new List<object>();
+
+                // Primary route feature
+                features.Add(_mapper.BuildRouteFeature(
+                    primaryRoute, floodWarnings, "primaryRoute"));
+
+                // Alternative route features
+                var altIndex = 1;
+                foreach (var altPath in routeResponse.Paths.Skip(1))
+                {
+                    var altWarnings = _floodAnalyzer.AnalyzeRoute(
+                        altPath.ToGeoJsonGeometry(), floodPolygons);
+                    features.Add(_mapper.BuildRouteFeature(
+                        altPath, altWarnings, $"alternativeRoute_{altIndex++}"));
+                }
+
+                // Flood zone features
+                foreach (var warning in floodWarnings)
+                {
+                    features.Add(_mapper.BuildFloodZoneFeature(warning));
+                }
+
                 return new SafeRouteResponse
                 {
                     Success = true,
                     Message = "Route calculated successfully",
                     StatusCode = SafeRouteStatusCode.Success,
-                    Data = new SafeRouteData
+                    Data = new SafeRouteGeoJsonData
                     {
-                        PrimaryRoute = _mapper.MapToRouteDto(primaryRoute, floodWarnings),
-                        AlternativeRoutes = routeResponse.Paths.Skip(1)
-                            .Select(p => _mapper.MapToRouteDto(
-                                p, _floodAnalyzer.AnalyzeRoute(p.ToGeoJsonGeometry(), floodPolygons)))
-                            .ToList(),
-                        FloodWarnings = floodWarnings,
-                        SafetyStatus = safetyStatus
+                        Type = "FeatureCollection",
+                        Features = features,
+                        Metadata = new SafeRouteMetadata
+                        {
+                            SafetyStatus = safetyStatus,
+                            TotalFloodZones = floodWarnings.Count,
+                            AlternativeRouteCount = routeResponse.Paths.Count - 1,
+                            GeneratedAt = DateTime.UtcNow
+                        }
                     }
                 };
             }
