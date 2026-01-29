@@ -14,7 +14,7 @@ namespace FDAAPI.App.Common.Services.Mapping
         {
             return new RouteDto
             {
-                Geometry = path.Geometry,
+                Geometry = path.ToGeoJsonGeometry(),
                 DistanceMeters = (decimal)path.Distance,
                 DurationSeconds = (int)(path.Time / 1000),
                 Instructions = path.Instructions.Select(i => new RouteInstructionDto
