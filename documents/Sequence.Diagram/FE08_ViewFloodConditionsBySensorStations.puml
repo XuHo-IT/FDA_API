@@ -1,0 +1,97 @@
+@startuml FE08_ListStationFloodConditions
+title FE-08 - List Station Flood Conditions (Stations Flood Conditions Screen)
+
+actor User
+participant UI
+participant "ViewFloodConditionsByStationsEndpoint" as Endpoint
+participant MediatR
+participant "GetStationFloodConditionsHandler" as Handler
+participant Repository
+database Database
+participant Service
+
+User -> UI: 1. Open "Stations Flood Conditions" screen
+UI -> Endpoint: 2. GET /api/v1/stations/conditions\nbounds, severity, status, page, size
+Endpoint -> MediatR: 3. Send(GetStationFloodConditionsRequest)
+MediatR -> Handler: 4. Handle(request)
+
+Handler -> Repository: 5. GetStationsByBounds(bounds, status)
+Repository -> Database: 6. SELECT stations WHERE in bounds AND status
+Database --> Repository: 7. Station list
+Repository --> Handler: 8. Stations
+
+Handler -> Repository: 9. GetLatestWaterLevels(stationIds)
+Repository -> Database: 10. SELECT latest readings per station
+Database --> Repository: 11. Water levels
+Repository --> Handler: 12. Water levels
+
+Handler -> Service: 13. ComputeSeverityForStations(stations, levels)
+Service --> Handler: 14. Severity results
+
+Handler -> Handler: 15. Build StationFloodConditionDto list
+
+alt No stations found
+  Handler --> MediatR: 16. Response { success: true, total: 0, items: [] }
+else Stations found
+  Handler --> MediatR: 17. Response { success: true, total > 0, items }
+end
+
+MediatR --> Endpoint: 18. GetStationFloodConditionsResponse
+Endpoint --> UI: 19. 200 OK + JSON payload
+UI --> User: 20. Show markers and list with severity colors
+
+@enduml
+
+
+@startuml FE08_StationFloodConditionDetail
+title FE-08 - Station Flood Condition Detail (Station Popup)
+
+actor User
+participant UI
+participant "ViewFloodConditionDetailEndpoint" as DetailEndpoint
+participant MediatR
+participant "GetStationFloodConditionDetailHandler" as DetailHandler
+participant Repository
+database Database
+participant Service
+
+User -> UI: 1. Tap on station marker
+UI -> DetailEndpoint: 2. GET /api/v1/stations/{id}/condition
+DetailEndpoint -> MediatR: 3. Send(GetStationFloodConditionDetailRequest)
+MediatR -> DetailHandler: 4. Handle(request)
+
+DetailHandler -> Repository: 5. GetStationById(stationId)
+Repository -> Database: 6. SELECT station WHERE id = stationId
+Database --> Repository: 7. Station or null
+Repository --> DetailHandler: 8. Station or null
+
+alt Station not found
+  DetailHandler --> MediatR: 9. Response { success: false, statusCode: 404 }
+  MediatR --> DetailEndpoint: 10. Error response
+  DetailEndpoint --> UI: 11. 404 Not Found
+  UI --> User: 12. Show "Station not found"
+else Station found
+  DetailHandler -> Repository: 13. GetRecentWaterLevels(stationId)
+  Repository -> Database: 14. SELECT latest N readings
+  Database --> Repository: 15. Readings
+  Repository --> DetailHandler: 16. Readings
+
+  DetailHandler -> Repository: 17. GetLatestAlertForStation(stationId)
+  Repository -> Database: 18. SELECT last alert
+  Database --> Repository: 19. Alert (optional)
+  Repository --> DetailHandler: 20. Alert (optional)
+
+  DetailHandler -> Service: 21. ComputeSeverity(station, readings, alert)
+  Service --> DetailHandler: 22. Severity result
+
+  DetailHandler -> DetailHandler: 23. Build StationFloodConditionDetailDto
+
+  DetailHandler --> MediatR: 24. Response { success: true, data }
+  MediatR --> DetailEndpoint: 25. Success response
+  DetailEndpoint --> UI: 26. 200 OK + JSON payload
+  UI --> User: 27. Show station detail popup
+end
+
+@enduml
+
+

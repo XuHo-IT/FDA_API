@@ -1,0 +1,111 @@
+name: uat-cd
+
+on:
+  push:
+    branches:
+      - uat
+  pull_request:
+    branches:
+      - uat
+    types:
+      - closed
+  workflow_dispatch: # Cho phép trigger thủ công
+
+jobs:
+  deploy-uat:
+    name: 🚀 Deploy to UAT Server
+    runs-on: ubuntu-22.04
+
+    # Chạy khi: push trực tiếp HOẶC merge PR (không chạy nếu close PR mà không merge) HOẶC manual trigger
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'push' ||
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🔐 Deploy to VPS
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          port: ${{ secrets.SSH_PORT }}
+          script_stop: true
+          script: |
+            set -e
+            echo "🚀 Starting UAT deployment..."
+            
+            # Navigate to project directory
+            cd /home/dev/FDA_API || cd /path/to/FDA_Api
+            
+            # Login to Docker Hub
+            echo "🔐 Logging in to Docker Hub..."
+            docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
+            
+            # Pull latest UAT image
+            echo "📥 Pulling latest UAT image..."
+            docker compose -p fda_uat -f docker-compose.uat.yml pull
+            
+            # Start/Recreate container (--force-recreate thay vì down để tránh drop network và downtime)
+            echo "▶️ Starting/Recreating UAT container..."
+            docker compose -p fda_uat -f docker-compose.uat.yml up -d --force-recreate
+
+            
+            # Wait for container to start
+            echo "⏳ Waiting for container to be ready..."
+            sleep 10
+            
+            # Check container status
+            echo "📊 Checking container status..."
+            docker ps | grep fdaapi || docker ps | grep uat
+            
+            # Show recent logs
+            echo "📋 Recent logs:"
+            docker compose -p fda_uat -f docker-compose.uat.yml logs --tail=50
+            
+            # Clean up unused images
+            echo "🧹 Cleaning up unused images..."
+            docker image prune -f
+            
+            echo "✅ UAT deployment completed!"
+
+      - name: 🏥 Health Check
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          port: ${{ secrets.SSH_PORT }}
+          script_stop: true
+          script: |
+            set -e
+            echo "🏥 Running health checks..."
+            
+            # Check if container is running
+            CONTAINER_STATUS=$(docker ps --filter "name=fdaapi" --filter "name=uat" --format "{{.Status}}" | head -1)
+            if [ -z "$CONTAINER_STATUS" ]; then
+              echo "❌ Container is not running!"
+              exit 1
+            fi
+            echo "✅ Container status: $CONTAINER_STATUS"
+            
+            # Check for errors in logs
+            ERROR_COUNT=$(docker compose -p fda_uat -f docker-compose.uat.yml logs --tail=100 | grep -i "error\|exception\|failed" | wc -l)
+            if [ "$ERROR_COUNT" -gt 0 ]; then
+              echo "⚠️ Found $ERROR_COUNT potential errors in logs"
+              docker compose -p fda_uat -f docker-compose.uat.yml logs --tail=100 | grep -i "error\|exception\|failed"
+            else
+              echo "✅ No errors found in recent logs"
+            fi
+            
+            # Check if schema exists (optional - requires psql)
+            # echo "🗄️ Checking database schema..."
+            # docker exec postgres_dev psql -U $POSTGRES_USER -d $POSTGRES_DB -c "\dn" | grep uat_schema || echo "⚠️ Schema check skipped (psql not available)"
+            
+            echo "✅ Health checks completed!"
+
