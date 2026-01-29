@@ -94,7 +94,11 @@ namespace FDAAPI.App.FeatG74_RequestSafeRoute
                 var normalRouteRequest = new GraphHopperRouteRequest
                 {
                     Points = points,
-                    Profile = profile
+                    Profile = profile,
+                    AlternativeRoute = new AlternativeRouteConfig
+                    {
+                        MaxPaths = request.MaxAlternatives
+                    }
                 };
 
                 var safeRouteTask = _graphHopper.GetRouteAsync(safeRouteRequest, ct);
@@ -143,11 +147,14 @@ namespace FDAAPI.App.FeatG74_RequestSafeRoute
                 // Normal route feature (alternative for comparison)
                 if (normalRouteResponse?.Paths != null && normalRouteResponse.Paths.Any())
                 {
-                    var normalRoute = normalRouteResponse.Paths.First();
-                    var normalGeometry = normalRoute.ToGeoJsonGeometry();
-                    var normalWarnings = _floodAnalyzer.AnalyzeRoute(normalGeometry, floodPolygons);
-                    features.Add(_mapper.BuildRouteFeature(
-                        normalRoute, normalWarnings, "normalRoute"));
+                    for (int i = 0; i < normalRouteResponse.Paths.Count; i++)
+                    {
+                        var normalRoute = normalRouteResponse.Paths[i];
+                        var normalGeometry = normalRoute.ToGeoJsonGeometry();
+                        var normalWarnings = _floodAnalyzer.AnalyzeRoute(normalGeometry, floodPolygons);
+                        features.Add(_mapper.BuildRouteFeature(
+                            normalRoute, normalWarnings, $"normalRoute_{i + 1}"));
+                    }
                 }
 
                 // Flood zone features
@@ -159,13 +166,18 @@ namespace FDAAPI.App.FeatG74_RequestSafeRoute
                 // Also include flood zones that safe route avoids but normal route hits
                 if (normalRouteResponse?.Paths != null && normalRouteResponse.Paths.Any())
                 {
-                    var normalGeometry = normalRouteResponse.Paths.First().ToGeoJsonGeometry();
-                    var normalWarnings = _floodAnalyzer.AnalyzeRoute(normalGeometry, floodPolygons);
-                    var additionalWarnings = normalWarnings
-                        .Where(nw => !safeWarnings.Any(sw => sw.StationId == nw.StationId));
-                    foreach (var warning in additionalWarnings)
+                    var addedStationIds = new HashSet<Guid>(safeWarnings.Select(w => w.StationId));
+                    foreach (var path in normalRouteResponse.Paths)
                     {
-                        features.Add(_mapper.BuildFloodZoneFeature(warning));
+                        var normalGeometry = path.ToGeoJsonGeometry();
+                        var normalWarnings = _floodAnalyzer.AnalyzeRoute(normalGeometry, floodPolygons);
+                        foreach (var warning in normalWarnings)
+                        {
+                            if (addedStationIds.Add(warning.StationId))
+                            {
+                                features.Add(_mapper.BuildFloodZoneFeature(warning));
+                            }
+                        }
                     }
                 }
 
@@ -182,7 +194,7 @@ namespace FDAAPI.App.FeatG74_RequestSafeRoute
                         {
                             SafetyStatus = safetyStatus,
                             TotalFloodZones = floodPolygons.Count,
-                            AlternativeRouteCount = normalRouteResponse?.Paths?.Any() == true ? 1 : 0,
+                            AlternativeRouteCount = normalRouteResponse?.Paths?.Count ?? 0,
                             GeneratedAt = DateTime.UtcNow
                         }
                     }
