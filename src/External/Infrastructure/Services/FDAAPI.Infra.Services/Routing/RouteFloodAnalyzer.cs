@@ -182,8 +182,8 @@ namespace FDAAPI.Infra.Services.Routing
         }
 
         /// <summary>
-        /// Calculate distance from route geometry to a point (station).
-        /// Simplified: uses first coordinate of route geometry.
+        /// Calculate minimum distance from any point on the route to a station.
+        /// Iterates all coordinate pairs [lng, lat] in the flat array.
         /// </summary>
         private double CalculateHaversineDistance(
             GeoJsonGeometry routeGeometry, decimal stationLat, decimal stationLng)
@@ -191,13 +191,22 @@ namespace FDAAPI.Infra.Services.Routing
             if (routeGeometry.Coordinates.Length < 2)
                 return double.MaxValue;
 
-            // Route geometry first point: [lng, lat]
-            var routeLng = (double)routeGeometry.Coordinates[0];
-            var routeLat = (double)routeGeometry.Coordinates[1];
+            var minDistance = double.MaxValue;
+            var stLat = (double)stationLat;
+            var stLng = (double)stationLng;
 
-            return HaversineDistance(
-                routeLat, routeLng,
-                (double)stationLat, (double)stationLng);
+            // Coordinates is flat: [lng0, lat0, lng1, lat1, ...]
+            for (int i = 0; i < routeGeometry.Coordinates.Length - 1; i += 2)
+            {
+                var routeLng = (double)routeGeometry.Coordinates[i];
+                var routeLat = (double)routeGeometry.Coordinates[i + 1];
+
+                var distance = HaversineDistance(routeLat, routeLng, stLat, stLng);
+                if (distance < minDistance)
+                    minDistance = distance;
+            }
+
+            return minDistance;
         }
 
         private double HaversineDistance(
