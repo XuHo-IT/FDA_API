@@ -10,6 +10,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__PostgreSQLConnection: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};
+      GraphHopper__BaseUrl: http://graphhopper:8989
     depends_on:
       - postgres
     networks:
