@@ -97,6 +97,7 @@ using System.Reflection;
 using System.Text;
 using FDAAPI.App.FeatG74_RequestSafeRoute;
 using FDAAPI.Infra.Services.Routing;
+using FDAAPI.App.FeatG75_OptimizedRoute;
 
 namespace FDAAPI.Infra.Configuration
 {
@@ -177,6 +178,8 @@ namespace FDAAPI.Infra.Configuration
             services.AddScoped<IRouteFloodAnalyzer, RouteFloodAnalyzer>();
             services.AddScoped<ISafeRouteMapper, SafeRouteMapper>();
 
+            services.AddMemoryCache();
+
             return services;
         }
 
@@ -254,7 +257,8 @@ namespace FDAAPI.Infra.Configuration
                 typeof(SubscribeToPlanRequest).Assembly,
                 typeof(CancelSubscriptionRequest).Assembly,
                 typeof(AdministrativeAreasEvaluateRequest).Assembly,
-                typeof(CreateSafeRouteRequest).Assembly
+                typeof(CreateSafeRouteRequest).Assembly,
+                typeof(OptimizedRouteRequest).Assembly
             };
 
             // Register MediatR with all feature assemblies and ValidationBehavior

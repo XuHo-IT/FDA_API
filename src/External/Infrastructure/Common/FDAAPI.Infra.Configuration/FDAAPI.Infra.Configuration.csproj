@@ -70,6 +70,7 @@
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG72_SubscribeToPlan\FDAAPI.App.FeatG72_SubscribeToPlan.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG73_CancelSubscription\FDAAPI.App.FeatG73_CancelSubscription.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG74_RequestSafeRoute\FDAAPI.App.FeatG74_RequestSafeRoute.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG75_OptimizedRoute\FDAAPI.App.FeatG75_OptimizedRoute.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG7_AuthLogin\FDAAPI.App.FeatG7_AuthLogin.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG8_AuthRefreshToken\FDAAPI.App.FeatG8_AuthRefreshToken.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG9_AuthLogout\FDAAPI.App.FeatG9_AuthLogout.csproj" />
