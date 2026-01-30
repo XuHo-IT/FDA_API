@@ -6,11 +6,11 @@ public class GraphHopperRouteRequest
 {
     public decimal[][] Points { get; set; } = Array.Empty<decimal[]>();
     public string Profile { get; set; } = "car";
-    public string? Weighting { get; set; }
     public List<GeoJsonGeometry>? AvoidPolygons { get; set; }
     public AlternativeRouteConfig? AlternativeRoute { get; set; }
     public bool PointsEncoded { get; set; } = false;
     public bool Instructions { get; set; } = true;
+    public int? DistanceInfluence { get; set; }
 }
 
 public class AlternativeRouteConfig

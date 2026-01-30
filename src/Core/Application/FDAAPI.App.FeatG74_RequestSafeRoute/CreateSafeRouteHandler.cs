@@ -106,7 +106,7 @@ namespace FDAAPI.App.FeatG74_RequestSafeRoute
                 {
                     Points = points,
                     Profile = profile,
-                    Weighting = "shortest"
+                    DistanceInfluence = 200
                 };
 
                 var safeRouteTask = _graphHopper.GetRouteAsync(safeRouteRequest, ct);
