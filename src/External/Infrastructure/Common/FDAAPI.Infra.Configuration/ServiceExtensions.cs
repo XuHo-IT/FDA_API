@@ -97,6 +97,7 @@ using System.Reflection;
 using System.Text;
 using FDAAPI.App.FeatG74_RequestSafeRoute;
 using FDAAPI.Infra.Services.Routing;
+using FDAAPI.App.FeatG5_AuthResetPassword;
 
 namespace FDAAPI.Infra.Configuration
 {
@@ -190,6 +191,7 @@ namespace FDAAPI.Infra.Configuration
                 typeof(LogoutRequest).Assembly,
                 typeof(RefreshTokenRequest).Assembly,
                 typeof(ChangePasswordRequest).Assembly,
+                typeof(ResetPasswordRequest).Assembly,
                 typeof(GoogleLoginInitiateRequest).Assembly,
                 typeof(GoogleOAuthCallbackRequest).Assembly,
                 typeof(GoogleMobileLoginRequest).Assembly,

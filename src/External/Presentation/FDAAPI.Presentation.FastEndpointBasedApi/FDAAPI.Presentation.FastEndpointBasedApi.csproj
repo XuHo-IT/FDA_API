@@ -66,6 +66,7 @@
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG45_GetFloodTrends\FDAAPI.App.FeatG45_GetFloodTrends.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG46_GetFloodStatistics\FDAAPI.App.FeatG46_GetFloodStatistics.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG4_WaterLevelDelete\FDAAPI.App.FeatG4_SensorReadingDelete.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG5_AuthResetPassword\FDAAPI.App.FeatG5_AuthResetPassword.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG67_GetMySubscriptions\FDAAPI.App.FeatG67_GetMySubscriptions.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG68_DeleteSubscription\FDAAPI.App.FeatG68_DeleteSubscription.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG69_AdminGetAllSubscriptions\FDAAPI.App.FeatG69_AdminGetAllSubscriptions.csproj" />
