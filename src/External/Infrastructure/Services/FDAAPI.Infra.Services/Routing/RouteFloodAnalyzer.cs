@@ -71,6 +71,79 @@ namespace FDAAPI.Infra.Services.Routing
             return floodPolygons;
         }
 
+        public List<FloodPolygon> BuildFloodPolygonsWithTrend(
+    List<Station> stations,
+    Dictionary<Guid, SensorReading> latestReadings,
+    Dictionary<Guid, List<SensorReading>> recentReadings)
+        {
+            var floodPolygons = new List<FloodPolygon>();
+
+            foreach (var station in stations)
+            {
+                if (!station.Latitude.HasValue || !station.Longitude.HasValue)
+                    continue;
+
+                if (!latestReadings.TryGetValue(station.Id, out var reading))
+                    continue;
+
+                var (severity, level) = CalculateFloodSeverity(reading.Value, station);
+
+                // Trend analysis: if rising >10%, increase severity by 1
+                if (recentReadings.TryGetValue(station.Id, out var readings) && readings.Count >= 3)
+                {
+                    var newest = readings[0].Value;  // most recent
+                    var oldest = readings[^1].Value;  // oldest of 3
+
+                    if (oldest > 0)
+                    {
+                        var trend = (newest - oldest) / oldest;
+                        if (trend > 0.1) // rising >10%
+                        {
+                            level = Math.Min(level + 1, 3);
+                            severity = level switch
+                            {
+                                3 => "critical",
+                                2 => "warning",
+                                1 => "caution",
+                                _ => severity
+                            };
+                        }
+                    }
+                }
+
+                // Only create polygons for warning+ severity (same filter as original)
+                if (level < 2)
+                    continue;
+
+                var radiusMeters = level switch
+                {
+                    3 => CRITICAL_RADIUS_METERS,
+                    2 => WARNING_RADIUS_METERS,
+                    _ => CAUTION_RADIUS_METERS
+                };
+
+                var circleGeometry = CreateCirclePolygon(
+                    (double)station.Latitude.Value,
+                    (double)station.Longitude.Value,
+                    radiusMeters);
+
+                floodPolygons.Add(new FloodPolygon
+                {
+                    StationId = station.Id,
+                    StationName = station.Name,
+                    StationCode = station.Code,
+                    Latitude = station.Latitude.Value,
+                    Longitude = station.Longitude.Value,
+                    WaterLevel = reading.Value,
+                    Severity = severity,
+                    SeverityLevel = level,
+                    Geometry = circleGeometry
+                });
+            }
+
+            return floodPolygons;
+        }
+
         public List<FloodWarningDto> AnalyzeRoute(
             GeoJsonGeometry routeGeometry,
             List<FloodPolygon> floodPolygons)

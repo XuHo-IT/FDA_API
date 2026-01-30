@@ -31,6 +31,16 @@ namespace FDAAPI.App.Common.Services
         /// Calculate overall safety status from warnings
         /// </summary>
         RouteSafetyStatus CalculateSafetyStatus(List<FloodWarningDto> warnings);
+
+        /// <summary>
+        /// Build flood polygons with trend-based severity projection.
+        /// If water level is rising >10%, severity is increased by 1 level.
+        /// </summary>
+        List<FloodPolygon> BuildFloodPolygonsWithTrend(
+            List<Station> stations,
+            Dictionary<Guid, SensorReading> latestReadings,
+            Dictionary<Guid, List<SensorReading>> recentReadings);
+
     }
 
 }
