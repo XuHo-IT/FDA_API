@@ -35,7 +35,8 @@ namespace FDAAPI.Infra.Services.Notifications
                 if (identifierType == "phone")
                 {
                     var message = $"Your FDA verification code is: {otpCode}. Valid for 5 minutes.";
-                    return await _smsService.SendSmsAsync(identifier, message, ct);
+                    // return await _smsService.SendSmsAsync(identifier, message, ct);
+                    return true; // SMS sending disabled for now
                 }
                 else
                 {

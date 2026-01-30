@@ -65,7 +65,7 @@ namespace FDAAPI.App.FeatG6_AuthSendOtp
             try
             {
                 // Generate 6-digit OTP (Mock for development)
-                var otpCode = GenerateMockOtp();
+                var otpCode = identifierType == "phone" ? "123456" : GenerateMockOtp();
                 var expiresAt = DateTime.UtcNow.AddMinutes(5);
 
                 // Save OTP to database
@@ -141,7 +141,7 @@ namespace FDAAPI.App.FeatG6_AuthSendOtp
             // return "123456";
 
             // For production: uncomment below
-            return Random.Shared.Next(100000, 999999).ToString();
+            return  Random.Shared.Next(100000, 999999).ToString();
         }
 
         /// <summary>
