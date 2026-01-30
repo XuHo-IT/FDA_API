@@ -15,6 +15,6 @@ public class GraphHopperRouteRequest
 public class AlternativeRouteConfig
 {
     public int MaxPaths { get; set; } = 3;
-    public double MaxWeightFactor { get; set; } = 2.0;
-    public double MaxShareFactor { get; set; } = 0.6;
+    public double MaxWeightFactor { get; set; } = 2.5;
+    public double MaxShareFactor { get; set; } = 0.8;
 }
