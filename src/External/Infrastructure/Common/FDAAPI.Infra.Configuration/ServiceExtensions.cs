@@ -337,6 +337,8 @@ namespace FDAAPI.Infra.Configuration
             services.AddScoped<SeverityAggregationBackgroundJob>();
             services.AddScoped<HotspotAggregationBackgroundJob>();
 
+            services.AddScoped<IOtpSender, OtpSender>();
+
             return services;
         }
 
