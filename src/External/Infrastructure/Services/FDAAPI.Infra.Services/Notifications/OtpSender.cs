@@ -30,8 +30,8 @@ namespace FDAAPI.Infra.Services.Notifications
             string otpCode,
             CancellationToken ct = default)
         {
-            try
-            {
+            // try
+            // {
                 if (identifierType == "phone")
                 {
                     var message = $"Your FDA verification code is: {otpCode}. Valid for 5 minutes.";
@@ -49,12 +49,12 @@ namespace FDAAPI.Infra.Services.Notifications
                         <p>- FDA Team</p>";
                     return await _emailService.SendEmailAsync(identifier, subject, body, ct);
                 }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to send OTP to {Identifier} via {Type}", identifier, identifierType);
-                return false;
-            }
+            // }
+            // catch (Exception ex)
+            // {
+            //     _logger.LogError(ex, "Failed to send OTP to {Identifier} via {Type}", identifier, identifierType);
+            //     return false;
+            // }
         }
     }
 }
