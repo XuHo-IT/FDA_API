@@ -65,6 +65,11 @@ namespace FDAAPI.Infra.Services.Routing
                 ["instructions"] = request.Instructions
             };
 
+            if (!string.IsNullOrEmpty(request.Weighting))
+            {
+                ghRequest["weighting"] = request.Weighting;
+            }
+
             if (request.AlternativeRoute != null)
             {
                 ghRequest["alternative_route"] = new
