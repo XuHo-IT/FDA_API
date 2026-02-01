@@ -6,6 +6,7 @@ using FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.Feat54_MqttIngesti
 using FDAAPI.Presentation.FastEndpointBasedApi.Hubs;
 using FDAAPI.Presentation.FastEndpointBasedApi.Middleware;
 using FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.Analytics;
+using FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs;
 using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
@@ -100,6 +101,9 @@ builder.Services.AddSignalR(options =>
 
 // Register Realtime Service
 builder.Services.AddScoped<IRealtimeMapService, RealtimeMapService>();
+
+// Register Prediction Verification Background Job
+builder.Services.AddScoped<FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.FeatG79_VerifyPredictions.VerifyPredictionsRunner>();
 
 // ==================================================
 // BUILD APPLICATION

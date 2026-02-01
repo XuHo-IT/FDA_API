@@ -83,6 +83,9 @@
     <ProjectReference Include="..\..\Services\FDAAPI.Infra.Services\FDAAPI.Infra.Services.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG36_AreaUpdate\FDAAPI.App.FeatG36_AreaUpdate.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG37_AreaDelete\FDAAPI.App.FeatG37_AreaDelete.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG76_LogPrediction\FDAAPI.App.FeatG76_LogPrediction.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG77_GetPredictionComparisons\FDAAPI.App.FeatG77_GetPredictionComparisons.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG78_GetPredictionAccuracyStats\FDAAPI.App.FeatG78_GetPredictionAccuracyStats.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -256,7 +256,10 @@ namespace FDAAPI.Infra.Configuration
                 typeof(SubscribeToPlanRequest).Assembly,
                 typeof(CancelSubscriptionRequest).Assembly,
                 typeof(AdministrativeAreasEvaluateRequest).Assembly,
-                typeof(CreateSafeRouteRequest).Assembly
+                typeof(CreateSafeRouteRequest).Assembly,
+                typeof(FDAAPI.App.FeatG76_LogPrediction.LogPredictionRequest).Assembly,
+                typeof(FDAAPI.App.FeatG77_GetPredictionComparisons.GetPredictionComparisonsRequest).Assembly,
+                typeof(FDAAPI.App.FeatG78_GetPredictionAccuracyStats.GetPredictionAccuracyStatsRequest).Assembly
             };
 
             // Register MediatR with all feature assemblies and ValidationBehavior
@@ -319,6 +322,7 @@ namespace FDAAPI.Infra.Configuration
             services.AddScoped<IUserPreferenceRepository, PgsqlUserPreferenceRepository>();
 
             services.AddScoped<IAreaRepository, PgsqlAreaRepository>();
+            services.AddScoped<IPredictionLogRepository, PgsqlPredictionLogRepository>();
 
             services.AddScoped<ISensorHourlyAggRepository, PgsqlSensorHourlyAggRepository>();
             services.AddScoped<ISensorDailyAggRepository, PgsqlSensorDailyAggRepository>();
@@ -336,6 +340,9 @@ namespace FDAAPI.Infra.Configuration
             services.AddScoped<FrequencyAggregationBackgroundJob>();
             services.AddScoped<SeverityAggregationBackgroundJob>();
             services.AddScoped<HotspotAggregationBackgroundJob>();
+
+            // Prediction verification background job (for Hangfire)
+            // Note: VerifyPredictionsRunner is registered in Presentation layer, not here
 
             services.AddScoped<IOtpSender, OtpSender>();
 
