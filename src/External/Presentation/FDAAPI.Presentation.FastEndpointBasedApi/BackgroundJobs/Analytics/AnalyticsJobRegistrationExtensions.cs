@@ -37,6 +37,9 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.Analytics
                     new RecurringJobOptions { TimeZone = vnTimeZone });
 
                 // Verify Predictions Job - runs every 10 minutes
+                // Remove old job if exists to avoid deserialization errors
+                RecurringJob.RemoveIfExists("verify-predictions-job");
+                
                 RecurringJob.AddOrUpdate<FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.FeatG79_VerifyPredictions.VerifyPredictionsRunner>(
                     "verify-predictions-job",
                     runner => runner.RunAsync(),
