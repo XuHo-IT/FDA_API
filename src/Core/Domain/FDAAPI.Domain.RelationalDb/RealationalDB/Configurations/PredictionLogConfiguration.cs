@@ -51,7 +51,7 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB.Configurations
                 .HasDatabaseName("ix_prediction_logs_verified");
             builder.HasIndex(e => e.EndTime)
                 .HasDatabaseName("ix_prediction_logs_end_time")
-                .HasFilter("[is_verified] = 0");
+                .HasFilter("\"IsVerified\" = false");
 
             // Relationships
             builder.HasOne(e => e.Area)
