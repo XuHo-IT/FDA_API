@@ -35,6 +35,13 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.Analytics
                     runner => runner.RunMonthlyAsync(),
                     Cron.Monthly(1, 4),
                     new RecurringJobOptions { TimeZone = vnTimeZone });
+
+                // Verify Predictions Job - runs every 10 minutes
+                RecurringJob.AddOrUpdate<FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.FeatG79_VerifyPredictions.VerifyPredictionsRunner>(
+                    "verify-predictions-job",
+                    runner => runner.RunAsync(),
+                    "*/10 * * * *",  // Every 10 minutes
+                    new RecurringJobOptions { TimeZone = vnTimeZone });
             }
             catch (TimeZoneNotFoundException)
             {

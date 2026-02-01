@@ -1,0 +1,187 @@
+@startuml FE19_LogPrediction
+title FE-19 - Log Prediction from AI System
+
+actor AISystem
+participant LogPredictionEndpoint
+participant MediatR
+participant LogPredictionHandler
+participant Repository
+database Database
+
+AISystem -> LogPredictionEndpoint: 1. POST /api/v1/internal/log-prediction
+activate LogPredictionEndpoint
+
+LogPredictionEndpoint -> LogPredictionEndpoint: 2. Validate API Key (if enabled)
+
+LogPredictionEndpoint -> MediatR: 3. Send(LogPredictionRequest)
+activate MediatR
+
+MediatR -> LogPredictionHandler: 4. Handle(request)
+activate LogPredictionHandler
+
+LogPredictionHandler -> Repository: 5. GetAreaById(areaId)
+activate Repository
+Repository -> Database: 6. SELECT * FROM areas WHERE id = ?
+activate Database
+Database --> Repository: 7. Area or null
+deactivate Database
+Repository --> LogPredictionHandler: 8. Area or null
+deactivate Repository
+
+alt Area NOT exists
+  LogPredictionHandler --> MediatR: 9. Response {success: false, statusCode: 404}
+  deactivate LogPredictionHandler
+  MediatR --> LogPredictionEndpoint: 10. Response
+  deactivate MediatR
+  LogPredictionEndpoint --> AISystem: 11. 404 Not Found
+  deactivate LogPredictionEndpoint
+else Area exists
+  LogPredictionHandler -> LogPredictionHandler: 12. Validate probability range (0-1)
+  LogPredictionHandler -> LogPredictionHandler: 13. Validate time range (endTime > startTime)
+  
+  LogPredictionHandler -> LogPredictionHandler: 14. Create PredictionLog entity
+  LogPredictionHandler -> Repository: 15. CreateAsync(predictionLog)
+  activate Repository
+  Repository -> Database: 16. INSERT INTO prediction_logs
+  activate Database
+  Database --> Repository: 17. Inserted (Id)
+  deactivate Database
+  Repository --> LogPredictionHandler: 18. PredictionLogId
+  deactivate Repository
+  
+  LogPredictionHandler --> MediatR: 19. Response {success: true, predictionLogId}
+  deactivate LogPredictionHandler
+  MediatR --> LogPredictionEndpoint: 20. Response
+  deactivate MediatR
+  LogPredictionEndpoint --> AISystem: 21. 200 OK {predictionLogId, isVerified: false}
+  deactivate LogPredictionEndpoint
+end
+
+@enduml
+
+@startuml FE19_VerifyPredictions
+title FE-19 - Verify Predictions Background Job
+
+participant HangfireScheduler
+participant VerifyPredictionsRunner
+participant MediatR
+participant VerifyPredictionsHandler
+participant Repository
+database Database
+
+== Flow: Verify Predictions (Recurring Job - Every 10 minutes) ==
+
+HangfireScheduler -> VerifyPredictionsRunner: 1. Trigger job (cron: */10 * * * *)
+activate VerifyPredictionsRunner
+
+VerifyPredictionsRunner -> MediatR: 2. Send(VerifyPredictionsRequest)
+activate MediatR
+
+MediatR -> VerifyPredictionsHandler: 3. Handle(request)
+activate VerifyPredictionsHandler
+
+VerifyPredictionsHandler -> Repository: 4. GetPendingVerificationAsync(beforeTime: Now, limit: 100)
+activate Repository
+Repository -> Database: 5. SELECT * FROM prediction_logs WHERE is_verified = false AND end_time <= NOW() LIMIT 100
+activate Database
+Database --> Repository: 6. List<PredictionLog>
+deactivate Database
+Repository --> VerifyPredictionsHandler: 7. Pending predictions
+deactivate Repository
+
+alt No pending predictions
+  VerifyPredictionsHandler --> MediatR: 8. Response {verifiedCount: 0}
+  deactivate VerifyPredictionsHandler
+  MediatR --> VerifyPredictionsRunner: 9. Response
+  deactivate MediatR
+  VerifyPredictionsRunner --> HangfireScheduler: 10. Job completed
+  deactivate VerifyPredictionsRunner
+else Has pending predictions
+  loop For each prediction
+    VerifyPredictionsHandler -> Repository: 9. GetMaxWaterLevelByAreaAndTimeRange(areaId, startTime, endTime)
+    activate Repository
+    Repository -> Database: 10. SELECT MAX(value) FROM sensor_readings sr JOIN stations s ON sr.station_id = s.id WHERE s.area_id = ? AND sr.measured_at BETWEEN ? AND ?
+    activate Database
+    Database --> Repository: 11. MaxValue or null
+    deactivate Database
+    Repository --> VerifyPredictionsHandler: 12. ActualWaterLevel
+    deactivate Repository
+    
+    VerifyPredictionsHandler -> VerifyPredictionsHandler: 13. Compare predicted vs actual
+    VerifyPredictionsHandler -> VerifyPredictionsHandler: 14. Calculate isCorrect
+    VerifyPredictionsHandler -> VerifyPredictionsHandler: 15. Calculate accuracyScore
+    
+    VerifyPredictionsHandler -> Repository: 16. UpdateAsync(predictionLog)
+    activate Repository
+    Repository -> Database: 17. UPDATE prediction_logs SET actual_water_level = ?, is_verified = true, is_correct = ?, accuracy_score = ?, verified_at = NOW() WHERE id = ?
+    activate Database
+    Database --> Repository: 18. Updated
+    deactivate Database
+    Repository --> VerifyPredictionsHandler: 19. Success
+    deactivate Repository
+  end
+  
+  VerifyPredictionsHandler --> MediatR: 20. Response {verifiedCount: N, processedCount: N}
+  deactivate VerifyPredictionsHandler
+  MediatR --> VerifyPredictionsRunner: 21. Response
+  deactivate MediatR
+  VerifyPredictionsRunner --> HangfireScheduler: 22. Job completed
+  deactivate VerifyPredictionsRunner
+end
+
+@enduml
+
+@startuml FE19_GetPredictionComparisons
+title FE-19 - Get Prediction Comparisons
+
+actor User
+participant UI
+participant GetPredictionComparisonsEndpoint
+participant MediatR
+participant GetPredictionComparisonsHandler
+participant Repository
+database Database
+
+User -> UI: 1. View prediction comparisons
+UI -> GetPredictionComparisonsEndpoint: 2. GET /api/v1/predictions/comparisons?areaId=...&isVerified=true
+activate GetPredictionComparisonsEndpoint
+
+GetPredictionComparisonsEndpoint -> GetPredictionComparisonsEndpoint: 3. Extract UserId from JWT
+
+GetPredictionComparisonsEndpoint -> MediatR: 4. Send(GetPredictionComparisonsRequest)
+activate MediatR
+
+MediatR -> GetPredictionComparisonsHandler: 5. Handle(request)
+activate GetPredictionComparisonsHandler
+
+GetPredictionComparisonsHandler -> Repository: 6. GetVerifiedAsync(areaId, startDate, endDate, minAccuracy, page, size)
+activate Repository
+Repository -> Database: 7. SELECT * FROM prediction_logs WHERE is_verified = true AND ... ORDER BY end_time DESC LIMIT size OFFSET page*size
+activate Database
+Database --> Repository: 8. List<PredictionLog>
+deactivate Database
+Repository --> GetPredictionComparisonsHandler: 9. Predictions
+deactivate Repository
+
+GetPredictionComparisonsHandler -> Repository: 10. GetTotalCountAsync(...)
+activate Repository
+Repository -> Database: 11. SELECT COUNT(*) FROM prediction_logs WHERE ...
+activate Database
+Database --> Repository: 12. Total count
+deactivate Database
+Repository --> GetPredictionComparisonsHandler: 13. Total
+deactivate Repository
+
+GetPredictionComparisonsHandler -> GetPredictionComparisonsHandler: 14. Calculate summary statistics
+GetPredictionComparisonsHandler -> GetPredictionComparisonsHandler: 15. Map entities to DTOs
+
+GetPredictionComparisonsHandler --> MediatR: 16. Response {items, total, summary}
+deactivate GetPredictionComparisonsHandler
+MediatR --> GetPredictionComparisonsEndpoint: 17. Response
+deactivate MediatR
+GetPredictionComparisonsEndpoint --> UI: 18. 200 OK {data}
+deactivate GetPredictionComparisonsEndpoint
+UI --> User: 19. Display comparisons
+
+@enduml
+
