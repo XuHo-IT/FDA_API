@@ -9,14 +9,12 @@ on:
       - uat
     types:
       - closed
-  workflow_dispatch: # Cho phép trigger thủ công
+  workflow_dispatch:
 
 jobs:
   deploy-uat:
     name: 🚀 Deploy to UAT Server
     runs-on: ubuntu-22.04
-
-    # Chạy khi: push trực tiếp HOẶC merge PR (không chạy nếu close PR mà không merge) HOẶC manual trigger
     if: |
       github.event_name == 'workflow_dispatch' ||
       github.event_name == 'push' ||
@@ -38,39 +36,25 @@ jobs:
           script: |
             set -e
             echo "🚀 Starting UAT deployment..."
-            
-            # Navigate to project directory
-            cd /home/dev/FDA_API || cd /path/to/FDA_Api
+            cd /home/dev/FDA_API
             
             # Login to Docker Hub
             echo "🔐 Logging in to Docker Hub..."
-            docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
+            echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
             
-            # Pull latest UAT image
+            # Pull image - Dùng file .env.uat có sẵn trên VPS
             echo "📥 Pulling latest UAT image..."
             docker compose -p fda_uat --env-file .env.uat -f docker-compose.uat.yml pull
             
-            # Start/Recreate container (--force-recreate thay vì down để tránh drop network và downtime)
-            echo "▶️ Starting/Recreating UAT container..."
+            # Restart container
+            echo "▶️ Recreating UAT container..."
             docker compose -p fda_uat --env-file .env.uat -f docker-compose.uat.yml up -d --force-recreate
             
-            # Wait for container to start
-            echo "⏳ Waiting for container to be ready..."
-            sleep 10
+            echo "⏳ Waiting for stabilization..."
+            sleep 15
             
-            # Check container status
-            echo "📊 Checking container status..."
-            docker ps --filter "name=fdaapi_uat" --format "table {{.Names}}\t{{.Status}}"
-           
-            # Show recent logs
-            echo "📋 Recent logs:"
-            docker compose -p fda_uat -f docker-compose.uat.yml logs --tail=50
-            
-            # Clean up unused images
-            echo "🧹 Cleaning up unused images..."
             docker image prune -f
-            
-            echo "✅ UAT deployment completed!"
+            echo "✅ UAT deployment step completed!"
 
       - name: 🏥 Health Check
         uses: appleboy/ssh-action@v1.2.0
@@ -86,32 +70,33 @@ jobs:
             echo "🏥 Running health checks..."
             cd /home/dev/FDA_API
 
-            # Kiểm tra xem container có đang Up không
-            CONTAINER_STATUS=$(docker ps --filter "name=fdaapi_uat" --format "{{.Status}}")
-            if [ -z "$CONTAINER_STATUS" ]; then
-              echo "❌ Container fdaapi_uat is not running!"
+            # 1. Check Container Status
+            CONTAINER_NAME="fdaapi_uat"
+            if [ -z "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
+              echo "❌ Container $CONTAINER_NAME is NOT running!"
               exit 1
             fi
-            echo "✅ Container status: $CONTAINER_STATUS"
+            echo "✅ Container status: UP"
             
-            # QUAN TRỌNG: Thêm --env-file .env.uat vào lệnh logs để tránh lỗi warning/exit 1
-            echo "🔍 Scanning logs for errors..."
-            ERROR_COUNT=$(docker compose -p fda_uat --env-file .env.uat -f docker-compose.uat.yml logs --tail=100 | grep -i "error\|exception\|failed" | wc -l)
-            
-            if [ "$ERROR_COUNT" -gt 0 ]; then
-              echo "⚠️ Found $ERROR_COUNT potential errors in logs:"
-              docker compose -p fda_uat --env-file .env.uat -f docker-compose.uat.yml logs --tail=50 | grep -i "error\|exception\|failed" | head -n 10
-            else
-              echo "✅ No errors found in recent logs"
-            fi
-
-            # Kiểm tra xem DB Connection có nhận đúng tên DB không (Tránh Database=;)
-            if docker inspect fdaapi_uat | grep -q "Database=FDA_UAT"; then
+            # 2. Check Database Connection (Quan trọng nhất)
+            # Inspect để xem biến môi trường thực tế container đang cầm
+            if docker inspect $CONTAINER_NAME | grep -q "Database=FDA_UAT"; then
               echo "✅ Database connection string verified: FDA_UAT"
             else
-              echo "❌ Database name is missing in connection string!"
+              echo "❌ Database name is missing or incorrect in container environment!"
               exit 1
             fi
-            
-            echo "✅ Health checks completed!"
 
+            # 3. Scan logs for errors
+            echo "🔍 Scanning logs for errors..."
+            # Sử dụng "|| true" để tránh lỗi exit 1 khi grep không tìm thấy lỗi
+            ERROR_LOGS=$(docker compose -p fda_uat --env-file .env.uat -f docker-compose.uat.yml logs --tail=100 | grep -i "error\|exception\|failed" || true)
+            
+            if [ -n "$ERROR_LOGS" ]; then
+              echo "⚠️ Found some potential issues in logs:"
+              echo "$ERROR_LOGS" | tail -n 5
+            else
+              echo "✅ No critical errors found in recent logs."
+            fi
+            
+            echo "✅ All Health Checks Passed!"
