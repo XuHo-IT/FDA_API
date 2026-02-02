@@ -17,8 +17,8 @@ services:
       ASPNETCORE_ENVIRONMENT: UAT
       ASPNETCORE_URLS: http://0.0.0.0:8080
       ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
-      ConnectionStrings__RedisConnection: "fda_redis_uat:6379,abortConnect=false"
-      ConnectionStrings__PostgreSQLConnection: "Host=fda_postgres_shared;Port=5432;Database=${POSTGRES_DB_UAT};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD"
+      ConnectionStrings__PostgreSQLConnection: "Host=fda_postgres_shared;Port=5432;Database=${POSTGRES_DB_UAT};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};"
+      ConnectionStrings__RedisConnection: "${REDIS_URL}"
       GraphHopper__BaseUrl: "http://fda_graphhopper:8989"
     networks:
       - fda_api_default
