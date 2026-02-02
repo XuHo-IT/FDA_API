@@ -84,29 +84,34 @@ jobs:
           script: |
             set -e
             echo "🏥 Running health checks..."
-            
             cd /home/dev/FDA_API
 
-            # Check if container is running
-            CONTAINER_STATUS=$(docker ps --filter "name=fdaapi" --filter "name=uat" --format "{{.Status}}" | head -1)
+            # Kiểm tra xem container có đang Up không
+            CONTAINER_STATUS=$(docker ps --filter "name=fdaapi_uat" --format "{{.Status}}")
             if [ -z "$CONTAINER_STATUS" ]; then
-              echo "❌ Container is not running!"
+              echo "❌ Container fdaapi_uat is not running!"
               exit 1
             fi
             echo "✅ Container status: $CONTAINER_STATUS"
             
-            # Check for errors in logs
-            ERROR_COUNT=$(docker compose -p fda_uat -f docker-compose.uat.yml logs --tail=100 | grep -i "error\|exception\|failed" | wc -l)
+            # QUAN TRỌNG: Thêm --env-file .env.uat vào lệnh logs để tránh lỗi warning/exit 1
+            echo "🔍 Scanning logs for errors..."
+            ERROR_COUNT=$(docker compose -p fda_uat --env-file .env.uat -f docker-compose.uat.yml logs --tail=100 | grep -i "error\|exception\|failed" | wc -l)
+            
             if [ "$ERROR_COUNT" -gt 0 ]; then
-              echo "⚠️ Found $ERROR_COUNT potential errors in logs"
-              docker compose -p fda_uat -f docker-compose.uat.yml logs --tail=100 | grep -i "error\|exception\|failed"
+              echo "⚠️ Found $ERROR_COUNT potential errors in logs:"
+              docker compose -p fda_uat --env-file .env.uat -f docker-compose.uat.yml logs --tail=50 | grep -i "error\|exception\|failed" | head -n 10
             else
               echo "✅ No errors found in recent logs"
             fi
-            
-            # Check if schema exists (optional - requires psql)
-            # echo "🗄️ Checking database schema..."
-            # docker exec postgres_dev psql -U $POSTGRES_USER -d $POSTGRES_DB -c "\dn" | grep uat_schema || echo "⚠️ Schema check skipped (psql not available)"
+
+            # Kiểm tra xem DB Connection có nhận đúng tên DB không (Tránh Database=;)
+            if docker inspect fdaapi_uat | grep -q "Database=FDA_UAT"; then
+              echo "✅ Database connection string verified: FDA_UAT"
+            else
+              echo "❌ Database name is missing in connection string!"
+              exit 1
+            fi
             
             echo "✅ Health checks completed!"
 
