@@ -1,0 +1,349 @@
+@startuml FE19_CompareAIPredictionsWithActualData
+title FE-19 - Compare AI Predictions with Actual Data (Class Diagram)
+
+skinparam backgroundColor #FEFEFE
+skinparam classBackgroundColor #FFFFFF
+skinparam classBorderColor #000000
+skinparam packageBackgroundColor #E8E8E8
+skinparam packageBorderColor #666666
+skinparam stereotypeCBackgroundColor #ADD1B2
+skinparam arrowColor #333333
+
+package "Presentation Layer\n(FastEndpoints + DTOs)" #E1D5E7 {
+
+  class LogPredictionEndpoint <<Endpoint>> {
+    - _mediator : IMediator
+    --
+    + Configure() : void
+    + HandleAsync(req : LogPredictionRequestDto, ct : CancellationToken) : Task
+  }
+
+  class LogPredictionRequestDto <<DTO>> {
+    + AreaId : Guid
+    + PredictedProb : decimal
+    + AiProb : decimal?
+    + PhysicsProb : decimal?
+    + RiskLevel : string
+    + StartTime : DateTime
+    + EndTime : DateTime
+  }
+
+  class LogPredictionResponseDto <<DTO>> {
+    + Success : bool
+    + Message : string
+    + StatusCode : int
+    + PredictionLogId : Guid
+    + IsVerified : bool
+    + CreatedAt : DateTime
+  }
+
+  class GetPredictionComparisonsEndpoint <<Endpoint>> {
+    - _mediator : IMediator
+    --
+    + Configure() : void
+    + HandleAsync(req : GetPredictionComparisonsRequestDto, ct : CancellationToken) : Task
+  }
+
+  class GetPredictionComparisonsRequestDto <<DTO>> {
+    + AreaId : Guid?
+    + StartDate : DateTime?
+    + EndDate : DateTime?
+    + IsVerified : bool?
+    + MinAccuracy : decimal?
+    + Page : int
+    + Size : int
+  }
+
+  class GetPredictionComparisonsResponseDto <<DTO>> {
+    + Success : bool
+    + Message : string
+    + StatusCode : int
+    + Total : int
+    + Items : List~PredictionComparisonDto~
+    + Summary : PredictionSummaryDto
+  }
+
+  class PredictionComparisonDto <<DTO>> {
+    + PredictionLogId : Guid
+    + AreaId : Guid
+    + AreaName : string
+    + PredictedProb : decimal
+    + AiProb : decimal?
+    + PhysicsProb : decimal?
+    + RiskLevel : string
+    + StartTime : DateTime
+    + EndTime : DateTime
+    + ActualWaterLevel : decimal?
+    + IsVerified : bool
+    + IsCorrect : bool?
+    + AccuracyScore : decimal?
+    + VerifiedAt : DateTime?
+  }
+
+  class GetPredictionAccuracyStatsEndpoint <<Endpoint>> {
+    - _mediator : IMediator
+    --
+    + Configure() : void
+    + HandleAsync(req : GetPredictionAccuracyStatsRequestDto, ct : CancellationToken) : Task
+  }
+
+  class GetPredictionAccuracyStatsRequestDto <<DTO>> {
+    + AreaId : Guid?
+    + StartDate : DateTime?
+    + EndDate : DateTime?
+    + GroupBy : string
+  }
+
+  class GetPredictionAccuracyStatsResponseDto <<DTO>> {
+    + Success : bool
+    + Message : string
+    + StatusCode : int
+    + Overall : AccuracyStatsDto
+    + ByPeriod : List~PeriodAccuracyDto~
+    + ByArea : List~AreaAccuracyDto~
+  }
+}
+
+package "Application Layer\n(CQRS Handlers + Request/Response)" #D5E8D4 {
+
+  class LogPredictionRequest <<Request>> {
+    + AreaId : Guid
+    + PredictedProb : decimal
+    + AiProb : decimal?
+    + PhysicsProb : decimal?
+    + RiskLevel : string
+    + StartTime : DateTime
+    + EndTime : DateTime
+  }
+
+  class LogPredictionResponse <<Response>> {
+    + Success : bool
+    + Message : string
+    + StatusCode : int
+    + PredictionLogId : Guid
+    + IsVerified : bool
+    + CreatedAt : DateTime
+  }
+
+  class LogPredictionHandler <<Handler>> {
+    - _predictionLogRepository : IPredictionLogRepository
+    - _areaRepository : IAreaRepository
+    --
+    + Handle(request : LogPredictionRequest, ct : CancellationToken) : Task~LogPredictionResponse~
+  }
+
+  class GetPredictionComparisonsRequest <<Request>> {
+    + UserId : Guid?
+    + AreaId : Guid?
+    + StartDate : DateTime?
+    + EndDate : DateTime?
+    + IsVerified : bool?
+    + MinAccuracy : decimal?
+    + Page : int
+    + Size : int
+  }
+
+  class GetPredictionComparisonsResponse <<Response>> {
+    + Success : bool
+    + Message : string
+    + StatusCode : int
+    + Total : int
+    + Items : List~PredictionComparisonDto~
+    + Summary : PredictionSummaryDto
+  }
+
+  class GetPredictionComparisonsHandler <<Handler>> {
+    - _predictionLogRepository : IPredictionLogRepository
+    - _mapper : IPredictionLogMapper
+    --
+    + Handle(request : GetPredictionComparisonsRequest, ct : CancellationToken) : Task~GetPredictionComparisonsResponse~
+  }
+
+  class GetPredictionAccuracyStatsRequest <<Request>> {
+    + UserId : Guid?
+    + AreaId : Guid?
+    + StartDate : DateTime?
+    + EndDate : DateTime?
+    + GroupBy : string
+  }
+
+  class GetPredictionAccuracyStatsResponse <<Response>> {
+    + Success : bool
+    + Message : string
+    + StatusCode : int
+    + Overall : AccuracyStatsDto
+    + ByPeriod : List~PeriodAccuracyDto~
+    + ByArea : List~AreaAccuracyDto~
+  }
+
+  class GetPredictionAccuracyStatsHandler <<Handler>> {
+    - _predictionLogRepository : IPredictionLogRepository
+    --
+    + Handle(request : GetPredictionAccuracyStatsRequest, ct : CancellationToken) : Task~GetPredictionAccuracyStatsResponse~
+  }
+
+  interface IRequestHandler~TRequest, TResponse~ <<Interface>> {
+    + Handle(request : TRequest, ct : CancellationToken) : Task~TResponse~
+  }
+
+  LogPredictionHandler ..|> IRequestHandler
+  GetPredictionComparisonsHandler ..|> IRequestHandler
+  GetPredictionAccuracyStatsHandler ..|> IRequestHandler
+}
+
+package "Background Jobs\n(Hangfire)" #D5E8D4 {
+
+  class VerifyPredictionsRunner <<Runner>> {
+    - _mediator : IMediator
+    - _logger : ILogger
+    --
+    + RunAsync() : Task
+  }
+
+  class VerifyPredictionsRequest <<Request>> {
+    + BeforeTime : DateTime
+    + Limit : int
+  }
+
+  class VerifyPredictionsResponse <<Response>> {
+    + Success : bool
+    + Message : string
+    + VerifiedCount : int
+    + ProcessedCount : int
+  }
+
+  class VerifyPredictionsHandler <<Handler>> {
+    - _predictionLogRepository : IPredictionLogRepository
+    - _sensorReadingRepository : ISensorReadingRepository
+    - _areaRepository : IAreaRepository
+    --
+    + Handle(request : VerifyPredictionsRequest, ct : CancellationToken) : Task~VerifyPredictionsResponse~
+  }
+
+  VerifyPredictionsHandler ..|> IRequestHandler
+  VerifyPredictionsRunner ..> IMediator : uses
+}
+
+package "Domain Layer - Entities" #F8CECC {
+
+  class PredictionLog <<Entity>> {
+    + Id : Guid
+    + AreaId : Guid
+    + PredictedProb : decimal
+    + AiProb : decimal?
+    + PhysicsProb : decimal?
+    + RiskLevel : string
+    + StartTime : DateTime
+    + EndTime : DateTime
+    + ActualWaterLevel : decimal?
+    + IsVerified : bool
+    + IsCorrect : bool?
+    + AccuracyScore : decimal?
+    + VerifiedAt : DateTime?
+    + CreatedAt : DateTime
+    + UpdatedAt : DateTime
+  }
+
+  class Area <<Entity>> {
+    + Id : Guid
+    + Name : string
+    + Code : string
+    + Level : string
+  }
+
+  class SensorReading <<Entity>> {
+    + Id : Guid
+    + StationId : Guid
+    + Value : decimal
+    + MeasuredAt : DateTime
+    + Unit : string
+  }
+
+  class Station <<Entity>> {
+    + Id : Guid
+    + AreaId : Guid?
+    + Code : string
+    + Name : string
+  }
+
+  Area "1" *-- "many" PredictionLog : has predictions
+  Area "1" *-- "many" Station : contains
+  Station "1" *-- "many" SensorReading : has readings
+}
+
+package "Domain Layer - Repositories" #FFE6CC {
+
+  interface IPredictionLogRepository <<Interface>> {
+    + CreateAsync(entity : PredictionLog, ct : CancellationToken) : Task~Guid~
+    + GetByIdAsync(id : Guid, ct : CancellationToken) : Task~PredictionLog?~
+    + GetPendingVerificationAsync(beforeTime : DateTime, limit : int, ct : CancellationToken) : Task~List~PredictionLog~>
+    + GetVerifiedAsync(areaId : Guid?, startDate : DateTime?, endDate : DateTime?, minAccuracy : decimal?, page : int, size : int, ct : CancellationToken) : Task~List~PredictionLog~>
+    + UpdateAsync(entity : PredictionLog, ct : CancellationToken) : Task~bool~
+  }
+
+  interface ISensorReadingRepository <<Interface>> {
+    + GetMaxByAreaAndTimeRangeAsync(areaId : Guid, startTime : DateTime, endTime : DateTime, ct : CancellationToken) : Task~decimal?~
+  }
+
+  interface IAreaRepository <<Interface>> {
+    + GetByIdAsync(id : Guid, ct : CancellationToken) : Task~Area?~
+  }
+}
+
+package "Common Services / Mappers" #E1D5E7 {
+
+  interface IPredictionLogMapper <<Interface>> {
+    + MapToDto(entity : PredictionLog) : PredictionComparisonDto
+    + MapToDtoList(entities : List~PredictionLog~) : List~PredictionComparisonDto~
+  }
+
+  interface IMediator <<Interface>> {
+    + Send(request : object, ct : CancellationToken) : Task~object~
+  }
+}
+
+' Relationships
+LogPredictionEndpoint ..> IMediator : uses
+LogPredictionEndpoint ..> LogPredictionRequestDto
+LogPredictionEndpoint ..> LogPredictionResponseDto
+LogPredictionEndpoint ..> LogPredictionRequest : maps DTO -> Request
+
+GetPredictionComparisonsEndpoint ..> IMediator : uses
+GetPredictionComparisonsEndpoint ..> GetPredictionComparisonsRequestDto
+GetPredictionComparisonsEndpoint ..> GetPredictionComparisonsResponseDto
+GetPredictionComparisonsResponseDto *-- PredictionComparisonDto
+
+GetPredictionAccuracyStatsEndpoint ..> IMediator : uses
+GetPredictionAccuracyStatsEndpoint ..> GetPredictionAccuracyStatsRequestDto
+GetPredictionAccuracyStatsEndpoint ..> GetPredictionAccuracyStatsResponseDto
+
+LogPredictionHandler ..> IPredictionLogRepository : uses
+LogPredictionHandler ..> IAreaRepository : uses
+LogPredictionHandler ..> PredictionLog
+
+GetPredictionComparisonsHandler ..> IPredictionLogRepository : uses
+GetPredictionComparisonsHandler ..> IPredictionLogMapper : uses
+GetPredictionComparisonsHandler ..> PredictionLog
+
+GetPredictionAccuracyStatsHandler ..> IPredictionLogRepository : uses
+GetPredictionAccuracyStatsHandler ..> PredictionLog
+
+VerifyPredictionsHandler ..> IPredictionLogRepository : uses
+VerifyPredictionsHandler ..> ISensorReadingRepository : uses
+VerifyPredictionsHandler ..> IAreaRepository : uses
+VerifyPredictionsHandler ..> PredictionLog
+VerifyPredictionsHandler ..> SensorReading
+
+VerifyPredictionsRunner ..> IMediator : uses
+VerifyPredictionsRunner ..> VerifyPredictionsRequest
+
+legend bottom left
+  |= Color |= Layer |
+  |<#E1D5E7>|Presentation / Common Services|
+  |<#D5E8D4>|Application (CQRS Handlers) / Background Jobs|
+  |<#F8CECC>|Domain Entities|
+  |<#FFE6CC>|Domain Repositories|
+endlegend
+
+@enduml
+

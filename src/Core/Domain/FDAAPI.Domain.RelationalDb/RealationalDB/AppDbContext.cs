@@ -42,15 +42,13 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB
         public DbSet<AlertCooldownConfig> AlertCooldownConfigs { get; set; } = null!;
         public DbSet<PricingPlan> PricingPlans { get; set; }
         public DbSet<UserSubscription> UserSubscriptions { get; set; }
+        public DbSet<PredictionLog> PredictionLogs { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-            if (env == "UAT")
-            {
-                modelBuilder.HasDefaultSchema("uat_schema");
-            }
+            // UAT uses separate database FDA_UAT with public schema (default)
+            // No need to set default schema - all tables use public schema
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         }
     }

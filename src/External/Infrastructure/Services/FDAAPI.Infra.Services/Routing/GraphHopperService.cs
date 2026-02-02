@@ -70,16 +70,28 @@ namespace FDAAPI.Infra.Services.Routing
                 ghRequest["alternative_route"] = new
                 {
                     max_paths = request.AlternativeRoute.MaxPaths,
-                    max_weight_factor = request.AlternativeRoute.MaxWeightFactor
+                    max_weight_factor = request.AlternativeRoute.MaxWeightFactor,
+                    max_share_factor = request.AlternativeRoute.MaxShareFactor
                 };
             }
 
-            // GraphHopper uses custom_model with areas to avoid polygons.
-            // Requires ch.disable=true (flexible/hybrid mode).
-            if (hasAvoidPolygons)
+            // custom_model requires ch.disable=true (flexible/hybrid mode).
+            if (hasAvoidPolygons || request.DistanceInfluence.HasValue)
             {
                 ghRequest["ch.disable"] = true;
-                ghRequest["custom_model"] = BuildCustomModel(request.AvoidPolygons!);
+
+                if (hasAvoidPolygons)
+                {
+                    ghRequest["custom_model"] = BuildCustomModel(
+                        request.AvoidPolygons!, request.DistanceInfluence);
+                }
+                else if (request.DistanceInfluence.HasValue)
+                {
+                    ghRequest["custom_model"] = new
+                    {
+                        distance_influence = request.DistanceInfluence.Value
+                    };
+                }
             }
 
             return ghRequest;
@@ -90,7 +102,7 @@ namespace FDAAPI.Infra.Services.Routing
         /// Format: { "priority": [{ "if": "in_flood_zone", "multiply_by": 0 }],
         ///           "areas": { "flood_zone": { "type": "Feature", "geometry": {...} } } }
         /// </summary>
-        private object BuildCustomModel(List<GeoJsonGeometry> polygons)
+        private object BuildCustomModel(List<GeoJsonGeometry> polygons, int? distanceInfluence = null)
         {
             var rings = polygons
                 .Select(p => FlatToRing(p.Coordinates))
@@ -103,13 +115,13 @@ namespace FDAAPI.Infra.Services.Routing
                 coordinates = rings.Select(r => new[] { r }).ToArray()
             };
 
-            return new
+            var model = new Dictionary<string, object>
             {
-                priority = new[]
+                ["priority"] = new[]
                 {
                     new { @if = "in_flood_zone", multiply_by = 0.0 }
                 },
-                areas = new Dictionary<string, object>
+                ["areas"] = new Dictionary<string, object>
                 {
                     ["flood_zone"] = new
                     {
@@ -119,6 +131,13 @@ namespace FDAAPI.Infra.Services.Routing
                     }
                 }
             };
+
+            if (distanceInfluence.HasValue)
+            {
+                model["distance_influence"] = distanceInfluence.Value;
+            }
+
+            return model;
         }
 
         private decimal[][] FlatToRing(decimal[] coords)

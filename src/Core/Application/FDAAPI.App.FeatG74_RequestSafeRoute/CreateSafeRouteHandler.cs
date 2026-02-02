@@ -79,9 +79,10 @@ namespace FDAAPI.App.FeatG74_RequestSafeRoute
                 var profile = request.RouteProfile.ToLower();
                 var hasFloodZones = request.AvoidFloodedAreas && floodPolygons.Any();
 
-                // 4. Call GraphHopper twice in parallel:
-                //    - Safe route: avoids flood zones (flexible mode, no alternatives)
-                //    - Normal route: fastest/shortest without avoidance (CH mode)
+                // 4. Call GraphHopper 3 times in parallel:
+                //    - Safe route: avoids flood zones (flexible mode)
+                //    - Normal fastest route: with alternatives (CH mode)
+                //    - Shortest route: shortest distance (CH mode, weighting=shortest)
                 var safeRouteRequest = new GraphHopperRouteRequest
                 {
                     Points = points,
@@ -94,26 +95,41 @@ namespace FDAAPI.App.FeatG74_RequestSafeRoute
                 var normalRouteRequest = new GraphHopperRouteRequest
                 {
                     Points = points,
-                    Profile = profile
+                    Profile = profile,
+                    AlternativeRoute = new AlternativeRouteConfig
+                    {
+                        MaxPaths = request.MaxAlternatives
+                    }
+                };
+
+                var shortestRouteRequest = new GraphHopperRouteRequest
+                {
+                    Points = points,
+                    Profile = profile,
+                    DistanceInfluence = 200
                 };
 
                 var safeRouteTask = _graphHopper.GetRouteAsync(safeRouteRequest, ct);
                 var normalRouteTask = _graphHopper.GetRouteAsync(normalRouteRequest, ct);
+                var shortestRouteTask = _graphHopper.GetRouteAsync(shortestRouteRequest, ct);
 
                 GraphHopperRouteResponse safeRouteResponse;
                 GraphHopperRouteResponse? normalRouteResponse = null;
+                GraphHopperRouteResponse? shortestRouteResponse = null;
 
                 try
                 {
-                    await Task.WhenAll(safeRouteTask, normalRouteTask);
+                    await Task.WhenAll(safeRouteTask, normalRouteTask, shortestRouteTask);
                     safeRouteResponse = safeRouteTask.Result;
                     normalRouteResponse = normalRouteTask.Result;
+                    shortestRouteResponse = shortestRouteTask.Result;
                 }
                 catch
                 {
-                    // If parallel fails, at least get safe route
                     safeRouteResponse = await safeRouteTask;
-                    _logger.LogWarning("Normal route request failed, continuing with safe route only");
+                    try { normalRouteResponse = await normalRouteTask; } catch { }
+                    try { shortestRouteResponse = await shortestRouteTask; } catch { }
+                    _logger.LogWarning("Some route requests failed, continuing with available routes");
                 }
 
                 // 5. Handle no route found
@@ -140,32 +156,59 @@ namespace FDAAPI.App.FeatG74_RequestSafeRoute
                 features.Add(_mapper.BuildRouteFeature(
                     safeRoute, safeWarnings, "safeRoute"));
 
-                // Normal route feature (alternative for comparison)
-                if (normalRouteResponse?.Paths != null && normalRouteResponse.Paths.Any())
+                // Collect all alternative paths (normal + shortest), deduplicate by distance
+                var alternativePaths = new List<(GraphHopperPath Path, string Source)>();
+                var addedDistances = new HashSet<double> { Math.Round(safeRoute.Distance, 1) };
+
+                if (normalRouteResponse?.Paths != null)
                 {
-                    var normalRoute = normalRouteResponse.Paths.First();
-                    var normalGeometry = normalRoute.ToGeoJsonGeometry();
-                    var normalWarnings = _floodAnalyzer.AnalyzeRoute(normalGeometry, floodPolygons);
-                    features.Add(_mapper.BuildRouteFeature(
-                        normalRoute, normalWarnings, "normalRoute"));
+                    foreach (var path in normalRouteResponse.Paths)
+                    {
+                        var roundedDist = Math.Round(path.Distance, 1);
+                        if (addedDistances.Add(roundedDist))
+                            alternativePaths.Add((path, "normalRoute"));
+                    }
                 }
 
-                // Flood zone features
+                if (shortestRouteResponse?.Paths != null)
+                {
+                    foreach (var path in shortestRouteResponse.Paths)
+                    {
+                        var roundedDist = Math.Round(path.Distance, 1);
+                        if (addedDistances.Add(roundedDist))
+                            alternativePaths.Add((path, "shortestRoute"));
+                    }
+                }
+
+                // Add alternative route features with sequential numbering
+                var alternativeCount = 0;
+                foreach (var (path, source) in alternativePaths)
+                {
+                    alternativeCount++;
+                    var altGeometry = path.ToGeoJsonGeometry();
+                    var altWarnings = _floodAnalyzer.AnalyzeRoute(altGeometry, floodPolygons);
+                    features.Add(_mapper.BuildRouteFeature(
+                        path, altWarnings, $"alternativeRoute_{alternativeCount}"));
+                }
+
+                // Flood zone features from safe route
                 foreach (var warning in safeWarnings)
                 {
                     features.Add(_mapper.BuildFloodZoneFeature(warning));
                 }
 
-                // Also include flood zones that safe route avoids but normal route hits
-                if (normalRouteResponse?.Paths != null && normalRouteResponse.Paths.Any())
+                // Also include flood zones from alternative routes (deduplicated)
+                var addedStationIds = new HashSet<Guid>(safeWarnings.Select(w => w.StationId));
+                foreach (var (path, _) in alternativePaths)
                 {
-                    var normalGeometry = normalRouteResponse.Paths.First().ToGeoJsonGeometry();
-                    var normalWarnings = _floodAnalyzer.AnalyzeRoute(normalGeometry, floodPolygons);
-                    var additionalWarnings = normalWarnings
-                        .Where(nw => !safeWarnings.Any(sw => sw.StationId == nw.StationId));
-                    foreach (var warning in additionalWarnings)
+                    var altGeometry = path.ToGeoJsonGeometry();
+                    var altWarnings = _floodAnalyzer.AnalyzeRoute(altGeometry, floodPolygons);
+                    foreach (var warning in altWarnings)
                     {
-                        features.Add(_mapper.BuildFloodZoneFeature(warning));
+                        if (addedStationIds.Add(warning.StationId))
+                        {
+                            features.Add(_mapper.BuildFloodZoneFeature(warning));
+                        }
                     }
                 }
 
@@ -182,7 +225,7 @@ namespace FDAAPI.App.FeatG74_RequestSafeRoute
                         {
                             SafetyStatus = safetyStatus,
                             TotalFloodZones = floodPolygons.Count,
-                            AlternativeRouteCount = normalRouteResponse?.Paths?.Any() == true ? 1 : 0,
+                            AlternativeRouteCount = alternativeCount,
                             GeneratedAt = DateTime.UtcNow
                         }
                     }

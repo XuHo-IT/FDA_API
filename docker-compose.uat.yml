@@ -4,20 +4,23 @@ services:
     container_name: fdaapi_uat 
     ports:
       - "7097:8080"
-    env_file: .env
+    env_file: .env.uat  # Use UAT-specific environment file
     pull_policy: always
     environment:
+      # Override critical environment variables to ensure correct values
       ASPNETCORE_ENVIRONMENT: UAT
       ASPNETCORE_URLS: http://0.0.0.0:8080
       ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      # CRITICAL: Override connection string to use container name instead of IP
+      # Container name works within Docker network, IP may not be accessible
       ConnectionStrings__PostgreSQLConnection: >
-        Host=postgres_dev;
+        Host=fda_postgres_shared;
         Port=5432;
-        Database=${POSTGRES_DB};
+        Database=${POSTGRES_DB_UAT};
         Username=${POSTGRES_USER};
-        Password=${POSTGRES_PASSWORD};
-        SearchPath=uat_schema
-      GraphHopper__BaseUrl: http://graphhopper_dev:8989
+        Password=${POSTGRES_PASSWORD}
+      # NO SearchPath - using default schema (public) in separate database
+      GraphHopper__BaseUrl: ${GRAPHHOPPER_BASE_URL:-http://graphhopper_dev:8989}
     networks:
       - fda_api_default
     restart: unless-stopped

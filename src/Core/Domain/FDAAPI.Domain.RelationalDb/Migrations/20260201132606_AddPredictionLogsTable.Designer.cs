@@ -3,6 +3,7 @@ using System;
 using FDAAPI.Domain.RelationalDb.RealationalDB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FDAAPI.Domain.RelationalDb.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260201132606_AddPredictionLogsTable")]
+    partial class AddPredictionLogsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -860,7 +863,7 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
 
                     b.HasIndex("EndTime")
                         .HasDatabaseName("ix_prediction_logs_end_time")
-                        .HasFilter("\"IsVerified\" = false");
+                        .HasFilter("[is_verified] = 0");
 
                     b.HasIndex("AreaId", "StartTime")
                         .HasDatabaseName("ix_prediction_logs_area_time");

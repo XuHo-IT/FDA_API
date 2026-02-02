@@ -10,10 +10,12 @@ public class GraphHopperRouteRequest
     public AlternativeRouteConfig? AlternativeRoute { get; set; }
     public bool PointsEncoded { get; set; } = false;
     public bool Instructions { get; set; } = true;
+    public int? DistanceInfluence { get; set; }
 }
 
 public class AlternativeRouteConfig
 {
     public int MaxPaths { get; set; } = 3;
-    public double MaxWeightFactor { get; set; } = 1.4;
+    public double MaxWeightFactor { get; set; } = 2.5;
+    public double MaxShareFactor { get; set; } = 0.8;
 }

@@ -10,14 +10,20 @@ public class EmailService : IEmailService
     private readonly IConfiguration _config;
     private readonly ILogger<EmailService> _logger;
 
+    public EmailService(IConfiguration config, ILogger<EmailService> logger)
+    {
+        _config = config;
+        _logger = logger;
+    }
+
     public async Task<bool> SendEmailAsync(string toEmail, string subject, string body, CancellationToken ct)
     {
         try
         {
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress(
-                _config["Smtp:FromName"],
-                _config["Smtp:FromEmail"]));
+                _config["Email:FromName"],
+                _config["Email:FromEmail"]));
             message.To.Add(MailboxAddress.Parse(toEmail));
             message.Subject = subject;
 
@@ -25,12 +31,12 @@ public class EmailService : IEmailService
 
             using var smtp = new SmtpClient();
             await smtp.ConnectAsync(
-                _config["Smtp:Host"],
-                int.Parse(_config["Smtp:Port"]),
+                _config["Email:SmtpHost"],
+                int.Parse(_config["Email:SmtpPort"]),
                 SecureSocketOptions.StartTls,
                 ct);
 
-            await smtp.AuthenticateAsync(_config["Smtp:Username"], _config["Smtp:Password"], ct);
+            await smtp.AuthenticateAsync(_config["Email:Username"], _config["Email:Password"], ct);
             await smtp.SendAsync(message, ct);
             await smtp.DisconnectAsync(true, ct);
 
