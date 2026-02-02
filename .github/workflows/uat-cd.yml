@@ -48,12 +48,11 @@ jobs:
             
             # Pull latest UAT image
             echo "📥 Pulling latest UAT image..."
-            docker compose -p fda_uat -f docker-compose.uat.yml pull
+            docker compose -p fda_uat --env-file .env.uat -f docker-compose.uat.yml pull
             
             # Start/Recreate container (--force-recreate thay vì down để tránh drop network và downtime)
             echo "▶️ Starting/Recreating UAT container..."
-            docker compose -p fda_uat -f docker-compose.uat.yml up -d --force-recreate
-
+            docker compose -p fda_uat --env-file .env.uat -f docker-compose.uat.yml up -d --force-recreate
             
             # Wait for container to start
             echo "⏳ Waiting for container to be ready..."

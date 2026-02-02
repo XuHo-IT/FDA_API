@@ -11,7 +11,8 @@ services:
     container_name: fdaapi_uat
     ports:
       - "7097:8080"
-    env_file: .env.uat
+    env_file:
+      - .env.uat
     pull_policy: always
     environment:
       ASPNETCORE_ENVIRONMENT: UAT

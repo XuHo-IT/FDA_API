@@ -6,7 +6,8 @@ services:
     container_name: fda_api_dev
     ports:
       - "5232:8080"
-    env_file: .env
+    env_file: 
+      - .env
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://0.0.0.0:8080
