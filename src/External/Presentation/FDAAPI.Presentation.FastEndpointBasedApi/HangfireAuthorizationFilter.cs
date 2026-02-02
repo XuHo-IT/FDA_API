@@ -11,7 +11,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi
             var env = http.RequestServices.GetRequiredService<IWebHostEnvironment>();
 
             // Allow in Development
-            if (env.IsDevelopment())
+            if (env.IsDevelopment() || env.IsEnvironment("UAT")) 
                 return true;
 
             // Production: must be authenticated
