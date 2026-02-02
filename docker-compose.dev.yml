@@ -10,7 +10,8 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://0.0.0.0:8080
-      ConnectionStrings__PostgreSQLConnection: Host=postgres_dev;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};
+      ConnectionStrings__PostgreSQLConnection: "Host=fda_postgres_shared;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};"
+      ConnectionStrings__RedisConnection: "${REDIS_URL}"
       GraphHopper__BaseUrl: http://graphhopper_dev:8989
     depends_on:
       - postgres
