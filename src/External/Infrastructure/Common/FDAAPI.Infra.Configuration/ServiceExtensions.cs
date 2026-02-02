@@ -120,7 +120,33 @@ namespace FDAAPI.Infra.Configuration
                 // connectionString = Environment.GetEnvironmentVariable("POSTGRES_CONN_STRING"); 
             }
 
-            // 3. Kiểm tra xem chuỗi kết nối đã tồn tại chưa
+            // 3. CRITICAL FIX: Remove SearchPath from connection string for UAT
+            // UAT now uses separate database FDA_UAT with public schema
+            // If connection string contains SearchPath=uat_schema, remove it
+            if (!string.IsNullOrEmpty(connectionString) && env.IsEnvironment("UAT"))
+            {
+                var originalConnectionString = connectionString;
+                
+                // Remove SearchPath parameter if present
+                connectionString = System.Text.RegularExpressions.Regex.Replace(
+                    connectionString, 
+                    @";?\s*SearchPath\s*=\s*[^;]+", 
+                    "", 
+                    System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                
+                // Log if SearchPath was removed
+                if (originalConnectionString != connectionString)
+                {
+                    var maskedConnectionString = System.Text.RegularExpressions.Regex.Replace(
+                        connectionString, 
+                        @"Password\s*=\s*[^;]+", 
+                        "Password=***", 
+                        System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                    Console.WriteLine($"⚠️ Removed SearchPath from UAT connection string. Cleaned: {maskedConnectionString}");
+                }
+            }
+
+            // 4. Kiểm tra xem chuỗi kết nối đã tồn tại chưa
             if (string.IsNullOrEmpty(connectionString))
             {
                 throw new InvalidOperationException("PostgreSQL Connection String is not initialized or found in environment variables.");
@@ -131,11 +157,9 @@ namespace FDAAPI.Infra.Configuration
             {
                 options.UseNpgsql(connectionString, x =>
                 {
-                    // Nếu là môi trường UAT, chỉ định bảng Migration nằm trong uat_schema
-                    if (env.IsEnvironment("UAT"))
-                    {
-                        x.MigrationsHistoryTable("__EFMigrationsHistory", "uat_schema");
-                    }
+                    // UAT uses separate database FDA_UAT with public schema (default)
+                    // Migration history table will be in public schema by default
+                    // No need to specify schema
                 });
             });
 
@@ -286,10 +310,9 @@ namespace FDAAPI.Infra.Configuration
             {
                 options.UseNpgsql(connectionString, x =>
                 {
-                    if (envName == "UAT")
-                    {
-                        x.MigrationsHistoryTable("__EFMigrationsHistory", "uat_schema");
-                    }
+                    // UAT uses separate database FDA_UAT with public schema (default)
+                    // Migration history table will be in public schema by default
+                    // No need to specify schema
                 });
             });
 
@@ -472,6 +495,9 @@ namespace FDAAPI.Infra.Configuration
 
             if (!string.IsNullOrEmpty(connectionString))
             {
+                // Use "hangfire" schema for all environments
+                // Since UAT now has its own separate database, we can use the same schema name
+                // This keeps the configuration simple and consistent
                 services.AddHangfire(config => config
                     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
                     .UseSimpleAssemblyNameTypeSerializer()
