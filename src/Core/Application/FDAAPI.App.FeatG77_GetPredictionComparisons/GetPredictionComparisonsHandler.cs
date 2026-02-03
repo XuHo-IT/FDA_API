@@ -48,7 +48,9 @@ namespace FDAAPI.App.FeatG77_GetPredictionComparisons
             {
                 PredictionLogId = p.Id,
                 AreaId = p.AreaId,
+                AdministrativeAreaId = p.AdministrativeAreaId,
                 AreaName = p.Area?.Name,
+                AdministrativeAreaName = p.AdministrativeArea?.Name,
                 PredictedProb = p.PredictedProb,
                 AiProb = p.AiProb,
                 PhysicsProb = p.PhysicsProb,

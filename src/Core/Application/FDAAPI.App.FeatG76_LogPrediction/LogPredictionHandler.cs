@@ -133,71 +133,42 @@ namespace FDAAPI.App.FeatG76_LogPrediction
                 };
             }
 
-            // 3. Find all Areas (monitored areas) that contain any of these stations
-            var uniqueAreaIds = new HashSet<Guid>();
-            foreach (var station in stationsInArea)
-            {
-                if (station.Latitude.HasValue && station.Longitude.HasValue)
-                {
-                    var areasContainingStation = await _areaRepository.GetAreasContainingStationAsync(
-                        station.Id,
-                        station.Latitude.Value,
-                        station.Longitude.Value,
-                        ct);
-                    foreach (var area in areasContainingStation)
-                    {
-                        uniqueAreaIds.Add(area.Id);
-                    }
-                }
-            }
-
-            if (!uniqueAreaIds.Any())
-            {
-                return new LogPredictionResponse
-                {
-                    Success = false,
-                    Message = $"No monitored areas found that contain stations in Administrative Area {administrativeArea.Name}.",
-                    StatusCode = PredictionLogStatusCode.NotFound
-                };
-            }
-
-            // 4. Create prediction logs for all unique Areas
-            var createdLogIds = new List<Guid>();
+            // 3. Create prediction log directly for AdministrativeArea
+            // Simple approach: AI sends AdministrativeAreaId → BE saves it directly
+            // No need to find user-created Areas - this is for AdministrativeArea prediction
             var now = DateTime.UtcNow;
-
-            foreach (var areaId in uniqueAreaIds)
+            
+            var predictionLog = new PredictionLog
             {
-                var predictionLog = new PredictionLog
-                {
-                    Id = Guid.NewGuid(),
-                    AreaId = areaId,
-                    PredictedProb = request.PredictedProb,
-                    AiProb = request.AiProb,
-                    PhysicsProb = request.PhysicsProb,
-                    RiskLevel = request.RiskLevel.ToLower(),
-                    StartTime = request.StartTime,
-                    EndTime = request.EndTime,
-                    IsVerified = false,
-                    CreatedBy = Guid.Empty, // Internal API - no user context
-                    CreatedAt = now,
-                    UpdatedBy = Guid.Empty,
-                    UpdatedAt = now
-                };
+                Id = Guid.NewGuid(),
+                AreaId = null,  // Not for user-created Area
+                AdministrativeAreaId = administrativeArea.Id,  // Directly save AdministrativeAreaId
+                PredictedProb = request.PredictedProb,
+                AiProb = request.AiProb,
+                PhysicsProb = request.PhysicsProb,
+                RiskLevel = request.RiskLevel.ToLower(),
+                StartTime = request.StartTime,
+                EndTime = request.EndTime,
+                IsVerified = false,
+                CreatedBy = Guid.Empty, // Internal API - no user context
+                CreatedAt = now,
+                UpdatedBy = Guid.Empty,
+                UpdatedAt = now
+            };
 
-                var predictionLogId = await _predictionLogRepository.CreateAsync(predictionLog, ct);
-                createdLogIds.Add(predictionLogId);
-            }
+            var predictionLogId = await _predictionLogRepository.CreateAsync(predictionLog, ct);
 
-            // 5. Return response (using first created log for backward compatibility)
+            // 4. Return response
             return new LogPredictionResponse
             {
                 Success = true,
-                Message = $"Prediction logged successfully for {createdLogIds.Count} monitored area(s) in Administrative Area {administrativeArea.Name}.",
+                Message = $"Prediction logged successfully for Administrative Area {administrativeArea.Name} ({level}).",
                 StatusCode = PredictionLogStatusCode.Created,
                 Data = new LogPredictionDataDto
                 {
-                    PredictionLogId = createdLogIds.FirstOrDefault(),
-                    AreaId = uniqueAreaIds.FirstOrDefault(),
+                    PredictionLogId = predictionLogId,
+                    AreaId = null,  // Not applicable for AdministrativeArea predictions
+                    AdministrativeAreaId = administrativeArea.Id,  // For AdministrativeArea predictions
                     IsVerified = false,
                     CreatedAt = now
                 }

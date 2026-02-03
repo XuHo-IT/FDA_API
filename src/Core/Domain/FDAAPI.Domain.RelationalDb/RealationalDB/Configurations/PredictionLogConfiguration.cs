@@ -14,7 +14,8 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB.Configurations
             builder.Property(e => e.Id).ValueGeneratedOnAdd();
 
             // Properties
-            builder.Property(e => e.AreaId).IsRequired();
+            builder.Property(e => e.AreaId).IsRequired(false);  // Nullable: can be for AdministrativeArea prediction
+            builder.Property(e => e.AdministrativeAreaId).IsRequired(false);  // Nullable: can be for Area prediction
             builder.Property(e => e.PredictedProb)
                 .HasPrecision(5, 4)
                 .IsRequired();
@@ -41,8 +42,11 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB.Configurations
             builder.Property(e => e.UpdatedAt).IsRequired();
 
             // Constraints
-            builder.HasCheckConstraint("chk_prob_range", "predicted_prob >= 0 AND predicted_prob <= 1");
-            builder.HasCheckConstraint("chk_time_range", "end_time > start_time");
+            builder.ToTable(t =>
+            {
+                t.HasCheckConstraint("chk_prob_range", "predicted_prob >= 0 AND predicted_prob <= 1");
+                t.HasCheckConstraint("chk_time_range", "end_time > start_time");
+            });
 
             // Indexes
             builder.HasIndex(e => new { e.AreaId, e.StartTime })
@@ -57,7 +61,16 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB.Configurations
             builder.HasOne(e => e.Area)
                 .WithMany()
                 .HasForeignKey(e => e.AreaId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
+            
+            builder.HasOne(e => e.AdministrativeArea)
+                .WithMany()
+                .HasForeignKey(e => e.AdministrativeAreaId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
+            
+            // Constraint: Either AreaId or AdministrativeAreaId must be set (enforced at application level)
         }
     }
 }

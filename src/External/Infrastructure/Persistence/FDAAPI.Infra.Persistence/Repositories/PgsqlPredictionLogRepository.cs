@@ -54,6 +54,7 @@ namespace FDAAPI.Infra.Persistence.Repositories
         {
             var query = _context.PredictionLogs
                 .Include(p => p.Area)
+                .Include(p => p.AdministrativeArea)
                 .AsNoTracking()
                 .Where(p => p.IsVerified);
 
