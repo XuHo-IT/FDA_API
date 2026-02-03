@@ -4,7 +4,7 @@ using System;
 namespace FDAAPI.App.FeatG76_LogPrediction
 {
     public sealed record LogPredictionRequest(
-        Guid AreaId,
+        Guid AdministrativeAreaId,
         decimal PredictedProb,
         decimal? AiProb,
         decimal? PhysicsProb,
