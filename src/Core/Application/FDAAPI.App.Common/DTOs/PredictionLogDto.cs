@@ -5,8 +5,10 @@ namespace FDAAPI.App.Common.DTOs
     public class PredictionLogDto
     {
         public Guid PredictionLogId { get; set; }
-        public Guid AreaId { get; set; }
+        public Guid? AreaId { get; set; }  // Nullable: for user-created Areas
+        public Guid? AdministrativeAreaId { get; set; }  // Nullable: for AdministrativeArea predictions
         public string? AreaName { get; set; }
+        public string? AdministrativeAreaName { get; set; }
         public decimal PredictedProb { get; set; }
         public decimal? AiProb { get; set; }
         public decimal? PhysicsProb { get; set; }
@@ -74,7 +76,8 @@ namespace FDAAPI.App.Common.DTOs
     public class LogPredictionDataDto
     {
         public Guid PredictionLogId { get; set; }
-        public Guid AreaId { get; set; }
+        public Guid? AreaId { get; set; }  // Nullable: not applicable for AdministrativeArea predictions
+        public Guid? AdministrativeAreaId { get; set; }  // Nullable: not applicable for Area predictions
         public bool IsVerified { get; set; }
         public DateTime CreatedAt { get; set; }
     }
