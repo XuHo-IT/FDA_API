@@ -4,7 +4,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.FeatG76_LogPredicti
 {
     public class LogPredictionRequestDto
     {
-        public Guid AreaId { get; set; }
+        public Guid AdministrativeAreaId { get; set; }
         public decimal PredictedProb { get; set; }
         public decimal? AiProb { get; set; }
         public decimal? PhysicsProb { get; set; }

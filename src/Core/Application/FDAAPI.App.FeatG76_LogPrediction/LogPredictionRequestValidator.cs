@@ -6,8 +6,8 @@ namespace FDAAPI.App.FeatG76_LogPrediction
     {
         public LogPredictionRequestValidator()
         {
-            RuleFor(x => x.AreaId)
-                .NotEmpty().WithMessage("Area ID is required.");
+            RuleFor(x => x.AdministrativeAreaId)
+                .NotEmpty().WithMessage("Administrative Area ID is required.");
 
             RuleFor(x => x.PredictedProb)
                 .InclusiveBetween(0, 1).WithMessage("Predicted probability must be between 0 and 1.");
