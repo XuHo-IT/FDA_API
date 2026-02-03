@@ -6,7 +6,8 @@ namespace FDAAPI.Domain.RelationalDb.Entities
 {
     public class PredictionLog : EntityWithId<Guid>, ICreatedEntity<Guid>, IUpdatedEntity<Guid>
     {
-        public Guid AreaId { get; set; }
+        public Guid? AreaId { get; set; }  // Nullable: for user-created monitored areas
+        public Guid? AdministrativeAreaId { get; set; }  // Nullable: for administrative area predictions (ward/district/city)
         public decimal PredictedProb { get; set; }  // 0.0000 - 1.0000
         public decimal? AiProb { get; set; }
         public decimal? PhysicsProb { get; set; }
@@ -30,6 +31,8 @@ namespace FDAAPI.Domain.RelationalDb.Entities
         // Navigation
         [JsonIgnore]
         public virtual Area? Area { get; set; }
+        [JsonIgnore]
+        public virtual AdministrativeArea? AdministrativeArea { get; set; }
     }
 }
 

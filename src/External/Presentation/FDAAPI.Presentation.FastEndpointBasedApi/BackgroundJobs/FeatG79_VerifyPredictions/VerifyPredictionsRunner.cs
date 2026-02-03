@@ -13,6 +13,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.FeatG79_Verify
     {
         private readonly IPredictionLogRepository _predictionLogRepository;
         private readonly IAreaRepository _areaRepository;
+        private readonly IAdministrativeAreaRepository _administrativeAreaRepository;
         private readonly IStationRepository _stationRepository;
         private readonly ISensorReadingRepository _sensorReadingRepository;
         private readonly ILogger<VerifyPredictionsRunner> _logger;
@@ -20,12 +21,14 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.FeatG79_Verify
         public VerifyPredictionsRunner(
             IPredictionLogRepository predictionLogRepository,
             IAreaRepository areaRepository,
+            IAdministrativeAreaRepository administrativeAreaRepository,
             IStationRepository stationRepository,
             ISensorReadingRepository sensorReadingRepository,
             ILogger<VerifyPredictionsRunner> logger)
         {
             _predictionLogRepository = predictionLogRepository;
             _areaRepository = areaRepository;
+            _administrativeAreaRepository = administrativeAreaRepository;
             _stationRepository = stationRepository;
             _sensorReadingRepository = sensorReadingRepository;
             _logger = logger;
@@ -79,24 +82,123 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.FeatG79_Verify
 
         private async Task VerifyPredictionAsync(PredictionLog prediction)
         {
-            // 1. Get area
-            var area = await _areaRepository.GetByIdAsync(prediction.AreaId, default);
-            if (area == null)
+            List<Station> stations = new List<Station>();
+
+            // 1. Determine if this is for Area or AdministrativeArea
+            if (prediction.AreaId.HasValue)
             {
-                _logger.LogWarning($"Area {prediction.AreaId} not found for prediction {prediction.Id}");
+                // For user-created Area
+                var area = await _areaRepository.GetByIdAsync(prediction.AreaId.Value, default);
+                if (area == null)
+                {
+                    _logger.LogWarning($"Area {prediction.AreaId} not found for prediction {prediction.Id}");
+                    return;
+                }
+
+                // Get stations within area radius
+                stations = (await _stationRepository.GetStationsWithinRadiusAsync(
+                    area.Latitude,
+                    area.Longitude,
+                    area.RadiusMeters,
+                    default)).ToList();
+            }
+            else if (prediction.AdministrativeAreaId.HasValue)
+            {
+                // For AdministrativeArea - get stations using same logic as AdministrativeAreasEvaluateHandler
+                var administrativeArea = await _administrativeAreaRepository.GetByIdAsync(prediction.AdministrativeAreaId.Value, default);
+                if (administrativeArea == null)
+                {
+                    _logger.LogWarning($"AdministrativeArea {prediction.AdministrativeAreaId} not found for prediction {prediction.Id}");
+                    return;
+                }
+
+                var level = administrativeArea.Level.ToLower();
+                
+                if (level == "ward")
+                {
+                    var (allStations, _) = await _stationRepository.GetStationsAsync(
+                        searchTerm: null,
+                        status: "active",
+                        pageNumber: 1,
+                        pageSize: 1000,
+                        default);
+                    stations = allStations
+                        .Where(s => s.AdministrativeAreaId == administrativeArea.Id)
+                        .ToList();
+                }
+                else if (level == "district")
+                {
+                    var (childWards, _) = await _administrativeAreaRepository.GetAdministrativeAreasAsync(
+                        searchTerm: null,
+                        level: "ward",
+                        parentId: administrativeArea.Id,
+                        pageNumber: 1,
+                        pageSize: 1000,
+                        default);
+                    var wardIds = childWards.Select(w => w.Id).ToList();
+
+                    if (wardIds.Any())
+                    {
+                        var (allStations, _) = await _stationRepository.GetStationsAsync(
+                            searchTerm: null,
+                            status: "active",
+                            pageNumber: 1,
+                            pageSize: 10000,
+                            default);
+                        stations = allStations
+                            .Where(s => s.AdministrativeAreaId.HasValue && wardIds.Contains(s.AdministrativeAreaId.Value))
+                            .ToList();
+                    }
+                }
+                else if (level == "city")
+                {
+                    var (districts, _) = await _administrativeAreaRepository.GetAdministrativeAreasAsync(
+                        searchTerm: null,
+                        level: "district",
+                        parentId: administrativeArea.Id,
+                        pageNumber: 1,
+                        pageSize: 1000,
+                        default);
+
+                    var allWardIds = new List<Guid>();
+                    foreach (var district in districts)
+                    {
+                        var (wards, _) = await _administrativeAreaRepository.GetAdministrativeAreasAsync(
+                            searchTerm: null,
+                            level: "ward",
+                            parentId: district.Id,
+                            pageNumber: 1,
+                            pageSize: 1000,
+                            default);
+                        allWardIds.AddRange(wards.Select(w => w.Id));
+                    }
+
+                    if (allWardIds.Any())
+                    {
+                        var (allStations, _) = await _stationRepository.GetStationsAsync(
+                            searchTerm: null,
+                            status: "active",
+                            pageNumber: 1,
+                            pageSize: 10000,
+                            default);
+                        stations = allStations
+                            .Where(s => s.AdministrativeAreaId.HasValue && allWardIds.Contains(s.AdministrativeAreaId.Value))
+                            .ToList();
+                    }
+                }
+            }
+            else
+            {
+                _logger.LogWarning($"Prediction {prediction.Id} has neither AreaId nor AdministrativeAreaId");
                 return;
             }
 
-            // 2. Get stations within area radius
-            var stations = await _stationRepository.GetStationsWithinRadiusAsync(
-                area.Latitude,
-                area.Longitude,
-                area.RadiusMeters,
-                default);
-
             if (!stations.Any())
             {
-                _logger.LogWarning($"No stations found within area {area.Id} radius for prediction {prediction.Id}");
+                var areaInfo = prediction.AreaId.HasValue 
+                    ? $"Area {prediction.AreaId}" 
+                    : $"AdministrativeArea {prediction.AdministrativeAreaId}";
+                _logger.LogWarning($"No stations found for {areaInfo} for prediction {prediction.Id}");
                 // Mark as verified but with no data
                 prediction.ActualWaterLevel = null;
                 prediction.IsVerified = true;
