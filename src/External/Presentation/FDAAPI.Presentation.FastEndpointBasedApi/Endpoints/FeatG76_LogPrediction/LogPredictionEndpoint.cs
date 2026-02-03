@@ -30,7 +30,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.FeatG76_LogPredicti
         public override async Task HandleAsync(LogPredictionRequestDto req, CancellationToken ct)
         {
             var request = new LogPredictionRequest(
-                AreaId: req.AreaId,
+                AdministrativeAreaId: req.AdministrativeAreaId,
                 PredictedProb: req.PredictedProb,
                 AiProb: req.AiProb,
                 PhysicsProb: req.PhysicsProb,

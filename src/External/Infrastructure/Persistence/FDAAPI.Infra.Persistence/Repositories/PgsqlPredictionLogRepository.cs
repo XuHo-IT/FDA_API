@@ -124,13 +124,17 @@ namespace FDAAPI.Infra.Persistence.Repositories
             var verifiedCount = await query.CountAsync(p => p.IsVerified, ct);
             var correctCount = await query.CountAsync(p => p.IsVerified && p.IsCorrect == true, ct);
             
-            var avgAccuracyScore = await query
+            // Fix: DefaultIfEmpty cannot be translated to SQL, so we need to handle it differently
+            var verifiedWithScores = await query
                 .Where(p => p.IsVerified && p.AccuracyScore.HasValue)
                 .Select(p => p.AccuracyScore!.Value)
-                .DefaultIfEmpty(0)
-                .AverageAsync(ct);
+                .ToListAsync(ct);
+            
+            var avgAccuracyScore = verifiedWithScores.Any() 
+                ? (decimal)verifiedWithScores.Average() 
+                : 0m;
 
-            return (totalPredictions, verifiedCount, correctCount, (decimal)avgAccuracyScore);
+            return (totalPredictions, verifiedCount, correctCount, avgAccuracyScore);
         }
     }
 }
