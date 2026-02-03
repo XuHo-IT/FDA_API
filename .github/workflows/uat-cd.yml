@@ -88,15 +88,7 @@ jobs:
             fi
 
             # 3. Scan logs for errors
-            echo "🔍 Scanning logs for errors..."
-            # Sử dụng "|| true" để tránh lỗi exit 1 khi grep không tìm thấy lỗi
-            ERROR_LOGS=$(docker compose -p fda_uat --env-file .env.uat -f docker-compose.uat.yml logs --tail=100 | grep -i "error\|exception\|failed" || true)
-            
-            if [ -n "$ERROR_LOGS" ]; then
-              echo "⚠️ Found some potential issues in logs:"
-              echo "$ERROR_LOGS" | tail -n 5
-            else
-              echo "✅ No critical errors found in recent logs."
-            fi
-            
-            echo "✅ All Health Checks Passed!"
+            echo "🔍 Checking recent logs (non-blocking)..."
+            docker compose -p fda_uat --env-file .env.uat -f docker-compose.uat.yml logs --tail=50 \
+            | grep -i "error\|exception\|failed" \
+            || echo "ℹ️ No critical patterns found (or runtime errors ignored)"
