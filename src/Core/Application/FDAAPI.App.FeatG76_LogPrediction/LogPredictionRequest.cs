@@ -10,7 +10,8 @@ namespace FDAAPI.App.FeatG76_LogPrediction
         decimal? PhysicsProb,
         string RiskLevel,
         DateTime StartTime,
-        DateTime EndTime
+        DateTime EndTime,
+        string? Metadata  // FE-20: Interpretability metadata
     ) : IFeatureRequest<LogPredictionResponse>;
 }
 

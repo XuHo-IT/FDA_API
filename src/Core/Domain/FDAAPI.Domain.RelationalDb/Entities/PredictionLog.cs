@@ -15,6 +15,9 @@ namespace FDAAPI.Domain.RelationalDb.Entities
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         
+        // FE-20: Interpretability metadata for this prediction
+        public string Metadata { get; set; } = "{}";
+        
         // Verification results
         public decimal? ActualWaterLevel { get; set; }
         public bool IsVerified { get; set; } = false;

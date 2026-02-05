@@ -36,7 +36,8 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.FeatG76_LogPredicti
                 PhysicsProb: req.PhysicsProb,
                 RiskLevel: req.RiskLevel,
                 StartTime: req.StartTime,
-                EndTime: req.EndTime
+                EndTime: req.EndTime,
+                Metadata: req.Metadata  // FE-20: Interpretability metadata
             );
 
             var result = await _mediator.Send(request, ct);
