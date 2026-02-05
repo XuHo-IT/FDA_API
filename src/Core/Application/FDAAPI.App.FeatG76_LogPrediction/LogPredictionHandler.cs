@@ -149,6 +149,7 @@ namespace FDAAPI.App.FeatG76_LogPrediction
                 RiskLevel = request.RiskLevel.ToLower(),
                 StartTime = request.StartTime,
                 EndTime = request.EndTime,
+                Metadata = string.IsNullOrWhiteSpace(request.Metadata) ? "{}" : request.Metadata,  // FE-20: Interpretability metadata
                 IsVerified = false,
                 CreatedBy = Guid.Empty, // Internal API - no user context
                 CreatedAt = now,

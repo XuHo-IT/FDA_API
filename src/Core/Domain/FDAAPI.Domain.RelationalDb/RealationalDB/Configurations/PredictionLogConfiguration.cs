@@ -29,6 +29,10 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB.Configurations
                 .IsRequired();
             builder.Property(e => e.EndTime)
                 .IsRequired();
+            builder.Property(e => e.Metadata)
+                .HasColumnType("jsonb")
+                .IsRequired()
+                .HasDefaultValue("{}");
             builder.Property(e => e.ActualWaterLevel)
                 .HasPrecision(14, 4);
             builder.Property(e => e.IsVerified)
