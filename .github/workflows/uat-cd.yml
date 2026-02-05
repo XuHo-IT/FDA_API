@@ -44,12 +44,10 @@ jobs:
             
             # Pull image - Dùng file .env.uat có sẵn trên VPS
             echo "📥 Pulling latest UAT image..."
-            docker compose -p fda_uat --env-file .env.uat -f docker-compose.uat.yml pull
-            
+            docker compose -p fda_uat --env-file .env.uat -f docker-compose.uat.yml pull fdaapi_uat
             # Restart container
             echo "▶️ Recreating UAT container..."
-            docker compose -p fda_uat --env-file .env.uat -f docker-compose.uat.yml up -d --force-recreate
-            
+            docker compose -p fda_uat --env-file .env.uat -f docker-compose.uat.yml up -d --force-recreate fdaapi_uat
             echo "⏳ Waiting for stabilization..."
             sleep 15
             
