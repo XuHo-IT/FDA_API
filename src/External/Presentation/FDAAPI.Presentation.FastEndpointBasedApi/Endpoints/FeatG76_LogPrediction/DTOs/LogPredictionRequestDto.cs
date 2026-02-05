@@ -11,6 +11,9 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.FeatG76_LogPredicti
         public string RiskLevel { get; set; } = string.Empty;
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
+
+        // FE-20: Interpretability metadata (JSON string)
+        public string? Metadata { get; set; }
     }
 }
 
