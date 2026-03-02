@@ -72,6 +72,11 @@
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG73_CancelSubscription\FDAAPI.App.FeatG73_CancelSubscription.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG74_RequestSafeRoute\FDAAPI.App.FeatG74_RequestSafeRoute.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG7_AuthLogin\FDAAPI.App.FeatG7_AuthLogin.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG81_FloodReportGet\FDAAPI.App.FeatG81_FloodReportGet.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG82_FloodReportUpdate\FDAAPI.App.FeatG82_FloodReportUpdate.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG83_FloodReportList\FDAAPI.App.FeatG83_FloodReportList.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG84_FloodReportGetNearby\FDAAPI.App.FeatG84_FloodReportGetNearby.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG85_FloodReportDelete\FDAAPI.App.FeatG85_FloodReportDelete.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG8_AuthRefreshToken\FDAAPI.App.FeatG8_AuthRefreshToken.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG9_AuthLogout\FDAAPI.App.FeatG9_AuthLogout.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG31_GetMapCurrentStatus\FDAAPI.App.FeatG31_GetMapCurrentStatus.csproj" />  
@@ -86,6 +91,7 @@
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG76_LogPrediction\FDAAPI.App.FeatG76_LogPrediction.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG77_GetPredictionComparisons\FDAAPI.App.FeatG77_GetPredictionComparisons.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG78_GetPredictionAccuracyStats\FDAAPI.App.FeatG78_GetPredictionAccuracyStats.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG79_FloodReportCreate\FDAAPI.App.FeatG79_FloodReportCreate.csproj" />
   </ItemGroup>
 
   <ItemGroup>

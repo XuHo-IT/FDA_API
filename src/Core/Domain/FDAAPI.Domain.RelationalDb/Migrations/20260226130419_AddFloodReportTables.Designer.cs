@@ -3,6 +3,7 @@ using System;
 using FDAAPI.Domain.RelationalDb.RealationalDB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FDAAPI.Domain.RelationalDb.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260226130419_AddFloodReportTables")]
+    partial class AddFloodReportTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -207,52 +210,52 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111111"),
                             CooldownMinutes = 30,
-                            CreatedAt = new DateTime(2026, 2, 26, 13, 11, 6, 784, DateTimeKind.Utc).AddTicks(213),
+                            CreatedAt = new DateTime(2026, 2, 26, 13, 4, 17, 315, DateTimeKind.Utc).AddTicks(5958),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
                             Description = "Low priority alerts - 30 min cooldown",
                             IsActive = true,
                             MaxNotificationsPerHour = 2,
                             Severity = "info",
-                            UpdatedAt = new DateTime(2026, 2, 26, 13, 11, 6, 784, DateTimeKind.Utc).AddTicks(213),
+                            UpdatedAt = new DateTime(2026, 2, 26, 13, 4, 17, 315, DateTimeKind.Utc).AddTicks(5958),
                             UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
                         },
                         new
                         {
                             Id = new Guid("22222222-2222-2222-2222-222222222222"),
                             CooldownMinutes = 20,
-                            CreatedAt = new DateTime(2026, 2, 26, 13, 11, 6, 784, DateTimeKind.Utc).AddTicks(213),
+                            CreatedAt = new DateTime(2026, 2, 26, 13, 4, 17, 315, DateTimeKind.Utc).AddTicks(5958),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
                             Description = "Caution alerts - 20 min cooldown",
                             IsActive = true,
                             MaxNotificationsPerHour = 3,
                             Severity = "caution",
-                            UpdatedAt = new DateTime(2026, 2, 26, 13, 11, 6, 784, DateTimeKind.Utc).AddTicks(213),
+                            UpdatedAt = new DateTime(2026, 2, 26, 13, 4, 17, 315, DateTimeKind.Utc).AddTicks(5958),
                             UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
                         },
                         new
                         {
                             Id = new Guid("33333333-3333-3333-3333-333333333333"),
                             CooldownMinutes = 10,
-                            CreatedAt = new DateTime(2026, 2, 26, 13, 11, 6, 784, DateTimeKind.Utc).AddTicks(213),
+                            CreatedAt = new DateTime(2026, 2, 26, 13, 4, 17, 315, DateTimeKind.Utc).AddTicks(5958),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
                             Description = "Warning alerts - 10 min cooldown",
                             IsActive = true,
                             MaxNotificationsPerHour = 6,
                             Severity = "warning",
-                            UpdatedAt = new DateTime(2026, 2, 26, 13, 11, 6, 784, DateTimeKind.Utc).AddTicks(213),
+                            UpdatedAt = new DateTime(2026, 2, 26, 13, 4, 17, 315, DateTimeKind.Utc).AddTicks(5958),
                             UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
                         },
                         new
                         {
                             Id = new Guid("44444444-4444-4444-4444-444444444444"),
                             CooldownMinutes = 5,
-                            CreatedAt = new DateTime(2026, 2, 26, 13, 11, 6, 784, DateTimeKind.Utc).AddTicks(213),
+                            CreatedAt = new DateTime(2026, 2, 26, 13, 4, 17, 315, DateTimeKind.Utc).AddTicks(5958),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
                             Description = "Critical alerts - 5 min cooldown",
                             IsActive = true,
                             MaxNotificationsPerHour = 12,
                             Severity = "critical",
-                            UpdatedAt = new DateTime(2026, 2, 26, 13, 11, 6, 784, DateTimeKind.Utc).AddTicks(213),
+                            UpdatedAt = new DateTime(2026, 2, 26, 13, 4, 17, 315, DateTimeKind.Utc).AddTicks(5958),
                             UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
                         });
                 });
@@ -737,7 +740,7 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                     b.HasIndex("Latitude", "Longitude")
                         .HasDatabaseName("ix_flood_reports_location");
 
-                    b.ToTable("FloodReports", null, t =>
+                    b.ToTable("flood_reports", null, t =>
                         {
                             t.HasCheckConstraint("chk_priority", "priority IN ('normal', 'high', 'critical')");
 
@@ -781,7 +784,7 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         .IsUnique()
                         .HasDatabaseName("uq_flag");
 
-                    b.ToTable("FloodReportFlags", null, t =>
+                    b.ToTable("flood_report_flags", null, t =>
                         {
                             t.HasCheckConstraint("chk_flag_reason", "reason IN ('spam', 'fake', 'inappropriate')");
                         });
@@ -818,7 +821,7 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                     b.HasIndex("FloodReportId")
                         .HasDatabaseName("ix_flood_report_media_report");
 
-                    b.ToTable("FloodReportMedia", null, t =>
+                    b.ToTable("flood_report_media", null, t =>
                         {
                             t.HasCheckConstraint("chk_media_type", "media_type IN ('photo', 'video')");
                         });
@@ -858,7 +861,7 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         .IsUnique()
                         .HasDatabaseName("uq_vote");
 
-                    b.ToTable("FloodReportVotes", null, t =>
+                    b.ToTable("flood_report_votes", null, t =>
                         {
                             t.HasCheckConstraint("chk_vote_type", "vote_type IN ('up', 'down')");
                         });
