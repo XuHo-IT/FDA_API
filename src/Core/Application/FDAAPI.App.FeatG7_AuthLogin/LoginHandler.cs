@@ -494,6 +494,13 @@ namespace FDAAPI.App.FeatG7_AuthLogin
 
             await _refreshTokenRepository.CreateAsync(refreshToken, ct);
 
+            // Update FCM token if provided (for push notifications)
+            if (!string.IsNullOrWhiteSpace(request.FcmToken))
+            {
+                user.FcmToken = request.FcmToken;
+                await _userRepository.UpdateAsync(user, ct);
+            }
+
             // Load user with roles for mapping
             var userWithRoles = await _userRepository.GetUserWithRolesAsync(user.Id, ct);
 
