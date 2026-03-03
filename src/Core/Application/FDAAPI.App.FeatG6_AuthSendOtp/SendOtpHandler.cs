@@ -1,4 +1,5 @@
 using FDAAPI.App.Common.Features;
+using FDAAPI.App.Common.Services;
 using FDAAPI.Domain.RelationalDb.Entities;
 using FDAAPI.Domain.RelationalDb.Repositories;
 using MediatR;
@@ -19,10 +20,12 @@ namespace FDAAPI.App.FeatG6_AuthSendOtp
     public class SendOtpHandler : IRequestHandler<SendOtpRequest, SendOtpResponse>
     {
         private readonly IOtpCodeRepository _otpRepository;
+        private readonly IOtpSender _otpSender;
 
-        public SendOtpHandler(IOtpCodeRepository otpRepository)
+        public SendOtpHandler(IOtpCodeRepository otpRepository, IOtpSender otpSender)
         {
             _otpRepository = otpRepository;
+            _otpSender = otpSender;
         }
 
         public async Task<SendOtpResponse> Handle(SendOtpRequest request, CancellationToken ct)
@@ -62,7 +65,7 @@ namespace FDAAPI.App.FeatG6_AuthSendOtp
             try
             {
                 // Generate 6-digit OTP (Mock for development)
-                var otpCode = GenerateMockOtp();
+                var otpCode = identifierType == "phone" ? "123456" : GenerateMockOtp();
                 var expiresAt = DateTime.UtcNow.AddMinutes(5);
 
                 // Save OTP to database
@@ -83,14 +86,31 @@ namespace FDAAPI.App.FeatG6_AuthSendOtp
                 await _otpRepository.CreateAsync(otp, ct);
 
                 // TODO: Production - Send OTP via SMS service
-                if (identifierType == "phone")
+                //if (identifierType == "phone")
+                //{
+                //    // await _smsService.SendOtpAsync(request.Identifier, otpCode);
+                //}
+                //else
+                //{
+                //    // await _emailService.SendOtpAsync(request.Identifier, otpCode);
+                //}
+
+                // Send OTP via SMS or Email         
+                var sent = await _otpSender.SendOtpAsync(
+                    request.Identifier,
+                    identifierType,
+                    otpCode,
+                    ct);
+
+                if (!sent)
                 {
-                    // await _smsService.SendOtpAsync(request.Identifier, otpCode);
+                    return new SendOtpResponse
+                    {
+                        Success = false,
+                        Message = $"Failed to send OTP to your {identifierType}. Please try again."
+                    };
                 }
-                else
-                {
-                    // await _emailService.SendOtpAsync(request.Identifier, otpCode);
-                }
+
 
                 return new SendOtpResponse
                 {
@@ -118,10 +138,10 @@ namespace FDAAPI.App.FeatG6_AuthSendOtp
         private string GenerateMockOtp()
         {
             // For development: return fixed OTP "123456"
-            return "123456";
+            // return "123456";
 
             // For production: uncomment below
-            // return Random.Shared.Next(100000, 999999).ToString();
+            return  Random.Shared.Next(100000, 999999).ToString();
         }
 
         /// <summary>

@@ -1,0 +1,271 @@
+@startuml FeatG44_GetFloodHistory_ClassDiagram
+!define RECTANGLE class
+
+skinparam backgroundColor #FEFEFE
+skinparam classBackgroundColor #FFFFFF
+skinparam classBorderColor #000000
+skinparam packageBackgroundColor #E8E8E8
+skinparam packageBorderColor #666666
+skinparam stereotypeCBackgroundColor #ADD1B2
+skinparam arrowColor #333333
+
+title FeatG44_GetFloodHistory - Class Diagram\n(Domain-Centric Architecture + CQRS Pattern)
+
+' ============================================
+' PRESENTATION LAYER
+' ============================================
+package "PRESENTATION LAYER" #E1D5E7 {
+  class GetFloodHistoryEndpoint <<Endpoint>> {
+    - _mediator: IMediator
+    --
+    + Configure(): void
+    + HandleAsync(req: GetFloodHistoryRequestDto, ct): Task
+  }
+
+  class GetFloodHistoryRequestDto <<DTO>> {
+    + StationId: Guid?
+    + StationIds: List<Guid>?
+    + AreaId: Guid?
+    + StartDate: DateTime?
+    + EndDate: DateTime?
+    + Granularity: string
+    + Limit: int
+    + Cursor: string?
+  }
+
+  class GetFloodHistoryResponseDto <<DTO>> {
+    + Success: bool
+    + Message: string
+    + Data: FloodHistoryDto?
+    + Pagination: PaginationDto?
+  }
+
+  GetFloodHistoryEndpoint --> GetFloodHistoryRequestDto : uses
+  GetFloodHistoryEndpoint --> GetFloodHistoryResponseDto : returns
+}
+
+' ============================================
+' APPLICATION LAYER
+' ============================================
+package "APPLICATION LAYER" #D5E8D4 {
+  class GetFloodHistoryRequest <<Record>> {
+    + StationId: Guid?
+    + StationIds: List<Guid>?
+    + AreaId: Guid?
+    + StartDate: DateTime?
+    + EndDate: DateTime?
+    + Granularity: string
+    + Limit: int
+    + Cursor: string?
+  }
+
+  class GetFloodHistoryResponse <<Response>> {
+    + Success: bool
+    + Message: string
+    + StatusCode: FloodHistoryStatusCode
+    + Data: FloodHistoryDto?
+    + Pagination: PaginationDto?
+  }
+
+  class GetFloodHistoryHandler <<Handler>> {
+    - _sensorReadingRepository: ISensorReadingRepository
+    - _hourlyAggRepository: ISensorHourlyAggRepository
+    - _dailyAggRepository: ISensorDailyAggRepository
+    - _stationRepository: IStationRepository
+    - _mapper: IFloodHistoryMapper
+    --
+    + Handle(request, ct): Task<GetFloodHistoryResponse>
+    - GetRawDataPoints(stationId, start, end, limit, ct): Task<List<FloodDataPointDto>>
+    - GetHourlyDataPoints(stationId, start, end, ct): Task<List<FloodDataPointDto>>
+    - GetDailyDataPoints(stationId, start, end, ct): Task<List<FloodDataPointDto>>
+    - DetectMissingIntervals(dataPoints, granularity): int
+  }
+
+  class GetFloodHistoryRequestValidator <<Validator>> {
+    --
+    + GetFloodHistoryRequestValidator()
+  }
+
+  interface IRequestHandler {
+    + Handle(request, ct): Task<Response>
+  }
+
+  enum FloodHistoryStatusCode <<Enumeration>> {
+    Success
+    BadRequest
+    NotFound
+    InternalServerError
+  }
+
+  class FloodHistoryDto <<DTO>> {
+    + StationId: Guid
+    + StationName: string
+    + StationCode: string
+    + DataPoints: List<FloodDataPointDto>
+    + Metadata: FloodHistoryMetadataDto
+  }
+
+  class FloodDataPointDto <<DTO>> {
+    + Timestamp: DateTime
+    + WaterLevel: double
+    + Rainfall: double?
+    + Severity: int
+  }
+
+  class FloodHistoryMetadataDto <<DTO>> {
+    + StartDate: DateTime
+    + EndDate: DateTime
+    + Granularity: string
+    + TotalDataPoints: int
+    + MissingIntervals: int
+    + LastUpdated: DateTime?
+  }
+
+  class PaginationDto <<DTO>> {
+    + HasMore: bool
+    + TotalCount: int
+  }
+
+  GetFloodHistoryHandler ..|> IRequestHandler : implements
+  GetFloodHistoryHandler --> GetFloodHistoryRequest : handles
+  GetFloodHistoryHandler --> GetFloodHistoryResponse : returns
+  GetFloodHistoryResponse --> FloodHistoryStatusCode : contains
+  GetFloodHistoryRequestValidator --> GetFloodHistoryRequest : validates
+}
+
+' ============================================
+' DOMAIN LAYER - Entities
+' ============================================
+package "DOMAIN LAYER - Entities" #F8CECC {
+  class SensorReading <<Entity>> {
+    + Id: Guid
+    + StationId: Guid
+    + WaterLevel: decimal
+    + Rainfall: decimal?
+    + Timestamp: DateTime
+    + Severity: int
+  }
+
+  class SensorHourlyAgg <<Entity>> {
+    + StationId: Guid
+    + Timestamp: DateTime
+    + AvgLevel: decimal
+    + MaxLevel: decimal
+    + MinLevel: decimal
+    + ReadingCount: int
+    + FloodHours: int
+  }
+
+  class SensorDailyAgg <<Entity>> {
+    + StationId: Guid
+    + Date: DateOnly
+    + AvgLevel: decimal
+    + MaxLevel: decimal
+    + MinLevel: decimal
+    + ReadingCount: int
+    + FloodHours: int
+    + PeakSeverity: int
+    + RainfallTotal: decimal?
+  }
+
+  class Station <<Entity>> {
+    + Id: Guid
+    + Name: string
+    + Code: string
+    + Latitude: decimal
+    + Longitude: decimal
+  }
+
+  Station "1" *-- "many" SensorReading
+  Station "1" *-- "many" SensorHourlyAgg
+  Station "1" *-- "many" SensorDailyAgg
+}
+
+' ============================================
+' DOMAIN LAYER - Repositories
+' ============================================
+package "DOMAIN LAYER - Repositories" #FFE6CC {
+  interface ISensorReadingRepository <<Interface>> {
+    + GetByStationAndTimeRangeAsync(stationId, start, end, limit, ct): Task<List<SensorReading>>
+  }
+
+  interface ISensorHourlyAggRepository <<Interface>> {
+    + GetByStationAndRangeAsync(stationId, start, end, ct): Task<List<SensorHourlyAgg>>
+  }
+
+  interface ISensorDailyAggRepository <<Interface>> {
+    + GetByStationAndRangeAsync(stationId, start, end, ct): Task<List<SensorDailyAgg>>
+  }
+
+  interface IStationRepository <<Interface>> {
+    + GetByIdAsync(id: Guid, ct): Task<Station?>
+  }
+}
+
+' ============================================
+' COMMON SERVICES
+' ============================================
+package "COMMON SERVICES" #E1D5E7 {
+  interface IMediator <<Interface>> {
+    + Send<TResponse>(request, ct): Task<TResponse>
+  }
+
+  interface IFloodHistoryMapper <<Interface>> {
+    + MapToDataPoints(readings: List<SensorReading>): List<FloodDataPointDto>
+    + MapToDataPoints(hourlyAggs: List<SensorHourlyAgg>): List<FloodDataPointDto>
+    + MapToDataPoints(dailyAggs: List<SensorDailyAgg>): List<FloodDataPointDto>
+  }
+
+  interface IFeatureRequest <<Interface>> { }
+  interface IFeatureResponse <<Interface>> { }
+
+  GetFloodHistoryRequest ..|> IFeatureRequest
+  GetFloodHistoryResponse ..|> IFeatureResponse
+}
+
+' ============================================
+' RELATIONSHIPS
+' ============================================
+GetFloodHistoryEndpoint ..> IMediator : uses
+GetFloodHistoryEndpoint ..> GetFloodHistoryRequest : sends
+
+GetFloodHistoryHandler ..> ISensorReadingRepository : uses
+GetFloodHistoryHandler ..> ISensorHourlyAggRepository : uses
+GetFloodHistoryHandler ..> ISensorDailyAggRepository : uses
+GetFloodHistoryHandler ..> IStationRepository : uses
+GetFloodHistoryHandler ..> IFloodHistoryMapper : uses
+
+GetFloodHistoryRequestDto ..> GetFloodHistoryRequest : maps to
+GetFloodHistoryResponseDto ..> GetFloodHistoryResponse : maps from
+
+GetFloodHistoryResponse *-- FloodHistoryDto
+FloodHistoryDto *-- FloodDataPointDto
+FloodHistoryDto *-- FloodHistoryMetadataDto
+
+FloodDataPointDto ..> SensorReading : represents
+FloodDataPointDto ..> SensorHourlyAgg : represents
+FloodDataPointDto ..> SensorDailyAgg : represents
+
+' ============================================
+' LEGEND
+' ============================================
+legend bottom left
+  | Color | Layer |
+  | #E1D5E7 | Presentation Layer & Common Services |
+  | #D5E8D4 | Application Layer |
+  | #F8CECC | Domain Entities |
+  | #FFE6CC | Domain Repositories |
+  | | |
+  | Line Style | Meaning |
+  | --> | Dependency |
+  | ..> | Uses/Sends |
+  | ..\|> | Implements |
+  | *-- | Composition |
+  | | |
+  | Feature: Get Flood History |
+  | Supports 3 granularity levels: raw, hourly, daily |
+  | Detects missing data intervals |
+  | Default: last 24 hours, limit 1000 records |
+endlegend
+
+@enduml

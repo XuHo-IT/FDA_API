@@ -47,6 +47,7 @@
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG48_SeverityAggregation\FDAAPI.App.FeatG48_SeverityAggregation.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG49_HotspotAggregation\FDAAPI.App.FeatG49_HotspotAggregation.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG4_WaterLevelDelete\FDAAPI.App.FeatG4_SensorReadingDelete.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG5_AuthResetPassword\FDAAPI.App.FeatG5_AuthResetPassword.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG67_GetMySubscriptions\FDAAPI.App.FeatG67_GetMySubscriptions.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG68_DeleteSubscription\FDAAPI.App.FeatG68_DeleteSubscription.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG50_GetJobStatus\FDAAPI.App.FeatG50_GetJobStatus.csproj" />
@@ -69,17 +70,22 @@
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG71_GetUserSubscription\FDAAPI.App.FeatG71_GetUserSubscription.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG72_SubscribeToPlan\FDAAPI.App.FeatG72_SubscribeToPlan.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG73_CancelSubscription\FDAAPI.App.FeatG73_CancelSubscription.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG74_RequestSafeRoute\FDAAPI.App.FeatG74_RequestSafeRoute.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG7_AuthLogin\FDAAPI.App.FeatG7_AuthLogin.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG8_AuthRefreshToken\FDAAPI.App.FeatG8_AuthRefreshToken.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG9_AuthLogout\FDAAPI.App.FeatG9_AuthLogout.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG31_GetMapCurrentStatus\FDAAPI.App.FeatG31_GetMapCurrentStatus.csproj" />  
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG32_AreaCreate\FDAAPI.App.FeatG32_AreaCreate.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG34_AreaStatusEvaluate\FDAAPI.App.FeatG34_AreaStatusEvaluate.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG55_AdministrativeAreasEvaluate\FDAAPI.App.FeatG55_AdministrativeAreasEvaluate.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Domain\FDAAPI.Domain.RelationalDb\FDAAPI.Domain.RelationalDb.csproj" />
     <ProjectReference Include="..\..\Persistence\FDAAPI.Infra.Persistence\FDAAPI.Infra.Persistence.csproj" />
     <ProjectReference Include="..\..\Services\FDAAPI.Infra.Services\FDAAPI.Infra.Services.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG36_AreaUpdate\FDAAPI.App.FeatG36_AreaUpdate.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG37_AreaDelete\FDAAPI.App.FeatG37_AreaDelete.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG76_LogPrediction\FDAAPI.App.FeatG76_LogPrediction.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG77_GetPredictionComparisons\FDAAPI.App.FeatG77_GetPredictionComparisons.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG78_GetPredictionAccuracyStats\FDAAPI.App.FeatG78_GetPredictionAccuracyStats.csproj" />
   </ItemGroup>
 
   <ItemGroup>

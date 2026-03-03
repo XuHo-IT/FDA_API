@@ -129,6 +129,16 @@ namespace FDAAPI.Infra.Persistence.Repositories
 
             return (events, totalCount);
         }
+
+        public async Task<List<FloodEvent>> GetActiveFloodEventsAsync(CancellationToken ct = default)
+        {
+            var now = DateTime.UtcNow;
+            return await _context.FloodEvents
+                .AsNoTracking()
+                .Include(f => f.AdministrativeArea)
+                .Where(f => f.StartTime <= now && f.EndTime >= now)
+                .ToListAsync(ct);
+        }
     }
 }
 

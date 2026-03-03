@@ -207,52 +207,52 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111111"),
                             CooldownMinutes = 30,
-                            CreatedAt = new DateTime(2026, 1, 22, 18, 17, 7, 712, DateTimeKind.Utc).AddTicks(9740),
+                            CreatedAt = new DateTime(2026, 2, 5, 14, 10, 41, 261, DateTimeKind.Utc).AddTicks(6384),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
                             Description = "Low priority alerts - 30 min cooldown",
                             IsActive = true,
                             MaxNotificationsPerHour = 2,
                             Severity = "info",
-                            UpdatedAt = new DateTime(2026, 1, 22, 18, 17, 7, 712, DateTimeKind.Utc).AddTicks(9740),
+                            UpdatedAt = new DateTime(2026, 2, 5, 14, 10, 41, 261, DateTimeKind.Utc).AddTicks(6384),
                             UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
                         },
                         new
                         {
                             Id = new Guid("22222222-2222-2222-2222-222222222222"),
                             CooldownMinutes = 20,
-                            CreatedAt = new DateTime(2026, 1, 22, 18, 17, 7, 712, DateTimeKind.Utc).AddTicks(9740),
+                            CreatedAt = new DateTime(2026, 2, 5, 14, 10, 41, 261, DateTimeKind.Utc).AddTicks(6384),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
                             Description = "Caution alerts - 20 min cooldown",
                             IsActive = true,
                             MaxNotificationsPerHour = 3,
                             Severity = "caution",
-                            UpdatedAt = new DateTime(2026, 1, 22, 18, 17, 7, 712, DateTimeKind.Utc).AddTicks(9740),
+                            UpdatedAt = new DateTime(2026, 2, 5, 14, 10, 41, 261, DateTimeKind.Utc).AddTicks(6384),
                             UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
                         },
                         new
                         {
                             Id = new Guid("33333333-3333-3333-3333-333333333333"),
                             CooldownMinutes = 10,
-                            CreatedAt = new DateTime(2026, 1, 22, 18, 17, 7, 712, DateTimeKind.Utc).AddTicks(9740),
+                            CreatedAt = new DateTime(2026, 2, 5, 14, 10, 41, 261, DateTimeKind.Utc).AddTicks(6384),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
                             Description = "Warning alerts - 10 min cooldown",
                             IsActive = true,
                             MaxNotificationsPerHour = 6,
                             Severity = "warning",
-                            UpdatedAt = new DateTime(2026, 1, 22, 18, 17, 7, 712, DateTimeKind.Utc).AddTicks(9740),
+                            UpdatedAt = new DateTime(2026, 2, 5, 14, 10, 41, 261, DateTimeKind.Utc).AddTicks(6384),
                             UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
                         },
                         new
                         {
                             Id = new Guid("44444444-4444-4444-4444-444444444444"),
                             CooldownMinutes = 5,
-                            CreatedAt = new DateTime(2026, 1, 22, 18, 17, 7, 712, DateTimeKind.Utc).AddTicks(9740),
+                            CreatedAt = new DateTime(2026, 2, 5, 14, 10, 41, 261, DateTimeKind.Utc).AddTicks(6384),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
                             Description = "Critical alerts - 5 min cooldown",
                             IsActive = true,
                             MaxNotificationsPerHour = 12,
                             Severity = "critical",
-                            UpdatedAt = new DateTime(2026, 1, 22, 18, 17, 7, 712, DateTimeKind.Utc).AddTicks(9740),
+                            UpdatedAt = new DateTime(2026, 2, 5, 14, 10, 41, 261, DateTimeKind.Utc).AddTicks(6384),
                             UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
                         });
                 });
@@ -793,6 +793,100 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                     b.ToTable("OtpCodes");
                 });
 
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.PredictionLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("AccuracyScore")
+                        .HasPrecision(5, 4)
+                        .HasColumnType("numeric(5,4)");
+
+                    b.Property<decimal?>("ActualWaterLevel")
+                        .HasPrecision(14, 4)
+                        .HasColumnType("numeric(14,4)");
+
+                    b.Property<Guid?>("AdministrativeAreaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("AiProb")
+                        .HasPrecision(5, 4)
+                        .HasColumnType("numeric(5,4)");
+
+                    b.Property<Guid?>("AreaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("EndTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool?>("IsCorrect")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsVerified")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Metadata")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasDefaultValue("{}");
+
+                    b.Property<decimal?>("PhysicsProb")
+                        .HasPrecision(5, 4)
+                        .HasColumnType("numeric(5,4)");
+
+                    b.Property<decimal>("PredictedProb")
+                        .HasPrecision(5, 4)
+                        .HasColumnType("numeric(5,4)");
+
+                    b.Property<string>("RiskLevel")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("VerifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AdministrativeAreaId");
+
+                    b.HasIndex("EndTime")
+                        .HasDatabaseName("ix_prediction_logs_end_time")
+                        .HasFilter("\"IsVerified\" = false");
+
+                    b.HasIndex("AreaId", "StartTime")
+                        .HasDatabaseName("ix_prediction_logs_area_time");
+
+                    b.HasIndex("IsVerified", "EndTime")
+                        .HasDatabaseName("ix_prediction_logs_verified");
+
+                    b.ToTable("prediction_logs", null, t =>
+                        {
+                            t.HasCheckConstraint("chk_prob_range", "predicted_prob >= 0 AND predicted_prob <= 1");
+
+                            t.HasCheckConstraint("chk_time_range", "end_time > start_time");
+                        });
+                });
+
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.PricingPlan", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1168,6 +1262,14 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         .HasPrecision(14, 4)
                         .HasColumnType("numeric(14,4)");
 
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasDefaultValue("urban_lowland")
+                        .HasComment("Station type: urban_river, urban_lowland, coastal, industrial, mountain, highland");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -1185,6 +1287,9 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
 
                     b.HasIndex("Status")
                         .HasDatabaseName("ix_station_status");
+
+                    b.HasIndex("Type")
+                        .HasDatabaseName("ix_station_type");
 
                     b.HasIndex("Latitude", "Longitude")
                         .HasDatabaseName("ix_station_geo");
@@ -1685,6 +1790,23 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                     b.Navigation("Alert");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.PredictionLog", b =>
+                {
+                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.AdministrativeArea", "AdministrativeArea")
+                        .WithMany()
+                        .HasForeignKey("AdministrativeAreaId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.Area", "Area")
+                        .WithMany()
+                        .HasForeignKey("AreaId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("AdministrativeArea");
+
+                    b.Navigation("Area");
                 });
 
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.RefreshToken", b =>

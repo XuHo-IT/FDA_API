@@ -19,10 +19,10 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat58_Administrati
         public override void Configure()
         {
             Get("/api/v1/admin/administrative-areas");
-            Policies("Admin");
+            Policies("User");
             Summary(s =>
             {
-                s.Summary = "Get list of administrative areas (Admin only)";
+                s.Summary = "Get list of administrative areas for both Admin and User";
                 s.Description = "Retrieve a paginated list of administrative areas with optional filtering by level, parent, or search term.";
             });
         }

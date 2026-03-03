@@ -21,5 +21,10 @@ namespace FDAAPI.Domain.RelationalDb.Repositories
             int pageSize,
             CancellationToken ct = default);
         Task<List<Station>> GetAllAsync(CancellationToken ct = default);
+        Task<List<Station>> GetStationsWithinRadiusAsync(
+            decimal latitude,
+            decimal longitude,
+            int radiusMeters,
+            CancellationToken ct = default);
     }
 }

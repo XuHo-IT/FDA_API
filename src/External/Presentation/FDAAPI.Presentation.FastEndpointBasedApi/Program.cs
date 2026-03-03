@@ -6,6 +6,7 @@ using FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.Feat54_MqttIngesti
 using FDAAPI.Presentation.FastEndpointBasedApi.Hubs;
 using FDAAPI.Presentation.FastEndpointBasedApi.Middleware;
 using FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.Analytics;
+using FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs;
 using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
@@ -101,6 +102,9 @@ builder.Services.AddSignalR(options =>
 // Register Realtime Service
 builder.Services.AddScoped<IRealtimeMapService, RealtimeMapService>();
 
+// Register Prediction Verification Background Job
+builder.Services.AddScoped<FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.FeatG79_VerifyPredictions.VerifyPredictionsRunner>();
+
 // ==================================================
 // BUILD APPLICATION
 // ==================================================
@@ -193,21 +197,26 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        if (app.Environment.IsEnvironment("UAT"))
-        {
-            context.Database.ExecuteSqlRaw("CREATE SCHEMA IF NOT EXISTS uat_schema;");
-        }
-        // Apply pending migrations
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        
+        // Log environment and database info for debugging
+        var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        logger.LogInformation($"🚀 Starting database migration for environment: {env}");
+        
+        // Ensure we're using the correct database (no schema override for UAT)
+        // UAT now uses separate database FDA_UAT with public schema
+        // DO NOT use ExecuteSqlRaw to set search_path or create uat_schema
+        
         context.Database.Migrate();
 
-
-        Console.WriteLine("? Database migrated successfully.");
+        logger.LogInformation("✅ Database migrated successfully.");
+        Console.WriteLine("✅ Database migrated successfully.");
     }
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "? An error occurred while migrating the database.");
+        logger.LogError(ex, "❌ An error occurred while migrating the database.");
+        throw; // Re-throw to prevent app from starting with broken database
     }
 }
 

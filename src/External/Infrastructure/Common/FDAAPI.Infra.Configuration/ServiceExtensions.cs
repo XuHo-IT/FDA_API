@@ -15,43 +15,24 @@ using FDAAPI.App.FeatG18_MediaUploadImage;
 using FDAAPI.App.FeatG19_ProfileVerifyUpdatePhone;
 using FDAAPI.App.FeatG2_SensorReadingUpdate;
 using FDAAPI.App.FeatG20_UserCreate;
-using FDAAPI.App.FeatG20_UserCreate;
-using FDAAPI.App.FeatG21_UserList;
 using FDAAPI.App.FeatG21_UserList;
 using FDAAPI.App.FeatG22_UserUpdate;
-using FDAAPI.App.FeatG22_UserUpdate;
-using FDAAPI.App.FeatG23_StationCreate;
 using FDAAPI.App.FeatG23_StationCreate;
 using FDAAPI.App.FeatG24_StationUpdate;
-using FDAAPI.App.FeatG24_StationUpdate;
-using FDAAPI.App.FeatG25_StationList;
 using FDAAPI.App.FeatG25_StationList;
 using FDAAPI.App.FeatG26_StationGet;
-using FDAAPI.App.FeatG26_StationGet;
-using FDAAPI.App.FeatG27_StationDelete;
 using FDAAPI.App.FeatG27_StationDelete;
 using FDAAPI.App.FeatG28_GetMapPreferences;
-using FDAAPI.App.FeatG28_GetMapPreferences;
-using FDAAPI.App.FeatG29_UpdateMapPreferences;
 using FDAAPI.App.FeatG29_UpdateMapPreferences;
 using FDAAPI.App.FeatG3_SensorReadingGet;
 using FDAAPI.App.FeatG30_GetFloodSeverityLayer;
-using FDAAPI.App.FeatG30_GetFloodSeverityLayer;
-using FDAAPI.App.FeatG31_GetMapCurrentStatus;
 using FDAAPI.App.FeatG31_GetMapCurrentStatus;
 using FDAAPI.App.FeatG32_AreaCreate;
-using FDAAPI.App.FeatG32_AreaCreate;
-using FDAAPI.App.FeatG33_AreaListByUser;
 using FDAAPI.App.FeatG33_AreaListByUser;
 using FDAAPI.App.FeatG34_AreaStatusEvaluate;
-using FDAAPI.App.FeatG34_AreaStatusEvaluate;
-using FDAAPI.App.FeatG35_AreaGet;
 using FDAAPI.App.FeatG35_AreaGet;
 using FDAAPI.App.FeatG36_AreaUpdate;
-using FDAAPI.App.FeatG36_AreaUpdate;
 using FDAAPI.App.FeatG37_AreaDelete;
-using FDAAPI.App.FeatG37_AreaDelete;
-using FDAAPI.App.FeatG38_AreaList;
 using FDAAPI.App.FeatG38_AreaList;
 using FDAAPI.App.FeatG39_SubscribeToAlerts;
 using FDAAPI.App.FeatG4_SensorReadingDelete;
@@ -85,6 +66,7 @@ using FDAAPI.App.FeatG68_DeleteSubscription;
 using FDAAPI.App.FeatG69_AdminGetAllSubscriptions;
 using FDAAPI.App.FeatG7_AuthLogin;
 using FDAAPI.App.FeatG70_AdminGetAlertStats;
+using FDAAPI.App.FeatG55_AdministrativeAreasEvaluate;
 using FDAAPI.App.FeatG71_GetUserSubscription;
 using FDAAPI.App.FeatG72_SubscribeToPlan;
 using FDAAPI.App.FeatG73_CancelSubscription;
@@ -113,6 +95,9 @@ using Polly.Extensions.Http;
 using Quartz;
 using System.Reflection;
 using System.Text;
+using FDAAPI.App.FeatG74_RequestSafeRoute;
+using FDAAPI.Infra.Services.Routing;
+using FDAAPI.App.FeatG5_AuthResetPassword;
 
 namespace FDAAPI.Infra.Configuration
 {
@@ -135,7 +120,33 @@ namespace FDAAPI.Infra.Configuration
                 // connectionString = Environment.GetEnvironmentVariable("POSTGRES_CONN_STRING"); 
             }
 
-            // 3. Kiểm tra xem chuỗi kết nối đã tồn tại chưa
+            // 3. CRITICAL FIX: Remove SearchPath from connection string for UAT
+            // UAT now uses separate database FDA_UAT with public schema
+            // If connection string contains SearchPath=uat_schema, remove it
+            if (!string.IsNullOrEmpty(connectionString) && env.IsEnvironment("UAT"))
+            {
+                var originalConnectionString = connectionString;
+                
+                // Remove SearchPath parameter if present
+                connectionString = System.Text.RegularExpressions.Regex.Replace(
+                    connectionString, 
+                    @";?\s*SearchPath\s*=\s*[^;]+", 
+                    "", 
+                    System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                
+                // Log if SearchPath was removed
+                if (originalConnectionString != connectionString)
+                {
+                    var maskedConnectionString = System.Text.RegularExpressions.Regex.Replace(
+                        connectionString, 
+                        @"Password\s*=\s*[^;]+", 
+                        "Password=***", 
+                        System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                    Console.WriteLine($"⚠️ Removed SearchPath from UAT connection string. Cleaned: {maskedConnectionString}");
+                }
+            }
+
+            // 4. Kiểm tra xem chuỗi kết nối đã tồn tại chưa
             if (string.IsNullOrEmpty(connectionString))
             {
                 throw new InvalidOperationException("PostgreSQL Connection String is not initialized or found in environment variables.");
@@ -146,11 +157,9 @@ namespace FDAAPI.Infra.Configuration
             {
                 options.UseNpgsql(connectionString, x =>
                 {
-                    // Nếu là môi trường UAT, chỉ định bảng Migration nằm trong uat_schema
-                    if (env.IsEnvironment("UAT"))
-                    {
-                        x.MigrationsHistoryTable("__EFMigrationsHistory", "uat_schema");
-                    }
+                    // UAT uses separate database FDA_UAT with public schema (default)
+                    // Migration history table will be in public schema by default
+                    // No need to specify schema
                 });
             });
 
@@ -189,6 +198,10 @@ namespace FDAAPI.Infra.Configuration
             services.AddScoped<IFloodEventMapper, FloodEventMapper>();
             services.AddScoped<IGlobalThresholdService, GlobalThresholdService>();
 
+            services.AddHttpClient<IGraphHopperService, GraphHopperService>();
+            services.AddScoped<IRouteFloodAnalyzer, RouteFloodAnalyzer>();
+            services.AddScoped<ISafeRouteMapper, SafeRouteMapper>();
+
             return services;
         }
 
@@ -202,6 +215,7 @@ namespace FDAAPI.Infra.Configuration
                 typeof(LogoutRequest).Assembly,
                 typeof(RefreshTokenRequest).Assembly,
                 typeof(ChangePasswordRequest).Assembly,
+                typeof(ResetPasswordRequest).Assembly,
                 typeof(GoogleLoginInitiateRequest).Assembly,
                 typeof(GoogleOAuthCallbackRequest).Assembly,
                 typeof(GoogleMobileLoginRequest).Assembly,
@@ -264,7 +278,12 @@ namespace FDAAPI.Infra.Configuration
                 typeof(AdminGetAllSubscriptionsRequest).Assembly,
                 typeof(GetUserSubscriptionRequest).Assembly,
                 typeof(SubscribeToPlanRequest).Assembly,
-                typeof(CancelSubscriptionRequest).Assembly
+                typeof(CancelSubscriptionRequest).Assembly,
+                typeof(AdministrativeAreasEvaluateRequest).Assembly,
+                typeof(CreateSafeRouteRequest).Assembly,
+                typeof(FDAAPI.App.FeatG76_LogPrediction.LogPredictionRequest).Assembly,
+                typeof(FDAAPI.App.FeatG77_GetPredictionComparisons.GetPredictionComparisonsRequest).Assembly,
+                typeof(FDAAPI.App.FeatG78_GetPredictionAccuracyStats.GetPredictionAccuracyStatsRequest).Assembly
             };
 
             // Register MediatR with all feature assemblies and ValidationBehavior
@@ -291,10 +310,9 @@ namespace FDAAPI.Infra.Configuration
             {
                 options.UseNpgsql(connectionString, x =>
                 {
-                    if (envName == "UAT")
-                    {
-                        x.MigrationsHistoryTable("__EFMigrationsHistory", "uat_schema");
-                    }
+                    // UAT uses separate database FDA_UAT with public schema (default)
+                    // Migration history table will be in public schema by default
+                    // No need to specify schema
                 });
             });
 
@@ -327,6 +345,7 @@ namespace FDAAPI.Infra.Configuration
             services.AddScoped<IUserPreferenceRepository, PgsqlUserPreferenceRepository>();
 
             services.AddScoped<IAreaRepository, PgsqlAreaRepository>();
+            services.AddScoped<IPredictionLogRepository, PgsqlPredictionLogRepository>();
 
             services.AddScoped<ISensorHourlyAggRepository, PgsqlSensorHourlyAggRepository>();
             services.AddScoped<ISensorDailyAggRepository, PgsqlSensorDailyAggRepository>();
@@ -344,6 +363,11 @@ namespace FDAAPI.Infra.Configuration
             services.AddScoped<FrequencyAggregationBackgroundJob>();
             services.AddScoped<SeverityAggregationBackgroundJob>();
             services.AddScoped<HotspotAggregationBackgroundJob>();
+
+            // Prediction verification background job (for Hangfire)
+            // Note: VerifyPredictionsRunner is registered in Presentation layer, not here
+
+            services.AddScoped<IOtpSender, OtpSender>();
 
             return services;
         }
@@ -471,6 +495,9 @@ namespace FDAAPI.Infra.Configuration
 
             if (!string.IsNullOrEmpty(connectionString))
             {
+                // Use "hangfire" schema for all environments
+                // Since UAT now has its own separate database, we can use the same schema name
+                // This keeps the configuration simple and consistent
                 services.AddHangfire(config => config
                     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
                     .UseSimpleAssemblyNameTypeSerializer()

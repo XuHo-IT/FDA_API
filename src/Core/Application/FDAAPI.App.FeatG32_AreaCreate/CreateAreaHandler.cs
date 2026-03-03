@@ -16,15 +16,18 @@ namespace FDAAPI.App.FeatG32_AreaCreate
         private readonly IAreaRepository _areaRepository;
         private readonly IAreaMapper _areaMapper;
         private readonly IUserAlertSubscriptionRepository _subscriptionRepo;
+        private readonly IStationRepository _stationRepository;
 
         public CreateAreaHandler(
-            IAreaRepository areaRepository, 
+            IAreaRepository areaRepository,
             IAreaMapper areaMapper,
-            IUserAlertSubscriptionRepository subscriptionRepository)
+            IUserAlertSubscriptionRepository subscriptionRepository,
+            IStationRepository stationRepository)
         {
             _areaRepository = areaRepository;
             _areaMapper = areaMapper;
             _subscriptionRepo = subscriptionRepository;
+            _stationRepository = stationRepository;
         }
 
         public async Task<CreateAreaResponse> Handle(CreateAreaRequest request, CancellationToken ct)
@@ -85,6 +88,24 @@ namespace FDAAPI.App.FeatG32_AreaCreate
                         StatusCode = AreaStatusCode.Conflict
                     };
                 }
+            }
+
+            // ===== BUSINESS RULE 4: Station Coverage Check =====
+            var stationsInArea = await _stationRepository
+                .GetStationsWithinRadiusAsync(
+                    request.Latitude,
+                    request.Longitude,
+                    request.RadiusMeters,
+                    ct);
+
+            if (stationsInArea == null || stationsInArea.Count == 0)
+            {
+                return new CreateAreaResponse
+                {
+                    Success = false,
+                    Message = "Cannot create area: No active monitoring stations found within the specified radius. Please choose a location with station coverage.",
+                    StatusCode = AreaStatusCode.UnprocessableEntity
+                };
             }
 
             // ===== CREATE AREA (Existing Logic) =====
