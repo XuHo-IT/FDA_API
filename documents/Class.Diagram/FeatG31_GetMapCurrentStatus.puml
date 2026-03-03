@@ -1,0 +1,198 @@
+@startuml FeatG31_GetMapCurrentStatus
+title Feature G31 - Get Map Current Status
+
+' Style Definitions
+skinparam componentStyle uml2
+skinparam classAttributeIconSize 0
+skinparam handwritten false
+skinparam linetype ortho
+
+' Color Palette
+!define PRESENTATION_COLOR #E1D5E7
+!define APPLICATION_COLOR #D5E8D4
+!define DOMAIN_ENTITY_COLOR #F8CECC
+!define DOMAIN_REPO_COLOR #FFE6CC
+!define COMMON_COLOR #E1D5E7
+
+skinparam package {
+    BackgroundColor<<Presentation>> PRESENTATION_COLOR
+    BackgroundColor<<Application>> APPLICATION_COLOR
+    BackgroundColor<<Domain_Entities>> DOMAIN_ENTITY_COLOR
+    BackgroundColor<<Domain_Repositories>> DOMAIN_REPO_COLOR
+    BackgroundColor<<Common>> COMMON_COLOR
+}
+
+' 1. PRESENTATION LAYER
+package "Presentation Layer" <<Presentation>> {
+    class GetMapCurrentStatusEndpoint <<Endpoint>> {
+        - _mediator: IMediator
+        + Configure(): void
+        + HandleAsync(req: GetMapCurrentStatusRequestDto, ct: CancellationToken): Task
+    }
+
+    class GetMapCurrentStatusRequestDto <<DTO>> {
+        + MinLat: decimal?
+        + MaxLat: decimal?
+        + MinLng: decimal?
+        + MaxLng: decimal?
+        + Status: string?
+    }
+
+    class GetMapCurrentStatusResponseDto <<DTO>> {
+        + Success: bool
+        + Message: string
+        + Data: GeoJsonFeatureCollection?
+    }
+}
+
+' 2. APPLICATION LAYER
+package "Application Layer" <<Application>> {
+    class GetMapCurrentStatusRequest <<Record>> {
+        + MinLat: decimal?
+        + MaxLat: decimal?
+        + MinLng: decimal?
+        + MaxLng: decimal?
+        + Status: string?
+    }
+
+    class GetMapCurrentStatusResponse <<Class>> {
+        + Success: bool
+        + Message: string
+        + StatusCode: Enum
+        + Data: GeoJsonFeatureCollection?
+    }
+
+    class GetMapCurrentStatusHandler <<Handler>> {
+        - _stationRepository: IStationRepository
+        - _dbContext: AppDbContext
+        + Handle(request: GetMapCurrentStatusRequest, ct: CancellationToken): Task<GetMapCurrentStatusResponse>
+        - CalculateFloodSeverity(waterLevel: double): (string, int)
+        - GetMarkerColor(severityLevel: int): string
+        - GetAlertLevel(severityLevel: int): string
+    }
+
+    interface "IRequestHandler<GetMapCurrentStatusRequest, GetMapCurrentStatusResponse>" as IRequestHandler
+
+    ' Nested Models (GeoJSON)
+    class GeoJsonFeatureCollection <<Class>> {
+        + Type: string
+        + Features: List<GeoJsonFeature>
+        + Metadata: object
+    }
+
+    class GeoJsonFeature <<Class>> {
+        + Type: string
+        + Geometry: GeoJsonGeometry
+        + Properties: object
+    }
+
+    class GeoJsonGeometry <<Class>> {
+        + Type: string
+        + Coordinates: double[]
+    }
+}
+
+' 3. DOMAIN LAYER - ENTITIES
+package "Domain Layer - Entities" <<Domain_Entities>> {
+    class Station <<Entity>> {
+        + Id: Guid
+        + Code: string
+        + Name: string
+        + LocationDesc: string
+        + Latitude: decimal?
+        + Longitude: decimal?
+        + RoadName: string
+        + Direction: string
+        + Status: string
+        + ThresholdWarning: decimal?
+        + ThresholdCritical: decimal?
+        + AdministrativeAreaId: Guid?
+        + InstalledAt: DateTimeOffset?
+        + LastSeenAt: DateTimeOffset?
+        + CreatedBy: Guid
+        + CreatedAt: DateTime
+        + UpdatedBy: Guid
+        + UpdatedAt: DateTime
+        + AdministrativeArea: AdministrativeArea?
+    }
+
+    class SensorReading <<Entity>> {
+        + Id: Guid
+        + StationId: Guid
+        + Value: double
+        + Distance: double
+        + SensorHeight: double
+        + Unit: string
+        + Status: int
+        + MeasuredAt: DateTime
+        + CreatedBy: Guid
+        + CreatedAt: DateTime
+        + UpdatedBy: Guid
+        + UpdatedAt: DateTime
+        + Station: Station?
+    }
+}
+
+' 4. DOMAIN LAYER - REPOSITORIES
+package "Domain Layer - Repositories" <<Domain_Repositories>> {
+    interface IStationRepository <<Interface>> {
+        + GetByIdAsync(id: Guid, ct: CancellationToken): Task<Station?>
+        + CreateAsync(entity: Station, ct: CancellationToken): Task<Guid>
+        + UpdateAsync(entity: Station, ct: CancellationToken): Task<bool>
+        + DeleteAsync(id: Guid, ct: CancellationToken): Task<bool>
+        + ListAsync(skip: int, take: int, ct: CancellationToken): Task<IEnumerable<Station>>
+        + GetStationsAsync(searchTerm: string, status: string, pageNumber: int, pageSize: int, ct: CancellationToken): Task<(IEnumerable<Station>, int)>
+        + GetAllAsync(ct: CancellationToken): Task<List<Station>>
+        + GetStationsWithinRadiusAsync(latitude: decimal, longitude: decimal, radiusMeters: int, ct: CancellationToken): Task<List<Station>>
+    }
+}
+
+' 5. COMMON SERVICES
+package "Common Services" <<Common>> {
+    interface IMediator <<Interface>> {
+        + Send(request: IRequest, ct: CancellationToken): Task<TResponse>
+    }
+    
+    class AppDbContext <<DbContext>> {
+        + Stations: DbSet<Station>
+        + SensorReadings: DbSet<SensorReading>
+    }
+}
+
+' Relationships
+GetMapCurrentStatusEndpoint ..> IMediator : uses
+GetMapCurrentStatusEndpoint ..> GetMapCurrentStatusRequest : creates
+GetMapCurrentStatusEndpoint ..> GetMapCurrentStatusRequestDto : uses
+GetMapCurrentStatusEndpoint ..> GetMapCurrentStatusResponseDto : returns
+
+GetMapCurrentStatusHandler ..|> IRequestHandler
+GetMapCurrentStatusHandler ..> IStationRepository : uses
+GetMapCurrentStatusHandler ..> AppDbContext : uses
+GetMapCurrentStatusHandler ..> GetMapCurrentStatusRequest : uses
+GetMapCurrentStatusHandler ..> GetMapCurrentStatusResponse : returns
+
+GetMapCurrentStatusResponse *-- GeoJsonFeatureCollection
+GetMapCurrentStatusResponseDto *-- GeoJsonFeatureCollection
+GeoJsonFeatureCollection *-- GeoJsonFeature
+GeoJsonFeature *-- GeoJsonGeometry
+
+SensorReading "many" -- "1" Station : belongs to
+
+' Legend
+legend bottom left
+    | Color | Layer |
+    | <#E1D5E7> | Presentation Layer |
+    | <#D5E8D4> | Application Layer |
+    | <#F8CECC> | Domain Entities |
+    | <#FFE6CC> | Domain Repositories |
+    | <#E1D5E7> | Common Services |
+
+    | Symbol | Meaning |
+    | ..> | Dependency / Uses |
+    | ..|> | Implements |
+    | *-- | Composition |
+    | -- | Association |
+endlegend
+
+@enduml
+

@@ -331,8 +331,8 @@ namespace FDAAPI.Infra.Configuration
             services.AddScoped<IPriorityRoutingService, PriorityRoutingService>();
             services.AddScoped<INotificationTemplateService, NotificationTemplateService>();
             services.AddScoped<INotificationDispatchService, NotificationDispatchService>();
-            //services.AddScoped<IPushNotificationService, PushNotificationService>();
-            services.AddScoped<IPushNotificationService, MockPushNotificationService>();
+            services.AddScoped<IPushNotificationService, PushNotificationService>();
+            //services.AddScoped<IPushNotificationService, MockPushNotificationService>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<ISmsService, SmsService>();
             services.AddScoped<IAlertCooldownConfigRepository, PgsqlAlertCooldownConfigRepository>();

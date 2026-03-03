@@ -28,6 +28,12 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat7_AuthLogin.DTO
         /// Device information (optional, for tracking)
         /// </summary>
         public string? DeviceInfo { get; set; }
+
+        /// <summary>
+        /// Firebase Cloud Messaging token (FCM) for push notifications
+        /// Mobile app should send this token after getting it from Firebase
+        /// </summary>
+        public string? FcmToken { get; set; }
     }
 }
 

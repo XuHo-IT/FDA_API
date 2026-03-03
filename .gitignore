@@ -15,6 +15,9 @@ appsetting.json
 appsettings.json
 appsettings.Development.json
 
+# Firebase service account file
+firebase-service-account.json
+
 # vscode dir
 .vscode/
 
