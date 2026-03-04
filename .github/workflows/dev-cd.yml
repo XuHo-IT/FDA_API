@@ -36,8 +36,20 @@ jobs:
           script: |
             set -e
             cd /home/dev/FDA_API
+
+            # 1. Update code
             git fetch origin
             git reset --hard origin/dev
-            docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
-            docker compose -p fda_dev --env-file .env -f docker-compose.dev.yml up -d --build --remove-orphans
-            docker image prune -f
+
+            # 2. Log in and drag the new image to the front (to reduce downtime).
+            echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+            docker compose -f docker-compose.dev.yml pull
+
+            # 3.Deploy
+            docker compose -p fda_dev --env-file .env -f docker-compose.dev.yml up -d --remove-orphans --force-recreate
+
+            # 4.Remove "dangling" images (those without tags) and build cache unnecessary files.
+            docker system prune -f
+
+            # 5. Delete all old images that have been replaced by 'latest'.
+            docker image prune -a -f --filter "until=24h"
