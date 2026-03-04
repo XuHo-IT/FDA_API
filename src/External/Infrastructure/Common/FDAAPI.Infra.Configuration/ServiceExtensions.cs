@@ -50,6 +50,7 @@ using FDAAPI.App.FeatG50_GetJobStatus;
 using FDAAPI.App.FeatG51_GetFrequencyAnalytics;
 using FDAAPI.App.FeatG52_GetSeverityAnalytics;
 using FDAAPI.App.FeatG53_GetHotspotRankings;
+using FDAAPI.App.FeatG79_FloodReportCreate;
 using FDAAPI.App.FeatG57_AdministrativeAreaCreate;
 using FDAAPI.App.FeatG58_AdministrativeAreaList;
 using FDAAPI.App.FeatG59_AdministrativeAreaGet;
@@ -75,6 +76,7 @@ using FDAAPI.App.FeatG9_AuthLogout;
 using FDAAPI.Domain.RelationalDb.RealationalDB;
 using FDAAPI.Domain.RelationalDb.Repositories;
 using FDAAPI.Infra.Persistence.Repositories;
+using FDAAPI.Infra.Services.Media;
 using FDAAPI.Infra.Services.Aggregation;
 using FDAAPI.Infra.Services.Alerts;
 using FDAAPI.Infra.Services.Auth;
@@ -98,6 +100,14 @@ using System.Text;
 using FDAAPI.App.FeatG74_RequestSafeRoute;
 using FDAAPI.Infra.Services.Routing;
 using FDAAPI.App.FeatG5_AuthResetPassword;
+using FDAAPI.App.FeatG83_FloodReportList;
+using FDAAPI.App.FeatG76_LogPrediction;
+using FDAAPI.App.FeatG77_GetPredictionComparisons;
+using FDAAPI.App.FeatG78_GetPredictionAccuracyStats;
+using FDAAPI.App.FeatG81_FloodReportGet;
+using FDAAPI.App.FeatG82_FloodReportUpdate;
+using FDAAPI.App.FeatG85_FloodReportDelete;
+using FDAAPI.App.FeatG84_FloodReportGetNearby;
 
 namespace FDAAPI.Infra.Configuration
 {
@@ -207,6 +217,8 @@ namespace FDAAPI.Infra.Configuration
 
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
+
+            // Register all feature assemblies including FE-25 flood report endpoints
             var assemblies = new[]
             {
                 typeof(VerifyAndUpdatePhoneRequest).Assembly,
@@ -281,9 +293,15 @@ namespace FDAAPI.Infra.Configuration
                 typeof(CancelSubscriptionRequest).Assembly,
                 typeof(AdministrativeAreasEvaluateRequest).Assembly,
                 typeof(CreateSafeRouteRequest).Assembly,
-                typeof(FDAAPI.App.FeatG76_LogPrediction.LogPredictionRequest).Assembly,
-                typeof(FDAAPI.App.FeatG77_GetPredictionComparisons.GetPredictionComparisonsRequest).Assembly,
-                typeof(FDAAPI.App.FeatG78_GetPredictionAccuracyStats.GetPredictionAccuracyStatsRequest).Assembly
+                typeof(LogPredictionRequest).Assembly,
+                typeof(GetPredictionComparisonsRequest).Assembly,
+                typeof(GetPredictionAccuracyStatsRequest).Assembly,
+                typeof(CreateFloodReportRequest).Assembly,
+                typeof(ListFloodReportsRequest).Assembly,
+                typeof(GetFloodReportRequest).Assembly,
+                typeof(UpdateFloodReportRequest).Assembly,
+                typeof(DeleteFloodReportRequest).Assembly,
+                typeof(GetNearbyFloodReportsRequest).Assembly
             };
 
             // Register MediatR with all feature assemblies and ValidationBehavior
@@ -297,6 +315,7 @@ namespace FDAAPI.Infra.Configuration
             services.AddValidatorsFromAssemblies(assemblies);
 
             services.AddHttpClient<IImageStorageService, ImageKitService>();
+            services.AddScoped<IVideoStorageService, CloudinaryVideoService>();
             services.AddScoped<IImageUploadPolicy, ImageUploadPolicy>();
             return services;
         }
@@ -346,6 +365,8 @@ namespace FDAAPI.Infra.Configuration
 
             services.AddScoped<IAreaRepository, PgsqlAreaRepository>();
             services.AddScoped<IPredictionLogRepository, PgsqlPredictionLogRepository>();
+            services.AddScoped<IFloodReportRepository, PgsqlFloodReportRepository>();
+            services.AddScoped<IFloodReportMediaRepository, PgsqlFloodReportMediaRepository>();
 
             services.AddScoped<ISensorHourlyAggRepository, PgsqlSensorHourlyAggRepository>();
             services.AddScoped<ISensorDailyAggRepository, PgsqlSensorDailyAggRepository>();
@@ -366,7 +387,6 @@ namespace FDAAPI.Infra.Configuration
 
             // Prediction verification background job (for Hangfire)
             // Note: VerifyPredictionsRunner is registered in Presentation layer, not here
-
             services.AddScoped<IOtpSender, OtpSender>();
 
             return services;

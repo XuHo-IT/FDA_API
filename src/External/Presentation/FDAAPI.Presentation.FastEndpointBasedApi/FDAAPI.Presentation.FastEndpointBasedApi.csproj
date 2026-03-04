@@ -100,6 +100,12 @@
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG64_FloodEventGet\FDAAPI.App.FeatG64_FloodEventGet.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG65_FloodEventUpdate\FDAAPI.App.FeatG65_FloodEventUpdate.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG66_FloodEventDelete\FDAAPI.App.FeatG66_FloodEventDelete.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG79_FloodReportCreate\FDAAPI.App.FeatG79_FloodReportCreate.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG81_FloodReportGet\FDAAPI.App.FeatG81_FloodReportGet.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG82_FloodReportUpdate\FDAAPI.App.FeatG82_FloodReportUpdate.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG83_FloodReportList\FDAAPI.App.FeatG83_FloodReportList.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG84_FloodReportGetNearby\FDAAPI.App.FeatG84_FloodReportGetNearby.csproj" />
+    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG85_FloodReportDelete\FDAAPI.App.FeatG85_FloodReportDelete.csproj" />
   </ItemGroup>
 
 </Project>
