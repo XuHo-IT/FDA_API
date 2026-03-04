@@ -8,7 +8,16 @@ namespace FDAAPI.App.FeatG7_AuthLogin
     /// 1. Phone + OTP (for Citizens)
     /// 2. Email + Password (for Admin/Gov)
     /// </summary>
-    public sealed record LoginRequest(string? Identifier,string? PhoneNumber, string? OtpCode,string? Email, string? Password, string? DeviceInfo, string? IpAddress) : IFeatureRequest<LoginResponse>;
+    public sealed record LoginRequest(
+        string? Identifier,
+        string? PhoneNumber,
+        string? OtpCode,
+        string? Email,
+        string? Password,
+        string? DeviceInfo,
+        string? IpAddress,
+        string? FcmToken
+    ) : IFeatureRequest<LoginResponse>;
 }
 
 

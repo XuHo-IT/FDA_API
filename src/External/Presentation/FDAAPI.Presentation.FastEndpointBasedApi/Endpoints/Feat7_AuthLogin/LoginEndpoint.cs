@@ -63,7 +63,16 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat7_AuthLogin{
         {
             try
             {
-                var command = new LoginRequest(req.Identifier, null, req.OtpCode, null, req.Password, req.DeviceInfo, HttpContext.Connection.RemoteIpAddress?.ToString());
+                var command = new LoginRequest(
+                    req.Identifier,
+                    null,
+                    req.OtpCode,
+                    null,
+                    req.Password,
+                    req.DeviceInfo,
+                    HttpContext.Connection.RemoteIpAddress?.ToString(),
+                    req.FcmToken
+                );
 
                 var result = await _mediator.Send(command, ct);
 
