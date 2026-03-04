@@ -1,9 +1,8 @@
 services:
   fdaapi:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: xuhoit/fda_api-fdaapi:latest 
     container_name: fda_api_dev
+    pull_policy: always
     ports:
       - "5232:8080"
     env_file: 
