@@ -17,7 +17,7 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.Endpoints.Feat31_GetMapCurren
 
         public override void Configure()
         {
-            Get("/api/map/current-status");
+            Get("/api/v1/map/current-status");
             AllowAnonymous();
             Summary(s => {
                 s.Summary = "Get current flood status of all stations";
