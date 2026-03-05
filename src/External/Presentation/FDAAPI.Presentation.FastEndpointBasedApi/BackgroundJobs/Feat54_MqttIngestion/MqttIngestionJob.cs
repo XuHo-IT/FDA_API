@@ -1,4 +1,5 @@
 ﻿using FDAAPI.App.FeatG1_SensorReadingCreate;
+using FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.Feat54_MqttIngestion.Services;
 using MediatR;
 using Microsoft.AspNetCore.SignalR;
 using MQTTnet;
@@ -150,6 +151,19 @@ namespace FDAAPI.Presentation.FastEndpointBasedApi.BackgroundJobs.Feat54_MqttIng
                             "Failed to save sensor reading. Station: {StationId}, Error: {Message}",
                             stationId,
                             result.Message
+                        );
+                    }
+                    else
+                    {
+                        // Broadcast real-time update via SignalR
+                        var realtimeService = scope.ServiceProvider.GetRequiredService<IRealtimeMapService>();
+                        await realtimeService.BroadcastSensorUpdateAsync(
+                            stationId,
+                            sensorData.WaterLevel,
+                            sensorData.Distance,
+                            sensorData.SensorHeight,
+                            sensorData.Status,
+                            measuredAt
                         );
                     }
                 }
