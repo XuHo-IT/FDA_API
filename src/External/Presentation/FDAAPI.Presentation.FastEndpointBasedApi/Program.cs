@@ -84,16 +84,9 @@ builder.Services.AddCors(options =>
     options.AddPolicy("CorsPolicy", builder =>
     {
 
-        builder.WithOrigins(
-                    "https://uat.fda.id.vn",
-                    "http://localhost:3000",
-                    "http://localhost:5173",
-                    "http://localhost:4200",
-                    "https://fda-website.vercel.app"
-               )
+        builder.AllowAnyOrigin()
                .AllowAnyMethod()
-               .AllowAnyHeader()
-               .AllowCredentials();
+               .AllowAnyHeader();
     });
 });
 
