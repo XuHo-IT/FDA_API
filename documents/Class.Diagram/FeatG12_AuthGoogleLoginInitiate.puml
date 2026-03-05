@@ -1,0 +1,148 @@
+@startuml FeatG12_AuthGoogleLoginInitiate_ClassDiagram
+!define RECTANGLE class
+
+skinparam backgroundColor #FEFEFE
+skinparam classBackgroundColor #FFFFFF
+skinparam classBorderColor #000000
+skinparam packageBackgroundColor #E8E8E8
+skinparam packageBorderColor #666666
+skinparam stereotypeCBackgroundColor #ADD1B2
+skinparam arrowColor #333333
+
+title FeatG12_AuthGoogleLoginInitiate - Class Diagram\n(Domain-Centric Architecture + CQRS Pattern)
+
+' ============================================
+' PRESENTATION LAYER
+' ============================================
+package "PRESENTATION LAYER" #E1D5E7 {
+  class GoogleLoginInitiateEndpoint <<Endpoint>> {
+    - _mediator: IMediator
+    --
+    + Configure(): void
+    + HandleAsync(req: GoogleLoginInitiateRequestDto, ct: CancellationToken): Task
+  }
+
+  class GoogleLoginInitiateRequestDto <<DTO>> {
+    + ReturnUrl: string?
+  }
+
+  class GoogleLoginInitiateResponseDto <<DTO>> {
+    + Success: bool
+    + Message: string?
+    + AuthorizationUrl: string?
+    + State: string?
+  }
+
+  GoogleLoginInitiateEndpoint --> GoogleLoginInitiateRequestDto : uses
+  GoogleLoginInitiateEndpoint --> GoogleLoginInitiateResponseDto : returns
+}
+
+' ============================================
+' APPLICATION LAYER
+' ============================================
+package "APPLICATION LAYER" #D5E8D4 {
+  class GoogleLoginInitiateRequest <<Record>> {
+    + ReturnUrl: string?
+  }
+
+  class GoogleLoginInitiateResponse <<Response>> {
+    + Success: bool
+    + Message: string
+    + AuthorizationUrl: string
+    + State: string
+  }
+
+  class GoogleLoginInitiateHandler <<Handler>> {
+    - _googleOAuthService: IGoogleOAuthService
+    - _stateCache: IStateCache
+    --
+    + Handle(request: GoogleLoginInitiateRequest, ct): Task<GoogleLoginInitiateResponse>
+  }
+
+  class GoogleLoginInitiateRequestValidator <<Validator>> {
+    --
+    + GoogleLoginInitiateRequestValidator()
+  }
+
+  interface IRequestHandler {
+    + Handle(request, ct): Task<Response>
+  }
+
+  GoogleLoginInitiateHandler ..|> IRequestHandler : implements
+  GoogleLoginInitiateHandler --> GoogleLoginInitiateRequest : handles
+  GoogleLoginInitiateHandler --> GoogleLoginInitiateResponse : returns
+  GoogleLoginInitiateRequestValidator --> GoogleLoginInitiateRequest : validates
+}
+
+' ============================================
+' DOMAIN LAYER - Entities & Repositories
+' ============================================
+package "DOMAIN LAYER - Entities" #F8CECC {
+  class User <<Entity>> {
+    + Id: Guid
+    + Email: string
+    + FullName: string?
+    + AvatarUrl: string?
+    + Provider: string?
+    + Status: string?
+    + CreatedAt: DateTime
+    + UpdatedAt: DateTime
+  }
+}
+
+package "DOMAIN LAYER - Repositories" #FFE6CC {
+  interface IStateCache <<Interface>> {
+    + SetStateAsync(state: string, returnUrl: string?, ttl: TimeSpan, ct): Task
+    + GetStateAsync(state: string, ct): Task<string?>
+    + RemoveStateAsync(state: string, ct): Task
+  }
+}
+
+' ============================================
+' COMMON SERVICES
+' ============================================
+package "COMMON SERVICES" #E1D5E7 {
+  interface IMediator <<Interface>> {
+    + Send<TResponse>(request, ct): Task<TResponse>
+  }
+
+  interface IGoogleOAuthService <<Interface>> {
+    + GenerateAuthorizationUrl(state: string): string
+  }
+
+  interface IFeatureRequest <<Interface>> { }
+  interface IFeatureResponse <<Interface>> { }
+
+  GoogleLoginInitiateRequest ..|> IFeatureRequest
+  GoogleLoginInitiateResponse ..|> IFeatureResponse
+}
+
+' ============================================
+' RELATIONSHIPS
+' ============================================
+GoogleLoginInitiateEndpoint ..> IMediator : uses
+GoogleLoginInitiateEndpoint ..> GoogleLoginInitiateRequest : sends
+GoogleLoginInitiateHandler ..> IGoogleOAuthService : uses
+GoogleLoginInitiateHandler ..> IStateCache : uses
+
+GoogleLoginInitiateRequestDto ..> GoogleLoginInitiateRequest : maps to
+GoogleLoginInitiateResponseDto ..> GoogleLoginInitiateResponse : maps from
+
+' ============================================
+' LEGEND
+' ============================================
+legend bottom left
+  | Color | Layer |
+  | #E1D5E7 | Presentation Layer & Common Services |
+  | #D5E8D4 | Application Layer |
+  | #F8CECC | Domain Entities |
+  | #FFE6CC | Domain Repositories |
+  | | |
+  | Line Style | Meaning |
+  | --> | Dependency |
+  | ..> | Uses/Sends |
+  | ..\|> | Implements |
+  | *-- | Composition |
+endlegend
+
+@enduml

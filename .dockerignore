@@ -1,0 +1,63 @@
+# Build artifacts
+**/bin/
+**/obj/
+**/out/
+
+# Visual Studio files
+**/.vs/
+**/.vscode/
+**/*.user
+**/*.suo
+**/*.userosscache
+**/*.sln.docstates
+
+# Test results
+**/TestResults/
+**/*.trx
+**/*.coverage
+
+# NuGet packages
+**/*.nupkg
+**/packages/
+**/.nuget/
+
+# Docker files
+**/Dockerfile*
+**/docker-compose*.yml
+**/.dockerignore
+
+# Git
+**/.git/
+**/.gitignore
+**/.gitattributes
+
+# IDE
+**/.idea/
+**/*.swp
+**/*.swo
+**/*~
+
+# OS files
+**/.DS_Store
+**/Thumbs.db
+
+# Logs
+**/*.log
+
+# Environment files
+**/.env
+**/.env.local
+**/.env.*.local
+**/.env.*
+
+# GitHub workflows (not needed in container)
+**/.github/
+
+# Documentation
+**/README.md
+**/docs/
+
+# Temporary files
+**/tmp/
+**/temp/
+

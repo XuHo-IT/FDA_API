@@ -1,0 +1,99 @@
+
+@startuml FE08_ListStationFloodConditions_Updated
+title FE08 - List Station Flood Conditions (Updated)
+
+actor User
+participant UI
+participant StationFloodConditionsEndpoint
+participant MediatR
+participant StationFloodConditionsHandler
+participant ExternalRepo
+participant ExternalService
+database Database
+
+User -> UI: 1. Open "Stations Flood Conditions" screen
+UI -> StationFloodConditionsEndpoint: 2. GET /api/v1/stations/conditions
+StationFloodConditionsEndpoint -> MediatR: 3. Send(StationFloodConditionsRequest)
+MediatR -> StationFloodConditionsHandler: 4. Handle(request)
+
+StationFloodConditionsHandler -> ExternalRepo: 5. GetStations(bounds, status)
+ExternalRepo -> Database: 6. SELECT stations WHERE in bounds AND status
+Database --> ExternalRepo: 7. Station list
+ExternalRepo --> StationFloodConditionsHandler: 8. Stations
+
+StationFloodConditionsHandler -> ExternalRepo: 9. GetLatestWaterLevels(stationIds)
+ExternalRepo -> Database: 10. SELECT latest readings per station
+Database --> ExternalRepo: 11. Water levels
+ExternalRepo --> StationFloodConditionsHandler: 12. Water levels
+
+StationFloodConditionsHandler -> ExternalService: 13. ComputeSeverity(stations, levels)
+ExternalService --> StationFloodConditionsHandler: 14. Severity results
+
+StationFloodConditionsHandler -> StationFloodConditionsHandler: 15. Build StationFloodConditionDto list
+
+alt [No stations found]
+    StationFloodConditionsHandler --> MediatR: 16. Response { success: true, total: 0, items: [] }
+else [Stations found]
+    StationFloodConditionsHandler --> MediatR: 17. Response { success: true, total > 0, items }
+end
+
+MediatR --> StationFloodConditionsEndpoint: 18. Response
+StationFloodConditionsEndpoint --> UI: 19. HTTP 200 + JSON
+UI --> User: 20. Show markers and list
+
+@enduml
+
+
+
+@startuml FE08_StationFloodConditionDetail_Updated
+title FE08 - Station Flood Condition Detail (Updated)
+
+actor User
+participant UI
+participant StationFloodConditionDetailEndpoint
+participant MediatR
+participant StationFloodConditionDetailHandler
+participant ExternalRepo
+participant ExternalService
+database Database
+
+User -> UI: 1. Tap on station marker
+UI -> StationFloodConditionDetailEndpoint: 2. GET /api/v1/stations/{id}/condition
+StationFloodConditionDetailEndpoint -> MediatR: 3. Send(StationFloodConditionDetailRequest)
+MediatR -> StationFloodConditionDetailHandler: 4. Handle(request)
+
+StationFloodConditionDetailHandler -> ExternalRepo: 5. GetStationById(stationId)
+ExternalRepo -> Database: 6. SELECT station WHERE id = stationId
+Database --> ExternalRepo: 7. Station or null
+ExternalRepo --> StationFloodConditionDetailHandler: 8. Station or null
+
+alt [Station not found]
+    StationFloodConditionDetailHandler --> MediatR: 9. Response { success: false, statusCode: 404 }
+    MediatR --> StationFloodConditionDetailEndpoint: 10. Error response
+    StationFloodConditionDetailEndpoint --> UI: 11. 404 Not Found
+    UI --> User: 12. Show "Station not found"
+else [Station found]
+    StationFloodConditionDetailHandler -> ExternalRepo: 13. GetRecentWaterLevels(stationId)
+    ExternalRepo -> Database: 14. SELECT latest N readings
+    Database --> ExternalRepo: 15. Readings
+    ExternalRepo --> StationFloodConditionDetailHandler: 16. Readings
+
+    StationFloodConditionDetailHandler -> ExternalRepo: 17. GetLatestAlertForStation(stationId)
+    ExternalRepo -> Database: 18. SELECT last alert
+    Database --> ExternalRepo: 19. Alert (optional)
+    ExternalRepo --> StationFloodConditionDetailHandler: 20. Alert (optional)
+
+    StationFloodConditionDetailHandler -> ExternalService: 21. ComputeSeverity(station, readings, alert)
+    ExternalService --> StationFloodConditionDetailHandler: 22. Severity result
+
+    StationFloodConditionDetailHandler -> StationFloodConditionDetailHandler: 23. Build StationFloodConditionDetailDto
+
+    StationFloodConditionDetailHandler --> MediatR: 24. Response { success: true, data }
+    MediatR --> StationFloodConditionDetailEndpoint: 25. Success response
+    StationFloodConditionDetailEndpoint --> UI: 26. 200 OK + JSON payload
+    UI --> User: 27. Show station detail popup
+end
+
+@enduml
+
+

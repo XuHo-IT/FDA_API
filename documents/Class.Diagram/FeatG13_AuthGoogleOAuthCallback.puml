@@ -1,0 +1,264 @@
+@startuml FeatG13_AuthGoogleOAuthCallback_ClassDiagram
+!define RECTANGLE class
+
+skinparam backgroundColor #FEFEFE
+skinparam classBackgroundColor #FFFFFF
+skinparam classBorderColor #000000
+skinparam packageBackgroundColor #E8E8E8
+skinparam packageBorderColor #666666
+skinparam stereotypeCBackgroundColor #ADD1B2
+skinparam arrowColor #333333
+
+title FeatG13_AuthGoogleOAuthCallback - Class Diagram\n(Domain-Centric Architecture + CQRS Pattern)
+
+' ============================================
+' PRESENTATION LAYER
+' ============================================
+package "PRESENTATION LAYER" #E1D5E7 {
+  class GoogleOAuthCallbackEndpoint <<Endpoint>> {
+    - _mediator: IMediator
+    --
+    + Configure(): void
+    + HandleAsync(req: GoogleOAuthCallbackRequestDto, ct: CancellationToken): Task
+  }
+
+  class GoogleOAuthCallbackRequestDto <<DTO>> {
+    + Code: string
+    + State: string
+  }
+
+  class GoogleOAuthCallbackResponseDto <<DTO>> {
+    + Success: bool
+    + Message: string
+    + AccessToken: string
+    + RefreshToken: string
+    + ExpiresAt: DateTime
+    + User: UserDto?
+    + ReturnUrl: string?
+  }
+
+  class UserDto <<DTO>> {
+    + Id: Guid
+    + Email: string
+    + FullName: string?
+    + AvatarUrl: string?
+    + Roles: List<string>
+  }
+
+  GoogleOAuthCallbackEndpoint --> GoogleOAuthCallbackRequestDto : uses
+  GoogleOAuthCallbackEndpoint --> GoogleOAuthCallbackResponseDto : returns
+  GoogleOAuthCallbackResponseDto *-- UserDto : contains
+}
+
+' ============================================
+' APPLICATION LAYER
+' ============================================
+package "APPLICATION LAYER" #D5E8D4 {
+  class GoogleOAuthCallbackRequest <<Record>> {
+    + Code: string
+    + State: string
+  }
+
+  class GoogleOAuthCallbackResponse <<Response>> {
+    + Success: bool
+    + Message: string
+    + AccessToken: string
+    + RefreshToken: string
+    + ExpiresAt: DateTime
+    + User: UserDto?
+    + ReturnUrl: string?
+  }
+
+  class GoogleOAuthCallbackHandler <<Handler>> {
+    - _googleOAuthService: IGoogleOAuthService
+    - _stateCache: IStateCache
+    - _userRepository: IUserRepository
+    - _oauthProviderRepository: IUserOAuthProviderRepository
+    - _roleRepository: IRoleRepository
+    - _userRoleRepository: IUserRoleRepository
+    - _refreshTokenRepository: IRefreshTokenRepository
+    - _jwtTokenService: IJwtTokenService
+    - _userMapper: IUserMapper
+    --
+    + Handle(request: GoogleOAuthCallbackRequest, ct): Task<GoogleOAuthCallbackResponse>
+    - (multiple private steps for exchange, verify, persist)
+  }
+
+  class GoogleOAuthCallbackRequestValidator <<Validator>> {
+    --
+    + GoogleOAuthCallbackRequestValidator()
+  }
+
+  interface IRequestHandler {
+    + Handle(request, ct): Task<Response>
+  }
+
+  GoogleOAuthCallbackHandler ..|> IRequestHandler : implements
+  GoogleOAuthCallbackHandler --> GoogleOAuthCallbackRequest : handles
+  GoogleOAuthCallbackHandler --> GoogleOAuthCallbackResponse : returns
+  GoogleOAuthCallbackRequestValidator --> GoogleOAuthCallbackRequest : validates
+}
+
+' ============================================
+' DOMAIN LAYER - Entities
+' ============================================
+package "DOMAIN LAYER - Entities" #F8CECC {
+  class User <<Entity>> {
+    + Id: Guid
+    + Email: string
+    + FullName: string?
+    + AvatarUrl: string?
+    + Provider: string?
+    + Status: string?
+    + EmailVerifiedAt: DateTime?
+    + LastLoginAt: DateTime?
+    + CreatedAt: DateTime
+    + UpdatedAt: DateTime
+    + UserOAuthProviders: List<UserOAuthProvider>
+    + RefreshTokens: List<RefreshToken>
+  }
+
+  class UserOAuthProvider <<Entity>> {
+    + Id: Guid
+    + UserId: Guid
+    + Provider: string
+    + ProviderUserId: string
+    + Email: string
+    + DisplayName: string
+    + ProfilePictureUrl: string?
+    + LastLoginAt: DateTime?
+    + CreatedAt: DateTime
+    + UpdatedAt: DateTime
+  }
+
+  class Role <<Entity>> {
+    + Id: Guid
+    + Code: string
+    + Name: string
+  }
+
+  class UserRole <<Entity>> {
+    + UserId: Guid
+    + RoleId: Guid
+  }
+
+  class RefreshToken <<Entity>> {
+    + Id: Guid
+    + UserId: Guid
+    + Token: string
+    + ExpiresAt: DateTime
+    + IsRevoked: bool
+    + CreatedAt: DateTime
+    + CreatedBy: Guid
+  }
+
+  User "1" *-- "many" UserOAuthProvider : has
+  User "1" *-- "many" RefreshToken : owns
+  User "1" *-- "many" UserRole : roles
+  Role "1" *-- "many" UserRole : memberships
+}
+
+' ============================================
+' DOMAIN LAYER - Repositories
+' ============================================
+package "DOMAIN LAYER - Repositories" #FFE6CC {
+  interface IUserRepository <<Interface>> {
+    + GetByEmailAsync(email: string, ct): Task<User?>
+    + CreateAsync(user: User, ct): Task
+    + UpdateAsync(user: User, ct): Task
+    + GetUserWithRolesAsync(userId: Guid, ct): Task<User>
+  }
+
+  interface IUserOAuthProviderRepository <<Interface>> {
+    + GetByProviderUserIdAsync(provider: string, providerUserId: string, ct): Task<UserOAuthProvider?>
+    + CreateAsync(entity: UserOAuthProvider, ct): Task
+    + UpdateAsync(entity: UserOAuthProvider, ct): Task
+  }
+
+  interface IRoleRepository <<Interface>> {
+    + GetByCodeAsync(code: string, ct): Task<Role?>
+  }
+
+  interface IUserRoleRepository <<Interface>> {
+    + AssignRoleToUserAsync(userId: Guid, roleId: Guid, ct): Task
+    + GetUserRolesAsync(userId: Guid, ct): Task<List<Role>>
+  }
+
+  interface IRefreshTokenRepository <<Interface>> {
+    + CreateAsync(token: RefreshToken, ct): Task
+  }
+}
+
+' ============================================
+' COMMON SERVICES
+' ============================================
+package "COMMON SERVICES" #E1D5E7 {
+  interface IMediator <<Interface>> {
+    + Send<TResponse>(request, ct): Task<TResponse>
+  }
+
+  interface IGoogleOAuthService <<Interface>> {
+    + GenerateAuthorizationUrl(state: string): string
+    + ExchangeCodeForTokenAsync(code: string, ct): Task<GoogleTokenResponse>
+    + VerifyIdTokenAsync(idToken: string, ct): Task<GoogleUserInfo>
+  }
+
+  interface IStateCache <<Interface>> {
+    + GetStateAsync(state: string, ct): Task<string?>
+    + RemoveStateAsync(state: string, ct): Task
+  }
+
+  interface IJwtTokenService <<Interface>> {
+    + GenerateAccessToken(userId: Guid, email: string, roles: List<string>): string
+    + GenerateRefreshToken(): string
+  }
+
+  interface IUserMapper <<Interface>> {
+    + MapToDto(user: User): UserDto
+  }
+
+  interface IFeatureRequest <<Interface>> { }
+  interface IFeatureResponse <<Interface>> { }
+
+  GoogleOAuthCallbackRequest ..|> IFeatureRequest
+  GoogleOAuthCallbackResponse ..|> IFeatureResponse
+}
+
+' ============================================
+' RELATIONSHIPS
+' ============================================
+GoogleOAuthCallbackEndpoint ..> IMediator : uses
+GoogleOAuthCallbackEndpoint ..> GoogleOAuthCallbackRequest : sends
+
+GoogleOAuthCallbackHandler ..> IGoogleOAuthService : uses
+GoogleOAuthCallbackHandler ..> IStateCache : uses
+GoogleOAuthCallbackHandler ..> IUserRepository : uses
+GoogleOAuthCallbackHandler ..> IUserOAuthProviderRepository : uses
+GoogleOAuthCallbackHandler ..> IRoleRepository : uses
+GoogleOAuthCallbackHandler ..> IUserRoleRepository : uses
+GoogleOAuthCallbackHandler ..> IRefreshTokenRepository : uses
+GoogleOAuthCallbackHandler ..> IJwtTokenService : uses
+GoogleOAuthCallbackHandler ..> IUserMapper : maps
+
+GoogleOAuthCallbackResponseDto ..> GoogleOAuthCallbackResponse : maps from
+GoogleOAuthCallbackRequestDto ..> GoogleOAuthCallbackRequest : maps to
+UserDto ..> User : represents
+
+' ============================================
+' LEGEND
+' ============================================
+legend bottom left
+  | Color | Layer |
+  | #E1D5E7 | Presentation Layer & Common Services |
+  | #D5E8D4 | Application Layer |
+  | #F8CECC | Domain Entities |
+  | #FFE6CC | Domain Repositories |
+  | | |
+  | Line Style | Meaning |
+  | --> | Dependency |
+  | ..> | Uses/Sends |
+  | ..\|> | Implements |
+  | *-- | Composition |
+endlegend
+
+@enduml

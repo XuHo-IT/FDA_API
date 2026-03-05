@@ -1,0 +1,212 @@
+@startuml FeatG34_AreaStatusEvaluate
+title Feature G34 - Area Status Evaluate
+
+' Style Definitions
+skinparam componentStyle uml2
+skinparam classAttributeIconSize 0
+skinparam handwritten false
+skinparam linetype ortho
+
+' Color Palette
+!define PRESENTATION_COLOR #E1D5E7
+!define APPLICATION_COLOR #D5E8D4
+!define DOMAIN_ENTITY_COLOR #F8CECC
+!define DOMAIN_REPO_COLOR #FFE6CC
+!define COMMON_COLOR #E1D5E7
+
+skinparam package {
+    BackgroundColor<<Presentation>> PRESENTATION_COLOR
+    BackgroundColor<<Application>> APPLICATION_COLOR
+    BackgroundColor<<Domain_Entities>> DOMAIN_ENTITY_COLOR
+    BackgroundColor<<Domain_Repositories>> DOMAIN_REPO_COLOR
+    BackgroundColor<<Common>> COMMON_COLOR
+}
+
+' 1. PRESENTATION LAYER
+package "Presentation Layer" <<Presentation>> {
+    class AreaStatusEvaluateEndpoint <<Endpoint>> {
+        - _mediator: IMediator
+        + Configure(): void
+        + HandleAsync(ct: CancellationToken): Task
+    }
+
+    class AreaStatusEvaluateResponseDto <<DTO>> {
+        + Success: bool
+        + Message: string
+        + Data: AreaStatusDto?
+    }
+
+    class "AreaStatusDto (Presentation)" as AreaStatusDto_Pres <<DTO>> {
+        + AreaId: Guid
+        + Status: string
+        + SeverityLevel: int
+        + Summary: string
+        + ContributingStations: List<ContributingStationDto>
+        + EvaluatedAt: DateTime
+    }
+
+    class "ContributingStationDto (Presentation)" as ContributingStationDto_Pres <<DTO>> {
+        + StationId: Guid
+        + StationCode: string
+        + Distance: double
+        + WaterLevel: double
+        + Severity: string
+        + Weight: int
+    }
+}
+
+' 2. APPLICATION LAYER
+package "Application Layer" <<Application>> {
+    class AreaStatusEvaluateRequest <<Record>> {
+        + AreaId: Guid
+    }
+
+    class AreaStatusEvaluateResponse <<Class>> {
+        + Success: bool
+        + Message: string
+        + StatusCode: AreaStatusCode
+        + Data: AreaStatusDto?
+    }
+
+    class AreaStatusEvaluateHandler <<Handler>> {
+        - _areaRepository: IAreaRepository
+        - _stationRepository: IStationRepository
+        - _sensorReadingRepository: ISensorReadingRepository
+        - _cache: IDistributedCache
+        - _configuration: IConfiguration
+        + Handle(request: AreaStatusEvaluateRequest, ct: CancellationToken): Task<AreaStatusEvaluateResponse>
+        - CalculateDistance(lat1: double, lon1: double, lat2: double, lon2: double): double
+        - ToRadians(angle: double): double
+        - CalculateSeverity(waterLevel: double, station: Station): (string, int)
+        - MapWeightToStatus(weight: int): string
+        - BuildSummary(status: string, stations: List<ContributingStationDto>): string
+    }
+
+    interface "IRequestHandler<AreaStatusEvaluateRequest, AreaStatusEvaluateResponse>" as IRequestHandler
+}
+
+' 3. DOMAIN LAYER - ENTITIES
+package "Domain Layer - Entities" <<Domain_Entities>> {
+    class Area <<Entity>> {
+        + Id: Guid
+        + UserId: Guid
+        + Name: string
+        + Latitude: decimal
+        + Longitude: decimal
+        + RadiusMeters: int
+        + AddressText: string
+        + CreatedAt: DateTime
+        + UpdatedAt: DateTime
+    }
+
+    class Station <<Entity>> {
+        + Id: Guid
+        + Code: string
+        + Name: string
+        + Latitude: decimal?
+        + Longitude: decimal?
+        + ThresholdWarning: decimal?
+        + ThresholdCritical: decimal?
+        + Status: string
+    }
+
+    class SensorReading <<Entity>> {
+        + Id: Guid
+        + StationId: Guid
+        + Value: double
+        + MeasuredAt: DateTime
+        + Station: Station?
+    }
+}
+
+' 4. DOMAIN LAYER - REPOSITORIES
+package "Domain Layer - Repositories" <<Domain_Repositories>> {
+    interface IAreaRepository <<Interface>> {
+        + GetByIdAsync(id: Guid, ct: CancellationToken): Task<Area?>
+    }
+
+    interface IStationRepository <<Interface>> {
+        + GetStationsAsync(searchTerm: string, status: string, pageNumber: int, pageSize: int, ct: CancellationToken): Task<(IEnumerable<Station>, int)>
+    }
+
+    interface ISensorReadingRepository <<Interface>> {
+        + GetLatestReadingsByStationsAsync(stationIds: List<Guid>, ct: CancellationToken): Task<List<SensorReading>>
+    }
+}
+
+' 5. COMMON SERVICES
+package "Common Services" <<Common>> {
+    interface IMediator <<Interface>> {
+        + Send(request: IRequest, ct: CancellationToken): Task<TResponse>
+    }
+
+    interface IDistributedCache <<Interface>> {
+        + GetStringAsync(key: string, ct: CancellationToken): Task<string?>
+        + SetStringAsync(key: string, value: string, options: DistributedCacheEntryOptions, ct: CancellationToken): Task
+    }
+
+    interface IConfiguration <<Interface>> {
+        + this[key: string]: string
+    }
+
+    class "AreaStatusDto (Common)" as AreaStatusDto_Common <<DTO>> {
+        + AreaId: Guid
+        + Status: string
+        + SeverityLevel: int
+        + Summary: string
+        + ContributingStations: List<ContributingStationDto>
+        + EvaluatedAt: DateTime
+    }
+
+    class "ContributingStationDto (Common)" as ContributingStationDto_Common <<DTO>> {
+        + StationId: Guid
+        + StationCode: string
+        + Distance: double
+        + WaterLevel: double
+        + Severity: string
+        + Weight: int
+    }
+}
+
+' Relationships
+AreaStatusEvaluateEndpoint ..> IMediator : uses
+AreaStatusEvaluateEndpoint ..> AreaStatusEvaluateRequest : creates
+AreaStatusEvaluateEndpoint ..> AreaStatusEvaluateResponseDto : returns
+AreaStatusEvaluateEndpoint ..> AreaStatusDto_Pres : maps to
+AreaStatusEvaluateEndpoint ..> ContributingStationDto_Pres : maps to
+
+AreaStatusEvaluateHandler ..|> IRequestHandler
+AreaStatusEvaluateHandler ..> IAreaRepository : uses
+AreaStatusEvaluateHandler ..> IStationRepository : uses
+AreaStatusEvaluateHandler ..> ISensorReadingRepository : uses
+AreaStatusEvaluateHandler ..> IDistributedCache : uses
+AreaStatusEvaluateHandler ..> IConfiguration : uses
+AreaStatusEvaluateHandler ..> AreaStatusEvaluateRequest : uses
+AreaStatusEvaluateHandler ..> AreaStatusEvaluateResponse : returns
+
+AreaStatusEvaluateResponse *-- AreaStatusDto_Common
+AreaStatusDto_Common *-- ContributingStationDto_Common
+
+AreaStatusEvaluateResponseDto *-- AreaStatusDto_Pres
+AreaStatusDto_Pres *-- ContributingStationDto_Pres
+
+SensorReading "many" -- "1" Station : belongs to
+
+' Legend
+legend bottom left
+    | Color | Layer |
+    | <#E1D5E7> | Presentation Layer |
+    | <#D5E8D4> | Application Layer |
+    | <#F8CECC> | Domain Entities |
+    | <#FFE6CC> | Domain Repositories |
+    | <#E1D5E7> | Common Services |
+
+    | Symbol | Meaning |
+    | ..> | Dependency / Uses |
+    | ..|> | Implements |
+    | *-- | Composition |
+    | -- | Association |
+endlegend
+
+@enduml
+

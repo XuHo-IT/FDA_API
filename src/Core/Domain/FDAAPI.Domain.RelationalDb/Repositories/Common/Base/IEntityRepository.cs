@@ -1,4 +1,4 @@
-﻿using FDAAPI.Domain.RelationalDb.Entities.Base;
+using FDAAPI.Domain.RelationalDb.Entities.Base;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,3 +16,8 @@ public interface IEntityRepository<TEntity>
     where TEntity : class, IEntity
 {
 }
+
+
+
+
+

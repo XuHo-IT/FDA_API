@@ -1,22 +1,108 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <Nullable>enable</Nullable>
+	  <TargetFramework>net8.0</TargetFramework>
+	  <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG14_ProfileGet\FDAAPI.App.FeatG14_ProfileGet.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG15_ProfileUpdate\FDAAPI.App.FeatG15_ProfileUpdate.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.Common\FDAAPI.App.Common.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG1\FDAAPI.App.FeatG1.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG2\FDAAPI.App.FeatG2.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG3\FDAAPI.App.FeatG3.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG4\FDAAPI.App.FeatG4.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG10_AuthChangePassword\FDAAPI.App.FeatG10_AuthChangePassword.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG11_AuthSetPassword\FDAAPI.App.FeatG11_AuthSetPassword.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG12_AuthGoogleLoginInitiate\FDAAPI.App.FeatG12_AuthGoogleLoginInitiate.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG13_AuthGoogleOAuthCallback\FDAAPI.App.FeatG13_AuthGoogleOAuthCallback.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG16_AuthGoogleMobileLogin\FDAAPI.App.FeatG16_AuthGoogleMobileLogin.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG17_AuthCheckIdentifier\FDAAPI.App.FeatG17_AuthCheckIdentifier.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG18_MediaUploadImage\FDAAPI.App.FeatG18_MediaUploadImage.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG19_ProfileVerifyUpdatePhone\FDAAPI.App.FeatG19_ProfileVerifyUpdatePhone.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG1_WaterLevelCreate\FDAAPI.App.FeatG1_SensorReadingCreate.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG20_UserCreate\FDAAPI.App.FeatG20_UserCreate.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG21_UserList\FDAAPI.App.FeatG21_UserList.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG22_UserUpdate\FDAAPI.App.FeatG22_UserUpdate.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG23_StationCreate\FDAAPI.App.FeatG23_StationCreate.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG24_StationUpdate\FDAAPI.App.FeatG24_StationUpdate.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG25_StationList\FDAAPI.App.FeatG25_StationList.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG26_StationGet\FDAAPI.App.FeatG26_StationGet.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG27_StationDelete\FDAAPI.App.FeatG27_StationDelete.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG28_GetMapPreferences\FDAAPI.App.FeatG28_GetMapPreferences.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG29_UpdateMapPreferences\FDAAPI.App.FeatG29_UpdateMapPreferences.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG2_WaterLevelUpdate\FDAAPI.App.FeatG2_SensorReadingUpdate.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG30_GetFloodSeverityLayer\FDAAPI.App.FeatG30_GetFloodSeverityLayer.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG33_AreaListByUser\FDAAPI.App.FeatG33_AreaListByUser.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG35_AreaGet\FDAAPI.App.FeatG35_AreaGet.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG38_AreaList\FDAAPI.App.FeatG38_AreaList.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG39_SubscribeToAlerts\FDAAPI.App.FeatG39_SubscribeToAlerts.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG3_WaterLevelGet\FDAAPI.App.FeatG3_SensorReadingGet.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG40_GetAlertHistory\FDAAPI.App.FeatG40_GetAlertHistory.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG41_UpdateAlertPreferences\FDAAPI.App.FeatG41_UpdateAlertPreferences.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG42_ProcessAlerts\FDAAPI.App.FeatG42_ProcessAlerts.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG43_DispatchNotifications\FDAAPI.App.FeatG43_DispatchNotifications.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG44_GetFloodHistory\FDAAPI.App.FeatG44_GetFloodHistory.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG45_GetFloodTrends\FDAAPI.App.FeatG45_GetFloodTrends.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG46_GetFloodStatistics\FDAAPI.App.FeatG46_GetFloodStatistics.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG47_FrequencyAggregation\FDAAPI.App.FeatG47_FrequencyAggregation.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG48_SeverityAggregation\FDAAPI.App.FeatG48_SeverityAggregation.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG49_HotspotAggregation\FDAAPI.App.FeatG49_HotspotAggregation.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG4_WaterLevelDelete\FDAAPI.App.FeatG4_SensorReadingDelete.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG5_AuthResetPassword\FDAAPI.App.FeatG5_AuthResetPassword.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG67_GetMySubscriptions\FDAAPI.App.FeatG67_GetMySubscriptions.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG68_DeleteSubscription\FDAAPI.App.FeatG68_DeleteSubscription.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG50_GetJobStatus\FDAAPI.App.FeatG50_GetJobStatus.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG51_GetFrequencyAnalytics\FDAAPI.App.FeatG51_GetFrequencyAnalytics.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG52_GetSeverityAnalytics\FDAAPI.App.FeatG52_GetSeverityAnalytics.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG53_GetHotspotRankings\FDAAPI.App.FeatG53_GetHotspotRankings.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG57_AdministrativeAreaCreate\FDAAPI.App.FeatG57_AdministrativeAreaCreate.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG58_AdministrativeAreaList\FDAAPI.App.FeatG58_AdministrativeAreaList.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG59_AdministrativeAreaGet\FDAAPI.App.FeatG59_AdministrativeAreaGet.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG60_AdministrativeAreaUpdate\FDAAPI.App.FeatG60_AdministrativeAreaUpdate.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG61_AdministrativeAreaDelete\FDAAPI.App.FeatG61_AdministrativeAreaDelete.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG62_FloodEventCreate\FDAAPI.App.FeatG62_FloodEventCreate.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG63_FloodEventList\FDAAPI.App.FeatG63_FloodEventList.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG64_FloodEventGet\FDAAPI.App.FeatG64_FloodEventGet.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG65_FloodEventUpdate\FDAAPI.App.FeatG65_FloodEventUpdate.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG66_FloodEventDelete\FDAAPI.App.FeatG66_FloodEventDelete.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG69_AdminGetAllSubscriptions\FDAAPI.App.FeatG69_AdminGetAllSubscriptions.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG6_AuthSendOtp\FDAAPI.App.FeatG6_AuthSendOtp.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG70_AdminGetAlertStats\FDAAPI.App.FeatG70_AdminGetAlertStats.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG71_GetUserSubscription\FDAAPI.App.FeatG71_GetUserSubscription.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG72_SubscribeToPlan\FDAAPI.App.FeatG72_SubscribeToPlan.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG73_CancelSubscription\FDAAPI.App.FeatG73_CancelSubscription.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG74_RequestSafeRoute\FDAAPI.App.FeatG74_RequestSafeRoute.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG7_AuthLogin\FDAAPI.App.FeatG7_AuthLogin.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG81_FloodReportGet\FDAAPI.App.FeatG81_FloodReportGet.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG82_FloodReportUpdate\FDAAPI.App.FeatG82_FloodReportUpdate.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG83_FloodReportList\FDAAPI.App.FeatG83_FloodReportList.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG84_FloodReportGetNearby\FDAAPI.App.FeatG84_FloodReportGetNearby.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG85_FloodReportDelete\FDAAPI.App.FeatG85_FloodReportDelete.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG8_AuthRefreshToken\FDAAPI.App.FeatG8_AuthRefreshToken.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG9_AuthLogout\FDAAPI.App.FeatG9_AuthLogout.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG31_GetMapCurrentStatus\FDAAPI.App.FeatG31_GetMapCurrentStatus.csproj" />  
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG32_AreaCreate\FDAAPI.App.FeatG32_AreaCreate.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG34_AreaStatusEvaluate\FDAAPI.App.FeatG34_AreaStatusEvaluate.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG55_AdministrativeAreasEvaluate\FDAAPI.App.FeatG55_AdministrativeAreasEvaluate.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Domain\FDAAPI.Domain.RelationalDb\FDAAPI.Domain.RelationalDb.csproj" />
+    <ProjectReference Include="..\..\Persistence\FDAAPI.Infra.Persistence\FDAAPI.Infra.Persistence.csproj" />
+    <ProjectReference Include="..\..\Services\FDAAPI.Infra.Services\FDAAPI.Infra.Services.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG36_AreaUpdate\FDAAPI.App.FeatG36_AreaUpdate.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG37_AreaDelete\FDAAPI.App.FeatG37_AreaDelete.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG76_LogPrediction\FDAAPI.App.FeatG76_LogPrediction.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG77_GetPredictionComparisons\FDAAPI.App.FeatG77_GetPredictionComparisons.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG78_GetPredictionAccuracyStats\FDAAPI.App.FeatG78_GetPredictionAccuracyStats.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Application\FDAAPI.App.FeatG79_FloodReportCreate\FDAAPI.App.FeatG79_FloodReportCreate.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-	  <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.10" />
+	  <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.9.0" />
+	  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
+	  <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.0" />
+	  <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
+	  <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.0" />
+	  <PackageReference Include="Hangfire.AspNetCore" Version="1.8.17" />
+	  <PackageReference Include="Hangfire.PostgreSql" Version="1.20.7" />
   </ItemGroup>
 
 </Project>
+

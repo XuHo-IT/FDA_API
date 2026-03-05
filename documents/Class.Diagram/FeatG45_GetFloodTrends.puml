@@ -1,0 +1,244 @@
+@startuml FeatG45_GetFloodTrends_ClassDiagram
+!define RECTANGLE class
+
+skinparam backgroundColor #FEFEFE
+skinparam classBackgroundColor #FFFFFF
+skinparam classBorderColor #000000
+skinparam packageBackgroundColor #E8E8E8
+skinparam packageBorderColor #666666
+skinparam stereotypeCBackgroundColor #ADD1B2
+skinparam arrowColor #333333
+
+title FeatG45_GetFloodTrends - Class Diagram\n(Domain-Centric Architecture + CQRS Pattern)
+
+' ============================================
+' PRESENTATION LAYER
+' ============================================
+package "PRESENTATION LAYER" #E1D5E7 {
+  class GetFloodTrendsEndpoint <<Endpoint>> {
+    - _mediator: IMediator
+    --
+    + Configure(): void
+    + HandleAsync(req: GetFloodTrendsRequestDto, ct): Task
+  }
+
+  class GetFloodTrendsRequestDto <<DTO>> {
+    + StationId: Guid
+    + Period: string
+    + StartDate: DateTime?
+    + EndDate: DateTime?
+    + Granularity: string
+    + CompareWithPrevious: bool
+  }
+
+  class GetFloodTrendsResponseDto <<DTO>> {
+    + Success: bool
+    + Message: string
+    + Data: FloodTrendDto?
+  }
+
+  GetFloodTrendsEndpoint --> GetFloodTrendsRequestDto : uses
+  GetFloodTrendsEndpoint --> GetFloodTrendsResponseDto : returns
+}
+
+' ============================================
+' APPLICATION LAYER
+' ============================================
+package "APPLICATION LAYER" #D5E8D4 {
+  class GetFloodTrendsRequest <<Record>> {
+    + StationId: Guid
+    + Period: string
+    + StartDate: DateTime?
+    + EndDate: DateTime?
+    + Granularity: string
+    + CompareWithPrevious: bool
+  }
+
+  class GetFloodTrendsResponse <<Response>> {
+    + Success: bool
+    + Message: string
+    + StatusCode: FloodHistoryStatusCode
+    + Data: FloodTrendDto?
+  }
+
+  class GetFloodTrendsHandler <<Handler>> {
+    - _dailyAggRepository: ISensorDailyAggRepository
+    - _stationRepository: IStationRepository
+    - _mapper: IFloodHistoryMapper
+    --
+    + Handle(request, ct): Task<GetFloodTrendsResponse>
+    - CalculateDateRange(period, customStart, customEnd): (DateTime, DateTime)
+    - AggregateToWeekly(dailyAggs): List<FloodTrendDataPointDto>
+    - AggregateToMonthly(dailyAggs): List<FloodTrendDataPointDto>
+    - CalculateComparison(stationId, start, end, current, ct): Task<FloodTrendComparisonDto?>
+    - GetIso8601WeekOfYear(date): int
+    - GetPeakSeverity(level): int
+  }
+
+  class GetFloodTrendsRequestValidator <<Validator>> {
+    --
+    + GetFloodTrendsRequestValidator()
+  }
+
+  interface IRequestHandler {
+    + Handle(request, ct): Task<Response>
+  }
+
+  enum FloodHistoryStatusCode <<Enumeration>> {
+    Success
+    BadRequest
+    NotFound
+    InternalServerError
+  }
+
+  class FloodTrendDto <<DTO>> {
+    + StationId: Guid
+    + StationName: string
+    + StationCode: string
+    + Period: string
+    + Granularity: string
+    + DataPoints: List<FloodTrendDataPointDto>
+    + Comparison: FloodTrendComparisonDto?
+    + Summary: FloodTrendSummaryDto
+  }
+
+  class FloodTrendDataPointDto <<DTO>> {
+    + Period: string
+    + PeriodStart: DateTime
+    + PeriodEnd: DateTime
+    + MaxLevel: double
+    + MinLevel: double
+    + AvgLevel: double
+    + ReadingCount: int
+    + FloodHours: int
+    + RainfallTotal: double
+    + PeakSeverity: int
+  }
+
+  class FloodTrendSummaryDto <<DTO>> {
+    + TotalFloodHours: int
+    + AvgWaterLevel: double
+    + MaxWaterLevel: double
+    + MinWaterLevel: double
+    + DaysWithFlooding: int
+    + MostAffectedDay: string?
+  }
+
+  class FloodTrendComparisonDto <<DTO>> {
+    + PreviousPeriodStart: DateTime
+    + PreviousPeriodEnd: DateTime
+    + FloodHoursChange: double
+    + FloodHoursChangePercent: double
+    + AvgLevelChange: double
+    + AvgLevelChangePercent: double
+  }
+
+  GetFloodTrendsHandler ..|> IRequestHandler : implements
+  GetFloodTrendsHandler --> GetFloodTrendsRequest : handles
+  GetFloodTrendsHandler --> GetFloodTrendsResponse : returns
+  GetFloodTrendsResponse --> FloodHistoryStatusCode : contains
+  GetFloodTrendsRequestValidator --> GetFloodTrendsRequest : validates
+}
+
+' ============================================
+' DOMAIN LAYER - Entities
+' ============================================
+package "DOMAIN LAYER - Entities" #F8CECC {
+  class SensorDailyAgg <<Entity>> {
+    + StationId: Guid
+    + Date: DateOnly
+    + AvgLevel: decimal
+    + MaxLevel: decimal
+    + MinLevel: decimal
+    + ReadingCount: int
+    + FloodHours: int
+    + PeakSeverity: int
+    + RainfallTotal: decimal?
+  }
+
+  class Station <<Entity>> {
+    + Id: Guid
+    + Name: string
+    + Code: string
+    + Latitude: decimal
+    + Longitude: decimal
+  }
+
+  Station "1" *-- "many" SensorDailyAgg
+}
+
+' ============================================
+' DOMAIN LAYER - Repositories
+' ============================================
+package "DOMAIN LAYER - Repositories" #FFE6CC {
+  interface ISensorDailyAggRepository <<Interface>> {
+    + GetByStationAndRangeAsync(stationId, startDate, endDate, ct): Task<List<SensorDailyAgg>>
+  }
+
+  interface IStationRepository <<Interface>> {
+    + GetByIdAsync(id: Guid, ct): Task<Station?>
+  }
+}
+
+' ============================================
+' COMMON SERVICES
+' ============================================
+package "COMMON SERVICES" #E1D5E7 {
+  interface IMediator <<Interface>> {
+    + Send<TResponse>(request, ct): Task<TResponse>
+  }
+
+  interface IFloodHistoryMapper <<Interface>> {
+    + MapToTrendDataPoints(dailyAggs: List<SensorDailyAgg>): List<FloodTrendDataPointDto>
+  }
+
+  interface IFeatureRequest <<Interface>> { }
+  interface IFeatureResponse <<Interface>> { }
+
+  GetFloodTrendsRequest ..|> IFeatureRequest
+  GetFloodTrendsResponse ..|> IFeatureResponse
+}
+
+' ============================================
+' RELATIONSHIPS
+' ============================================
+GetFloodTrendsEndpoint ..> IMediator : uses
+GetFloodTrendsEndpoint ..> GetFloodTrendsRequest : sends
+
+GetFloodTrendsHandler ..> ISensorDailyAggRepository : uses
+GetFloodTrendsHandler ..> IStationRepository : uses
+GetFloodTrendsHandler ..> IFloodHistoryMapper : uses
+
+GetFloodTrendsRequestDto ..> GetFloodTrendsRequest : maps to
+GetFloodTrendsResponseDto ..> GetFloodTrendsResponse : maps from
+
+GetFloodTrendsResponse *-- FloodTrendDto
+FloodTrendDto *-- FloodTrendDataPointDto
+FloodTrendDto *-- FloodTrendSummaryDto
+FloodTrendDto *-- FloodTrendComparisonDto
+
+FloodTrendDataPointDto ..> SensorDailyAgg : aggregates
+
+' ============================================
+' LEGEND
+' ============================================
+legend bottom left
+  | Color | Layer |
+  | #E1D5E7 | Presentation Layer & Common Services |
+  | #D5E8D4 | Application Layer |
+  | #F8CECC | Domain Entities |
+  | #FFE6CC | Domain Repositories |
+  | | |
+  | Line Style | Meaning |
+  | --> | Dependency |
+  | ..> | Uses/Sends |
+  | ..\|> | Implements |
+  | *-- | Composition |
+  | | |
+  | Feature: Get Flood Trends |
+  | Periods: last7days, last30days, last90days, last365days, custom |
+  | Granularity: daily, weekly, monthly |
+  | Optional comparison with previous period |
+endlegend
+
+@enduml

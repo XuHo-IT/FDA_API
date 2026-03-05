@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,4 +11,10 @@ namespace FDAAPI.Domain.RelationalDb.Entities.Base;
     ///     in the application domain must extend from.
     /// </summary>
     public interface IEntity { }
+
+
+
+
+
+
 

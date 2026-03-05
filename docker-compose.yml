@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  fdaapi:
+    image: xuhoit/fda_api-fdaapi:latest
+    container_name: fdaapi_prod
+
+    ports:
+      - "7097:8080"
+
+    env_file:
+      - .env
+    pull_policy: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://0.0.0.0:8080
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+
+    restart: unless-stopped

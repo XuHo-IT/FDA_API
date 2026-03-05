@@ -1,0 +1,52 @@
+version: "3.9"
+
+services:
+  fdaapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fdaapi_local
+    ports:
+      - "5232:8080"
+    env_file:
+      - .env
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://0.0.0.0:8080
+      GraphHopper__BaseUrl: http://graphhopper:8989
+    depends_on:
+      - graphhopper
+    restart: unless-stopped
+
+  graphhopper:
+    image: israelhikingmap/graphhopper:latest
+    container_name: fda_graphhopper
+    volumes:
+      - ./graphhopper-data:/data
+    ports:
+      - "8989:8989"
+    environment:
+      - JAVA_OPTS=-Xmx4g -Xms2g
+    command: >
+      --input /data/vietnam-260128.osm.pbf
+      -o /data/vietnam-gh
+      --host 0.0.0.0
+      --port 8989
+    restart: unless-stopped
+#   postgres:
+#     image: postgres:16
+#     container_name: postgres_dev
+#     env_file:
+#       - .env
+#     environment:
+#       POSTGRES_DB: ${POSTGRES_DB}
+#       POSTGRES_USER: ${POSTGRES_USER}
+#       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#     ports:
+#       - "5432:5432"
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data
+#     restart: unless-stopped
+
+# volumes:
+#   postgres_data:

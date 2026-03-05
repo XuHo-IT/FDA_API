@@ -1,0 +1,68 @@
+services:
+  fdaapi:
+    image: xuhoit/fda_api-fdaapi:latest 
+    container_name: fda_api_dev
+    pull_policy: always
+    ports:
+      - "5232:8080"
+    env_file: 
+      - .env
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://0.0.0.0:8080
+      ConnectionStrings__PostgreSQLConnection: "Host=fda_postgres_shared;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};"
+      ConnectionStrings__RedisConnection: "${REDIS_URL}"
+      GraphHopper__BaseUrl: http://graphhopper_dev:8989
+    depends_on:
+      - postgres
+      - graphhopper
+    networks:
+      - fda_api_default
+    restart: unless-stopped
+
+  graphhopper:
+    image: israelhikingmap/graphhopper:latest
+    container_name: fda_graphhopper
+    volumes:
+      - ./graphhopper-data:/data
+    ports:
+      - "8989:8989"
+    environment:
+      - JAVA_OPTS=-Xmx4g -Xms2g
+    command: >
+      --input /data/vietnam-260128.osm.pbf
+      -o /data/vietnam-gh
+      --host 0.0.0.0
+      --port 8989
+    networks:
+      fda_api_default:
+        aliases:
+          - graphhopper_dev
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16
+    container_name: fda_postgres_shared
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      fda_api_default:
+        aliases:
+          - postgres_dev
+    restart: unless-stopped
+
+networks:
+  fda_api_default:
+    name: fda_api_shared_network 
+
+volumes:
+  postgres_data:
+    external: true
+    name: fda_api_postgres_data

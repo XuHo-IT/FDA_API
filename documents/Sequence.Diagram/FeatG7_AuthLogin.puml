@@ -1,0 +1,172 @@
+@startuml OTP_Login
+title OTP Login
+
+actor User
+participant UI
+participant LoginEndpoint
+participant MediatR
+participant LoginHandler
+participant Repository
+participant Service
+database Database
+
+== Flow 1: OTP Login (Auto-register) ==
+
+User -> UI: 1. Enter identifier + OTP
+activate UI
+
+UI -> LoginEndpoint: 2. POST /api/auth/login
+activate LoginEndpoint
+
+LoginEndpoint -> MediatR: 3. Send(request)
+activate MediatR
+
+MediatR -> LoginHandler: 4. Handle
+activate LoginHandler
+
+LoginHandler -> Repository: 5. GetValidOTP
+activate Repository
+Repository -> Database: 6. SELECT otp_codes
+activate Database
+Database --> Repository: 7. OtpCode
+deactivate Database
+Repository --> LoginHandler: 8. OtpCode
+deactivate Repository
+
+LoginHandler -> LoginHandler: 9. Verify Otp
+
+alt OTP code mismatch
+  LoginHandler -> Repository: 10. IncreaseAttemptCount
+  activate Repository
+  Repository -> Database: 11. UPDATE attempt_count
+  activate Database
+  Database --> Repository: Updated
+  deactivate Database
+  Repository --> LoginHandler: 12. Success
+  deactivate Repository
+
+  LoginHandler --> MediatR: 13. Response
+  deactivate LoginHandler
+  MediatR --> LoginEndpoint: 14. Response
+  deactivate MediatR
+  LoginEndpoint --> UI: 15. 401 Unauthorized
+  deactivate LoginEndpoint
+  UI --> User: 16. "Incorrect OTP"
+  deactivate UI
+
+else OTP code matches
+  LoginHandler -> Repository: 10. GetUser
+  activate Repository
+  Repository -> Database: 11. SELECT users
+  activate Database
+  Database --> Repository: 12. User or null
+  deactivate Database
+  Repository --> LoginHandler: 13. User or null
+  deactivate Repository
+
+  alt User Not exists
+    LoginHandler -> Repository: 14. CreateUser
+    activate Repository
+    Repository -> Database: 15. INSERT INTO users
+    activate Database
+    Database --> Repository: Inserted
+    deactivate Database
+    Repository --> LoginHandler: 16. Created
+    deactivate Repository
+  end
+
+  LoginHandler -> Service: 17. GenerateToken
+  activate Service
+  Service --> LoginHandler: 18. accessToken, refreshToken
+  deactivate Service
+
+  LoginHandler -> Repository: 19. CreateRefreshToken
+  activate Repository
+  Repository -> Database: 20. INSERT INTO refresh_tokens
+  activate Database
+  Database --> Repository: Inserted
+  deactivate Database
+  Repository --> LoginHandler: 21. Success
+  deactivate Repository
+
+  LoginHandler --> MediatR: 22. Response
+  deactivate LoginHandler
+  MediatR --> LoginEndpoint: 23. Response
+  deactivate MediatR
+  LoginEndpoint --> UI: 24. 200 OK
+  deactivate LoginEndpoint
+  UI --> User: 25. Login success
+  deactivate UI
+end
+
+deactivate handler
+deactivate mediator
+deactivate endpoint
+deactivate ui
+
+|||
+
+== Flow 2: Password Login (Existing users only) ==
+
+User -> UI: 1. Enter identifier + Password
+activate UI
+
+UI -> LoginEndpoint: 2. POST /api/auth/login
+activate LoginEndpoint
+
+LoginEndpoint -> MediatR: 3. Send(request)
+activate MediatR
+
+MediatR -> LoginHandler: 4. Handle
+activate LoginHandler
+
+LoginHandler -> Repository: 5. GetUser
+activate Repository
+Repository -> Database: 6. SELECT users
+activate Database
+Database --> Repository: 7. User or null
+deactivate Database
+Repository --> LoginHandler: 8. User
+deactivate Repository
+
+LoginHandler -> Service: 9. VerifyPassword
+activate Service
+Service --> LoginHandler: 10. true/false
+deactivate Service
+
+alt Password mismatch
+  LoginHandler --> MediatR: 11. Response
+  deactivate LoginHandler
+  MediatR --> LoginEndpoint: 12. Response
+  deactivate MediatR
+  LoginEndpoint --> UI: 13. 401 Unauthorized
+  deactivate LoginEndpoint
+  UI --> User: 14. "Invalid credentials"
+  deactivate UI
+
+else Password matches
+  LoginHandler -> Service: 11. GenerateToken
+  activate Service
+  Service --> LoginHandler: 12. accessToken, refreshToken
+  deactivate Service
+
+  LoginHandler -> Repository: 13. CreateRefreshToken
+  activate Repository
+  Repository -> Database: 14. INSERT INTO refresh_tokens
+  activate Database
+  Database --> Repository: Inserted
+  deactivate Database
+  Repository --> LoginHandler: 15. Success
+  deactivate Repository
+
+  LoginHandler --> MediatR: 16. Response
+  deactivate LoginHandler
+  MediatR --> LoginEndpoint: 17. Response
+  deactivate MediatR
+  LoginEndpoint --> UI: 18. 200 OK
+  deactivate LoginEndpoint
+  UI --> User: 19. Login success
+  deactivate UI
+end
+
+@enduml

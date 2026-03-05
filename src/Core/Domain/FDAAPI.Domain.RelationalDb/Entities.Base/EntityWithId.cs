@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -19,3 +19,9 @@ public abstract class EntityWithId<TEntityId> : IEntity
     [DatabaseGenerated(DatabaseGeneratedOption.None)]
     public TEntityId Id { get; set; }
 }
+
+
+
+
+
+

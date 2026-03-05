@@ -15,6 +15,9 @@ appsetting.json
 appsettings.json
 appsettings.Development.json
 
+# Firebase service account file
+firebase-service-account.json
+
 # vscode dir
 .vscode/
 
@@ -404,3 +407,11 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Environment variable files
+.env
+.env.*
+
+# GraphHopper 
+graphhopper-data/*.pbf
+graphhopper-data/*-gh/

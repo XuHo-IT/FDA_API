@@ -1,0 +1,150 @@
+@startuml FE234_FloodPerArea_ClassDiagram
+title Class Diagram - FE234 Flood Evaluation Per Monitored Area
+
+skinparam backgroundColor #FEFEFE
+skinparam classBackgroundColor #FFFFFF
+skinparam classBorderColor #000000
+skinparam packageBackgroundColor #E8E8E8
+skinparam packageBorderColor #666666
+skinparam stereotypeCBackgroundColor #ADD1B2
+skinparam arrowColor #333333
+
+package "PRESENTATION LAYER" #E1D5E7 {
+    class AreaStatusEvaluateEndpoint <<Endpoint>> {
+        - _mediator: IMediator
+        --
+        + Configure(): void
+        + HandleAsync(ct): Task
+    }
+
+    class CreateAreaEndpoint <<Endpoint>> {
+        - _mediator: IMediator
+        --
+        + Configure(): void
+        + HandleAsync(req: CreateAreaRequestDto, ct): Task
+    }
+
+    class AreaStatusEvaluateResponseDto <<DTO>> {
+        + Success: bool
+        + Message: string
+        + Data: AreaStatusDto
+    }
+
+    class AreaStatusDto <<DTO>> {
+        + AreaId: Guid
+        + Status: string
+        + SeverityLevel: int
+        + Summary: string
+        + EvaluatedAt: DateTime
+        + ContributingStations: List<ContributingStationDto>
+    }
+
+    class ContributingStationDto <<DTO>> {
+        + StationCode: string
+        + Distance: double
+        + WaterLevel: double
+        + Severity: string
+        + Weight: int
+    }
+}
+
+package "APPLICATION LAYER" #D5E8D4 {
+    interface "IRequestHandler<AreaStatusEvaluateRequest, AreaStatusEvaluateResponse>" as IAreaStatusEvaluateHandler <<Interface>>
+
+    class AreaStatusEvaluateHandler <<Handler>> {
+        - _areaRepository: IAreaRepository
+        - _stationRepository: IStationRepository
+        - _sensorReadingRepository: ISensorReadingRepository
+        - _cache: IDistributedCache
+        --
+        + Handle(request: AreaStatusEvaluateRequest, ct): Task<AreaStatusEvaluateResponse>
+        - CalculateDistance(lat1, lon1, lat2, lon2): double
+        - CalculateSeverity(waterLevel, station): (string, int)
+        - MapWeightToStatus(weight): string
+    }
+
+    class AreaStatusEvaluateRequest <<Request>> {
+        + AreaId: Guid
+    }
+
+    class AreaStatusEvaluateResponse <<Response>> {
+        + Success: bool
+        + Message: string
+        + Data: AreaStatusDto
+        + StatusCode: AreaStatusCode
+    }
+}
+
+package "DOMAIN LAYER - Entities" #F8CECC {
+    class Area <<Entity>> {
+        + Id: Guid
+        + UserId: Guid
+        + Name: string
+        + Latitude: decimal
+        + Longitude: decimal
+        + RadiusMeters: int
+        + AddressText: string
+        + CreatedAt: DateTime
+        + UpdatedAt: DateTime
+        --
+        + User: User
+    }
+
+    class User <<Entity>> {
+        + Id: Guid
+        + Email: string
+        + FullName: string
+    }
+}
+
+package "DOMAIN LAYER - Repositories" #FFE6CC {
+    interface IAreaRepository <<Interface>> {
+        + GetByIdAsync(id: Guid, ct: CancellationToken): Task<Area>
+        + GetByUserIdAsync(userId: Guid, searchTerm: string, page: int, size: int, ct: CancellationToken): Task
+        + CreateAsync(area: Area, ct: CancellationToken): Task<Guid>
+        + UpdateAsync(area: Area, ct: CancellationToken): Task<bool>
+    }
+
+    interface IStationRepository <<Interface>> {
+        + GetStationsAsync(searchTerm, status, page, size, ct): Task
+    }
+
+    interface ISensorReadingRepository <<Interface>> {
+        + GetLatestReadingsByStationsAsync(stationIds, ct): Task
+    }
+}
+
+package "COMMON SERVICES" #E1D5E7 {
+    interface IMediator <<Interface>>
+    interface IDistributedCache <<Interface>>
+}
+
+' Relationships
+AreaStatusEvaluateEndpoint ..> IMediator : uses
+AreaStatusEvaluateEndpoint ..> AreaStatusEvaluateRequest : sends
+AreaStatusEvaluateHandler ..|> IAreaStatusEvaluateHandler : implements
+AreaStatusEvaluateHandler ..> IAreaRepository : uses
+AreaStatusEvaluateHandler ..> IStationRepository : uses
+AreaStatusEvaluateHandler ..> ISensorReadingRepository : uses
+AreaStatusEvaluateHandler ..> IDistributedCache : uses
+
+AreaStatusEvaluateResponse *-- AreaStatusDto : contains
+AreaStatusDto *-- ContributingStationDto : contains
+
+"1" *-- "many" User : User has many Areas
+Area "many" *-- "1" User : Area belongs to User
+
+legend bottom left
+| Color | Layer |
+|<#E1D5E7>| PRESENTATION / COMMON |
+|<#D5E8D4>| APPLICATION LAYER |
+|<#F8CECC>| DOMAIN ENTITIES |
+|<#FFE6CC>| DOMAIN REPOSITORIES |
+| Relationship | Meaning |
+| ..> | Uses / Dependency |
+| ..|> | Implements |
+| *-- | Composition |
+| "1" *-- "many" | Database Relationship |
+endlegend
+
+@enduml

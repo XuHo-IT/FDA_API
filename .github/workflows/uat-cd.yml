@@ -1,0 +1,97 @@
+name: uat-cd
+
+on:
+  workflow_run:
+    workflows: ["uat-ci"]
+    types:
+      - completed
+    branches:
+      - uat
+  workflow_dispatch:
+
+jobs:
+  deploy-uat:
+    name: 🚀 Deploy to UAT Server
+    runs-on: ubuntu-22.04
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🔐 Deploy to VPS
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          port: ${{ secrets.SSH_PORT }}
+          script_stop: true
+          script: |
+            set -e
+            echo "🚀 Starting UAT deployment..."
+            cd /home/dev/FDA_API
+            
+            # Login to Docker Hub
+            echo "🔐 Logging in to Docker Hub..."
+            echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+            
+            # Pull image - Dùng file .env.uat có sẵn trên VPS
+            echo "📥 Pulling latest UAT image..."
+            docker compose -p fda_uat --env-file .env.uat -f docker-compose.uat.yml pull fdaapi_uat
+           
+            # Restart container
+            echo "▶️ Recreating UAT container..."
+            docker compose -p fda_uat --env-file .env.uat -f docker-compose.uat.yml up -d --force-recreate fdaapi_uat
+           
+            echo "⏳ Waiting for stabilization..."
+            sleep 15
+            
+            # Clean up to reduce server load.
+            echo "🧹 Cleaning up old images and build cache..."
+            docker image prune -f
+
+            # Delete old images that are no longer used by any containers (keep the latest version that was just pulled).
+            docker image prune -a -f --filter "until=24h"
+            
+            echo "✅ UAT deployment step completed!"
+
+      - name: 🏥 Health Check
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          port: ${{ secrets.SSH_PORT }}
+          script_stop: true
+          script: |
+            set -e
+            echo "🏥 Running health checks..."
+            cd /home/dev/FDA_API
+
+            # 1. Check Container Status
+            CONTAINER_NAME="fdaapi_uat"
+            if [ -z "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
+              echo "❌ Container $CONTAINER_NAME is NOT running!"
+              exit 1
+            fi
+            echo "✅ Container status: UP"
+            
+            # 2. Check Database Connection (Quan trọng nhất)
+            # Inspect để xem biến môi trường thực tế container đang cầm
+            if docker inspect $CONTAINER_NAME | grep -q "Database=FDA_UAT"; then
+              echo "✅ Database connection string verified: FDA_UAT"
+            else
+              echo "❌ Database name is missing or incorrect in container environment!"
+              exit 1
+            fi
+
+            # 3. Scan logs for errors
+            echo "🔍 Checking recent logs (non-blocking)..."
+            docker compose -p fda_uat --env-file .env.uat -f docker-compose.uat.yml logs --tail=50 \
+            | grep -i "error\|exception\|failed" \
+            || echo "ℹ️ No critical patterns found (or runtime errors ignored)"

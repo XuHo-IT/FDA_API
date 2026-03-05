@@ -1,52 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FDAAPI.App.Common.Models.Common;
-public sealed class Result<TValue>
+namespace FDAAPI.App.Common.Models.Common
 {
-    /// <summary>
-    ///     Check if the result is success or not to get its inner value.
-    /// </summary>
-    public bool IsSuccess { get; set; }
-
-    public TValue Value { get; set; }
-
-    public Result() { }
-
-    public Result(TValue value)
+    public class Result<TValue>
     {
-        Value = value;
+        public bool IsSuccess { get; }
+        public bool IsFailure => !IsSuccess;
+        public TValue Value { get; }
+        public string Error { get; }
+
+        protected Result(TValue value, bool isSuccess, string error)
+        {
+            Value = value;
+            IsSuccess = isSuccess;
+            Error = error;
+        }
+
+        public static Result<TValue> Success(TValue value) => new(value, true, string.Empty);
+        public static Result<TValue> Failure(string error) => new(default!, false, error);
     }
-
-    /// <summary>
-    ///     A short hand to create a Success <see cref="Result{T}"/> instance
-    ///     with input <paramref name="value"/>.
-    /// </summary>
-    /// <param name="value"></param>
-    /// <returns>
-    ///     A <see cref="Result{T}"/> with (IsSucess = <see langword="true"/>)
-    /// </returns>
-    public static Result<TValue> Success(TValue value) => new(value) { IsSuccess = true };
-
-    /// <summary>
-    ///     A short hand to create a Failed <see cref="Result{T}"/> instance
-    ///     with empty return value.
-    /// </summary>
-    /// <returns>
-    ///     A <see cref="Result{T}"/> with (IsSucess = <see langword="false"/>)
-    /// </returns>
-    public static Result<TValue> Failed() => new(default) { IsSuccess = false };
-
-    /// <summary>
-    ///     A short hand to create a Failed <see cref="Result{T}"/> instance
-    ///     with return value.
-    /// </summary>
-    /// <returns>
-    ///     A <see cref="Result{T}"/> with (IsSucess = <see langword="false"/>)
-    /// </returns>
-    public static Result<TValue> Failed(TValue value) =>
-        new(value) { IsSuccess = false, Value = value };
 }
+

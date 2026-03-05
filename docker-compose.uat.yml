@@ -1,0 +1,33 @@
+services:
+  fda_redis_uat:
+    image: redis:7-alpine
+    container_name: fda_redis_uat
+    networks:
+      - fda_api_default
+    restart: unless-stopped
+
+  fdaapi_uat:
+    image: xuhoit/fda_api-fdaapi:uat
+    container_name: fdaapi_uat
+    ports:
+      - "7097:8080"
+    env_file:
+      - .env.uat
+    pull_policy: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: UAT
+      ASPNETCORE_URLS: http://0.0.0.0:8080
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      ConnectionStrings__PostgreSQLConnection: "Host=fda_postgres_shared;Port=5432;Database=${POSTGRES_DB_UAT};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};"
+      ConnectionStrings__RedisConnection: "${REDIS_URL}"
+      GraphHopper__BaseUrl: "http://fda_graphhopper:8989"
+    networks:
+      - fda_api_default
+    depends_on:
+      - fda_redis_uat
+    restart: unless-stopped
+
+networks:
+  fda_api_default:
+    external: true
+    name: fda_api_shared_network

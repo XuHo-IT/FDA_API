@@ -1,0 +1,166 @@
+@startuml FE08_ViewFloodConditionsBySensorStations
+title FE-08 - View Flood Conditions by Sensor Stations (Class Diagram)
+
+skinparam backgroundColor #FEFEFE
+skinparam classBackgroundColor #FFFFFF
+skinparam classBorderColor #000000
+skinparam packageBackgroundColor #E8E8E8
+skinparam packageBorderColor #666666
+skinparam stereotypeCBackgroundColor #ADD1B2
+skinparam arrowColor #333333
+
+package "Presentation Layer\n(FastEndpoints + DTOs)" #E1D5E7 {
+
+  class ViewFloodConditionsByStationsEndpoint <<Endpoint>> {
+    - _mediator : IMediator
+    --
+    + Configure() : void
+    + HandleAsync(req : ViewFloodConditionsByStationsRequestDto, ct : CancellationToken) : Task
+  }
+
+  class ViewFloodConditionsByStationsRequestDto <<DTO>> {
+    + Bounds : string
+    + Severity : string
+    + Status : string
+    + Page : int
+    + Size : int
+  }
+
+  class ViewFloodConditionsByStationsResponseDto <<DTO>> {
+    + Success : bool
+    + Message : string
+    + StatusCode : int
+    + Total : int
+    + Items : List~StationFloodConditionDto~
+  }
+
+  class StationFloodConditionDto <<DTO>> {
+    + StationId : Guid
+    + Code : string
+    + Name : string
+    + RoadName : string
+    + Direction : string
+    + Latitude : decimal
+    + Longitude : decimal
+    + StationStatus : string
+    + LatestMeasuredAt : DateTime
+    + WaterLevel : decimal
+    + Unit : string
+    + Severity : string
+    + SeverityScore : int
+    + LastAlertAt : DateTime?
+  }
+}
+
+package "Application Layer\n(CQRS Handlers + Request/Response)" #D5E8D4 {
+
+  class GetStationFloodConditionsRequest <<Request>> {
+    + UserId : Guid?
+    + Bounds : string
+    + Severity : string
+    + Status : string
+    + Page : int
+    + Size : int
+  }
+
+  class GetStationFloodConditionsResponse <<Response>> {
+    + Success : bool
+    + Message : string
+    + StatusCode : int
+    + Total : int
+    + Items : List~StationFloodConditionDto~
+  }
+
+  interface IRequestHandler~TRequest, TResponse~ <<Interface>> {
+    + Handle(request : TRequest, ct : CancellationToken) : Task~TResponse~
+  }
+
+  class GetStationFloodConditionsHandler <<Handler>> {
+    - _stationRepository : IStationRepository
+    - _waterLevelRepository : IWaterLevelRepository
+    - _mapper : IStationFloodConditionMapper
+    --
+    + Handle(request : GetStationFloodConditionsRequest, ct : CancellationToken) : Task~GetStationFloodConditionsResponse~
+  }
+
+  GetStationFloodConditionsHandler ..|> IRequestHandler
+}
+
+package "Domain Layer - Entities" #F8CECC {
+
+  class Station <<Entity>> {
+    + Id : Guid
+    + Code : string
+    + Name : string
+    + LocationDesc : string
+    + Latitude : decimal
+    + Longitude : decimal
+    + RoadName : string
+    + Direction : string
+    + Status : string
+    + InstalledAt : DateTime?
+    + LastSeenAt : DateTime?
+  }
+
+  class WaterLevel <<Entity>> {
+    + Id : long
+    + StationId : Guid
+    + LocationName : string
+    + Value : decimal
+    + Unit : string
+    + MeasuredAt : DateTime
+    + Status : string
+  }
+
+  Station "1" *-- "many" WaterLevel : has readings
+}
+
+package "Domain Layer - Repositories" #FFE6CC {
+
+  interface IStationRepository <<Interface>> {
+    + GetByIdAsync(id : Guid, ct : CancellationToken) : Task~Station?~
+    + GetByBoundsAsync(minLat : decimal, minLng : decimal, maxLat : decimal, maxLng : decimal, status : string?, ct : CancellationToken) : Task~List~Station~>
+  }
+
+  interface IWaterLevelRepository <<Interface>> {
+    + GetLatestByStationIdsAsync(stationIds : IEnumerable~Guid~, ct : CancellationToken) : Task~List~WaterLevel~>
+  }
+}
+
+package "Common Services / Mappers" #E1D5E7 {
+
+  interface IStationFloodConditionMapper <<Interface>> {
+    + Map(Station, WaterLevel?) : StationFloodConditionDto
+    + MapList(stations : List~Station~, levels : List~WaterLevel~) : List~StationFloodConditionDto~
+  }
+
+  interface IMediator <<Interface>> {
+    + Send(request : object, ct : CancellationToken) : Task~object~
+  }
+}
+
+' Relationships
+ViewFloodConditionsByStationsEndpoint ..> IMediator : uses
+ViewFloodConditionsByStationsEndpoint ..> ViewFloodConditionsByStationsRequestDto
+ViewFloodConditionsByStationsEndpoint ..> ViewFloodConditionsByStationsResponseDto
+ViewFloodConditionsByStationsResponseDto *-- StationFloodConditionDto
+
+ViewFloodConditionsByStationsEndpoint ..> GetStationFloodConditionsRequest : maps DTO -> Request
+GetStationFloodConditionsHandler ..> IStationRepository : uses
+GetStationFloodConditionsHandler ..> IWaterLevelRepository : uses
+GetStationFloodConditionsHandler ..> IStationFloodConditionMapper : uses
+
+GetStationFloodConditionsHandler ..> Station
+GetStationFloodConditionsHandler ..> WaterLevel
+
+legend bottom left
+  |= Color |= Layer |
+  |<#E1D5E7>|Presentation / Common Services|
+  |<#D5E8D4>|Application (CQRS Handlers)|
+  |<#F8CECC>|Domain Entities|
+  |<#FFE6CC>|Domain Repositories|
+endlegend
+
+@enduml
+
+

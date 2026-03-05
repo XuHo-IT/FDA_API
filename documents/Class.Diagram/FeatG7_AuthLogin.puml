@@ -1,0 +1,341 @@
+@startuml FeatG7_AuthLogin_ClassDiagram
+!define RECTANGLE class
+
+skinparam backgroundColor #FEFEFE
+skinparam classBackgroundColor #FFFFFF
+skinparam classBorderColor #000000
+skinparam packageBackgroundColor #E8E8E8
+skinparam packageBorderColor #666666
+skinparam stereotypeCBackgroundColor #ADD1B2
+skinparam arrowColor #333333
+
+title FeatG7_AuthLogin - Class Diagram\n(Domain-Centric Architecture + CQRS Pattern)
+
+' ============================================
+' PRESENTATION LAYER
+' ============================================
+package "PRESENTATION LAYER" #E1D5E7 {
+  
+  class LoginEndpoint <<Endpoint>> {
+    ' - _mediator: IMediator
+    ' --
+    + Configure(): void
+    + HandleAsync(req: LoginRequestDto, ct: CancellationToken): Task
+  }
+  
+  class LoginRequestDto <<DTO>> {
+    + Identifier: string?
+    + OtpCode: string?
+    + Password: string?
+    + DeviceInfo: string?
+  }
+  
+  class LoginResponseDto <<DTO>> {
+    + Success: bool
+    + Message: string
+    + AccessToken: string?
+    + RefreshToken: string?
+    + ExpiresAt: DateTime?
+    + User: UserDto?
+  }
+  
+  class UserDto <<DTO>> {
+    + Id: Guid
+    + Email: string
+    + FullName: string?
+    + PhoneNumber: string?
+    + AvatarUrl: string?
+    + Roles: List<string>
+  }
+  
+  LoginEndpoint --> LoginRequestDto : uses
+  LoginEndpoint --> LoginResponseDto : returns
+  LoginResponseDto *-- UserDto : contains
+}
+
+' ============================================
+' APPLICATION LAYER
+' ============================================
+package "APPLICATION LAYER" #D5E8D4 {
+  
+  class LoginRequest <<Record>> {
+    + Identifier: string?
+    + PhoneNumber: string?
+    + OtpCode: string?
+    + Email: string?
+    + Password: string?
+    + DeviceInfo: string?
+    + IpAddress: string?
+  }
+  
+  class LoginResponse <<Response>> {
+    + Success: bool
+    + Message: string
+    + AccessToken: string?
+    + RefreshToken: string?
+    + ExpiresAt: DateTime?
+    + User: UserDto?
+  }
+  
+  class UserDto_App <<DTO>> {
+    + Id: Guid
+    + Email: string
+    + FullName: string?
+    + PhoneNumber: string?
+    + AvatarUrl: string?
+    + Roles: List<string>
+  }
+  
+  class LoginHandler <<Handler>> {
+    ' - _userRepository: IUserRepository
+    ' - _otpRepository: IOtpCodeRepository
+    ' - _userRoleRepository: IUserRoleRepository
+    ' - _roleRepository: IRoleRepository
+    ' - _refreshTokenRepository: IRefreshTokenRepository
+    ' - _passwordHasher: IPasswordHasher
+    ' - _jwtTokenService: IJwtTokenService
+    ' --
+    + Handle(request: LoginRequest, ct): Task<LoginResponse>
+    - HandleOtpLoginAsync(identifier, otpCode, request, ct): Task<LoginResponse>
+    - HandlePasswordLoginAsync(identifier, password, request, ct): Task<LoginResponse>
+    - GenerateTokenResponseAsync(user, request, ct): Task<LoginResponse>
+  }
+  
+  LoginHandler --> LoginRequest : handles
+  LoginHandler --> LoginResponse : returns
+  LoginResponse *-- UserDto_App : contains
+  
+  interface "IRequestHandler<LoginRequest, LoginResponse>" as IRequestHandler
+  LoginHandler ..|> IRequestHandler : implements
+}
+
+' ============================================
+' DOMAIN LAYER - ENTITIES
+' ============================================
+package "DOMAIN LAYER - Entities" #F8CECC {
+  
+  class User <<Entity>> {
+    + Id: Guid
+    + Email: string
+    + PhoneNumber: string?
+    + FullName: string?
+    + PasswordHash: string?
+    + AvatarUrl: string?
+    + Provider: string
+    + Status: string
+    + EmailVerifiedAt: DateTime?
+    + PhoneVerifiedAt: DateTime?
+    + LastLoginAt: DateTime?
+    + CreatedAt: DateTime
+    + UpdatedAt: DateTime
+    --
+    + UserRoles: List<UserRole>
+    + RefreshTokens: List<RefreshToken>
+    + OAuthProviders: List<UserOAuthProvider>
+  }
+  
+  class OtpCode <<Entity>> {
+    + Id: Guid
+    + PhoneNumber: string
+    + Code: string
+    + IsUsed: bool
+    + ExpiresAt: DateTime
+    + AttemptCount: int
+    + CreatedAt: DateTime
+  }
+  
+  class RefreshToken <<Entity>> {
+    + Id: Guid
+    + UserId: Guid
+    + Token: string
+    + ExpiresAt: DateTime
+    + DeviceInfo: string?
+    + IpAddress: string?
+    + IsRevoked: bool
+    + CreatedAt: DateTime
+    + CreatedBy: Guid
+    --
+    + User: User
+  }
+  
+  class Role <<Entity>> {
+    + Id: Guid
+    + Code: string
+    + Name: string
+    --
+    + UserRoles: List<UserRole>
+  }
+  
+  class UserRole <<Entity>> {
+    + Id: Guid
+    + UserId: Guid
+    + RoleId: Guid
+    + AssignedAt: DateTime
+    --
+    + User: User
+    + Role: Role
+  }
+  
+  User "1" *-- "many" RefreshToken : has
+  User "1" *-- "many" UserRole : has
+  Role "1" *-- "many" UserRole : has
+}
+
+' ============================================
+' DOMAIN LAYER - REPOSITORY INTERFACES
+' ============================================
+package "DOMAIN LAYER - Repositories" #FFE6CC {
+  
+  interface IUserRepository {
+    + GetByEmailAsync(email, ct): Task<User?>
+    + GetByPhoneNumberAsync(phone, ct): Task<User?>
+    + CreateAsync(user, ct): Task
+    + UpdateAsync(user, ct): Task
+  }
+  
+  interface IOtpCodeRepository {
+    + GetLatestValidOtpAsync(phone, ct): Task<OtpCode?>
+    + GetLatestValidOtpByIdentifierAsync(identifier, ct): Task<OtpCode?>
+    + MarkAsUsedAsync(id, ct): Task
+    + IncrementAttemptCountAsync(id, ct): Task
+  }
+  
+  interface IRefreshTokenRepository {
+    + CreateAsync(token, ct): Task
+    + GetByTokenAsync(token, ct): Task<RefreshToken?>
+    + RevokeAsync(id, ct): Task
+  }
+  
+  interface IRoleRepository {
+    + GetByCodeAsync(code, ct): Task<Role?>
+    + GetAllAsync(ct): Task<List<Role>>
+  }
+  
+  interface IUserRoleRepository {
+    + AssignRoleToUserAsync(userId, roleId, ct): Task
+    + GetUserRolesAsync(userId, ct): Task<List<Role>>
+  }
+  
+  IUserRepository ..> User : manages
+  IOtpCodeRepository ..> OtpCode : manages
+  IRefreshTokenRepository ..> RefreshToken : manages
+  IRoleRepository ..> Role : manages
+  IUserRoleRepository ..> UserRole : manages
+}
+
+' ============================================
+' COMMON SERVICES
+' ============================================
+package "COMMON SERVICES" #E1D5E7 {
+  
+  interface IPasswordHasher {
+    + HashPassword(password: string): string
+    + VerifyPassword(password, hash): bool
+  }
+  
+  interface IJwtTokenService {
+    + GenerateAccessToken(userId, email, roles): string
+    + GenerateRefreshToken(): string
+    + ValidateToken(token): ClaimsPrincipal?
+  }
+  
+  interface IMediator {
+    + Send<TResponse>(request, ct): Task<TResponse>
+  }
+}
+
+' ============================================
+' RELATIONSHIPS
+' ============================================
+
+' Presentation -> Application
+LoginEndpoint ..> IMediator : uses
+LoginEndpoint ..> LoginRequest : sends
+LoginEndpoint ..> LoginResponse : receives
+
+' Application -> Domain Repositories
+LoginHandler ..> IUserRepository : uses
+LoginHandler ..> IOtpCodeRepository : uses
+LoginHandler ..> IRoleRepository : uses
+LoginHandler ..> IUserRoleRepository : uses
+LoginHandler ..> IRefreshTokenRepository : uses
+
+' Application -> Services
+LoginHandler ..> IPasswordHasher : uses
+LoginHandler ..> IJwtTokenService : uses
+
+' Handler produces domain entities
+LoginHandler ..> User : creates/updates
+LoginHandler ..> RefreshToken : creates
+
+' ============================================
+' NOTES
+' ============================================
+' note top of LoginHandler
+'   **AUTHENTICATION FLOWS**
+  
+'   1. **OTP Login** (Auto-register):
+'      • Identifier + OtpCode
+'      • Verify OTP → Create/Update User
+'      • Assign USER role (if new)
+'      • Generate JWT tokens
+  
+'   2. **Password Login** (Existing users):
+'      • Identifier + Password
+'      • Verify Password → Check Status
+'      • Generate JWT tokens
+  
+'   **Supported Identifiers:**
+'   • Phone: +84901234567
+'   • Email: user@example.com
+' end note
+
+' note bottom of User
+'   **User Status Values:**
+'   • active: Normal user
+'   • inactive: Suspended temporarily
+'   • banned: Permanently banned
+  
+'   **Provider Values:**
+'   • local: Email/Phone registration
+'   • google: Google OAuth
+'   • facebook: Facebook OAuth
+' end note
+
+' note bottom of OtpCode
+'   **OTP Validation Rules:**
+'   • Expires after 5 minutes
+'   • Max 3 verification attempts
+'   • Single use only (IsUsed flag)
+'   • 6-digit numeric code
+' end note
+
+' note right of RefreshToken
+'   **Token Lifecycle:**
+'   • Access Token: 60 minutes
+'   • Refresh Token: 7 days
+'   • Tracks device & IP
+'   • Can be revoked
+' end note
+
+' ============================================
+' LEGEND
+' ============================================
+legend bottom left
+  **LEGEND**
+  
+  **Colors:**
+  🟣 Presentation Layer (FastEndpoints)
+  🟢 Application Layer (CQRS Handlers)
+  🔴 Domain Entities
+  🟠 Repository Interfaces
+  🟣 Common Services
+  
+  **Relationships:**
+  ---> Dependency
+  ...> Uses/Implements
+  *--- Composition
+  o--- Aggregation
+endlegend
+
+@enduml
