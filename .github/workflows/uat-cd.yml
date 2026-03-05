@@ -1,14 +1,12 @@
 name: uat-cd
 
 on:
-  push:
-    branches:
-      - uat
-  pull_request:
-    branches:
-      - uat
+  workflow_run:
+    workflows: ["uat-ci"]
     types:
-      - closed
+      - completed
+    branches:
+      - uat
   workflow_dispatch:
 
 jobs:
@@ -17,8 +15,7 @@ jobs:
     runs-on: ubuntu-22.04
     if: |
       github.event_name == 'workflow_dispatch' ||
-      github.event_name == 'push' ||
-      (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
 
     steps:
       - name: 📥 Checkout Code

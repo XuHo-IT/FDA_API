@@ -5,6 +5,7 @@ on:
     branches: ["uat"]
   pull_request:
     branches: ["uat"]
+    types: [opened, synchronize, reopened, closed]
 
 jobs:
   # Gộp Analyze và Build vào làm 1 để CodeQL bắt được quá trình biên dịch

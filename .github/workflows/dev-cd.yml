@@ -1,14 +1,13 @@
 name: dev-cd
 
 on:
-  push:
-    branches:
-      - dev
-  pull_request:
-    branches:
-      - dev
+  workflow_run:
+    workflows: ["dev-ci"]
     types:
-      - closed
+      - completed
+    branches:
+      - dev
+  workflow_dispatch:
 
 jobs:
   publish-source:
@@ -17,8 +16,8 @@ jobs:
 
     # Chạy khi: push trực tiếp HOẶC merge PR (không chạy nếu close PR mà không merge)
     if: |
-      github.event_name == 'push' ||
-      (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
 
     steps:
       - name: 📥 Checkout Code
