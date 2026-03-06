@@ -207,52 +207,52 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111111"),
                             CooldownMinutes = 30,
-                            CreatedAt = new DateTime(2026, 2, 26, 13, 11, 6, 784, DateTimeKind.Utc).AddTicks(213),
+                            CreatedAt = new DateTime(2026, 3, 3, 17, 42, 1, 105, DateTimeKind.Utc).AddTicks(6564),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
                             Description = "Low priority alerts - 30 min cooldown",
                             IsActive = true,
                             MaxNotificationsPerHour = 2,
                             Severity = "info",
-                            UpdatedAt = new DateTime(2026, 2, 26, 13, 11, 6, 784, DateTimeKind.Utc).AddTicks(213),
+                            UpdatedAt = new DateTime(2026, 3, 3, 17, 42, 1, 105, DateTimeKind.Utc).AddTicks(6564),
                             UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
                         },
                         new
                         {
                             Id = new Guid("22222222-2222-2222-2222-222222222222"),
                             CooldownMinutes = 20,
-                            CreatedAt = new DateTime(2026, 2, 26, 13, 11, 6, 784, DateTimeKind.Utc).AddTicks(213),
+                            CreatedAt = new DateTime(2026, 3, 3, 17, 42, 1, 105, DateTimeKind.Utc).AddTicks(6564),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
                             Description = "Caution alerts - 20 min cooldown",
                             IsActive = true,
                             MaxNotificationsPerHour = 3,
                             Severity = "caution",
-                            UpdatedAt = new DateTime(2026, 2, 26, 13, 11, 6, 784, DateTimeKind.Utc).AddTicks(213),
+                            UpdatedAt = new DateTime(2026, 3, 3, 17, 42, 1, 105, DateTimeKind.Utc).AddTicks(6564),
                             UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
                         },
                         new
                         {
                             Id = new Guid("33333333-3333-3333-3333-333333333333"),
                             CooldownMinutes = 10,
-                            CreatedAt = new DateTime(2026, 2, 26, 13, 11, 6, 784, DateTimeKind.Utc).AddTicks(213),
+                            CreatedAt = new DateTime(2026, 3, 3, 17, 42, 1, 105, DateTimeKind.Utc).AddTicks(6564),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
                             Description = "Warning alerts - 10 min cooldown",
                             IsActive = true,
                             MaxNotificationsPerHour = 6,
                             Severity = "warning",
-                            UpdatedAt = new DateTime(2026, 2, 26, 13, 11, 6, 784, DateTimeKind.Utc).AddTicks(213),
+                            UpdatedAt = new DateTime(2026, 3, 3, 17, 42, 1, 105, DateTimeKind.Utc).AddTicks(6564),
                             UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
                         },
                         new
                         {
                             Id = new Guid("44444444-4444-4444-4444-444444444444"),
                             CooldownMinutes = 5,
-                            CreatedAt = new DateTime(2026, 2, 26, 13, 11, 6, 784, DateTimeKind.Utc).AddTicks(213),
+                            CreatedAt = new DateTime(2026, 3, 3, 17, 42, 1, 105, DateTimeKind.Utc).AddTicks(6564),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
                             Description = "Critical alerts - 5 min cooldown",
                             IsActive = true,
                             MaxNotificationsPerHour = 12,
                             Severity = "critical",
-                            UpdatedAt = new DateTime(2026, 2, 26, 13, 11, 6, 784, DateTimeKind.Utc).AddTicks(213),
+                            UpdatedAt = new DateTime(2026, 3, 3, 17, 42, 1, 105, DateTimeKind.Utc).AddTicks(6564),
                             UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
                         });
                 });
@@ -327,6 +327,53 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         .HasDatabaseName("ix_alert_rules_station");
 
                     b.ToTable("AlertRules");
+                });
+
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.AlertTemplate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BodyTemplate")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Channel")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Severity")
+                        .HasColumnType("text");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TitleTemplate")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AlertTemplates");
                 });
 
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.AnalyticsJob", b =>
@@ -1409,6 +1456,73 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                     b.ToTable("sensor_hourly_agg", (string)null);
                 });
 
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.SensorIncident", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("AssignedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("AssignedTo")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AssignedUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("IncidentType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Priority")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Resolution")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ResolutionNotes")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ResolvedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("StationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssignedUserId");
+
+                    b.HasIndex("StationId");
+
+                    b.ToTable("SensorIncidents");
+                });
+
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.Station", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1436,6 +1550,9 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
 
                     b.Property<DateTimeOffset?>("InstalledAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsIncidentActive")
+                        .HasColumnType("boolean");
 
                     b.Property<DateTimeOffset?>("LastSeenAt")
                         .HasColumnType("timestamp with time zone");
@@ -1508,6 +1625,69 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         .HasDatabaseName("ix_station_geo");
 
                     b.ToTable("stations", (string)null);
+                });
+
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.StationComponent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ComponentType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("FirmwareVersion")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTimeOffset?>("InstalledAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("LastMaintenanceAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Model")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("SerialNumber")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("StationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StationId");
+
+                    b.ToTable("StationComponents");
                 });
 
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.User", b =>
@@ -2114,6 +2294,23 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                     b.Navigation("Station");
                 });
 
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.SensorIncident", b =>
+                {
+                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.User", "AssignedUser")
+                        .WithMany()
+                        .HasForeignKey("AssignedUserId");
+
+                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.Station", "Station")
+                        .WithMany()
+                        .HasForeignKey("StationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AssignedUser");
+
+                    b.Navigation("Station");
+                });
+
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.Station", b =>
                 {
                     b.HasOne("FDAAPI.Domain.RelationalDb.Entities.AdministrativeArea", "AdministrativeArea")
@@ -2122,6 +2319,17 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("AdministrativeArea");
+                });
+
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.StationComponent", b =>
+                {
+                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.Station", "Station")
+                        .WithMany()
+                        .HasForeignKey("StationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Station");
                 });
 
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.UserAlertSubscription", b =>

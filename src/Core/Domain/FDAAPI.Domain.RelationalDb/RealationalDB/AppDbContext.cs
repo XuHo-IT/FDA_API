@@ -47,6 +47,9 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB
         public DbSet<FloodReportMedia> FloodReportMedia { get; set; } = null!;
         public DbSet<FloodReportVote> FloodReportVotes { get; set; } = null!;
         public DbSet<FloodReportFlag> FloodReportFlags { get; set; } = null!;
+        public DbSet<AlertTemplate> AlertTemplates { get; set; } = null!;
+        public DbSet<SensorIncident> SensorIncidents { get; set; } = null!;
+        public DbSet<StationComponent> StationComponents { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

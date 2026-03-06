@@ -1,0 +1,49 @@
+@startuml FE06_ViewFloodMap
+title FE06 - View Flood Map (Real-time Water Levels)
+
+actor User
+participant UI
+participant GetMapCurrentStatusEndpoint
+participant MediatR
+participant GetMapCurrentStatusHandler
+participant Repository
+database Database
+
+User -> UI: 1. Open flood map view
+UI -> GetMapCurrentStatusEndpoint: 2. GET /api/map/current-status\n(bounds, status)
+
+alt Validation failed
+    GetMapCurrentStatusEndpoint --> UI: 3. 400 Bad Request
+    UI --> User: 4. Show validation error
+else Validation passed
+    GetMapCurrentStatusEndpoint -> MediatR: 5. Send(GetMapCurrentStatusRequest)
+    MediatR -> GetMapCurrentStatusHandler: 6. Handle(request)
+
+    GetMapCurrentStatusHandler -> Repository: 7. Get stations\nwith optional filters
+    Repository -> Database: 8. SELECT Stations\nWHERE lat/lng IN bounds\nAND status = ?
+    Database --> Repository: 9. List<Station>
+    Repository --> GetMapCurrentStatusHandler: 10. List<Station>
+
+    GetMapCurrentStatusHandler -> Repository: 11. Get latest readings\nfor each station
+    Repository -> Database: 12. SELECT SensorReadings\nGROUP BY StationId\nORDER BY MeasuredAt DESC
+    Database --> Repository: 13. Latest readings
+    Repository --> GetMapCurrentStatusHandler: 14. Dictionary<StationId, Reading>
+
+    GetMapCurrentStatusHandler -> GetMapCurrentStatusHandler: 15. Calculate flood severity\nfor each station
+
+    GetMapCurrentStatusHandler -> GetMapCurrentStatusHandler: 16. Build GeoJSON\nFeatureCollection
+
+    alt No stations found
+        GetMapCurrentStatusHandler --> MediatR: 17. Response\n(success: false, 404)
+        MediatR --> GetMapCurrentStatusEndpoint: 18. Response
+        GetMapCurrentStatusEndpoint --> UI: 19. 404 Not Found
+        UI --> User: 20. No stations in area
+    else Stations found
+        GetMapCurrentStatusHandler --> MediatR: 21. Response\n(success: true, GeoJSON)
+        MediatR --> GetMapCurrentStatusEndpoint: 22. Response
+        GetMapCurrentStatusEndpoint --> UI: 23. 200 OK\n(GeoJSON FeatureCollection)
+        UI --> User: 24. Display map with\nreal-time water levels
+    end
+end
+
+@enduml

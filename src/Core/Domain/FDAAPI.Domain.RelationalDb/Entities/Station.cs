@@ -29,6 +29,7 @@ namespace FDAAPI.Domain.RelationalDb.Entities
         public Guid? AdministrativeAreaId { get; set; } // Reference to administrative area (ward/district)
         public DateTimeOffset? InstalledAt { get; set; }
         public DateTimeOffset? LastSeenAt { get; set; }
+        public bool IsIncidentActive { get; set; } = false; // True when station has active hardware_fault/offline incident
         public Guid CreatedBy { get; set; }
         public DateTime CreatedAt { get; set; }
         public Guid UpdatedBy { get; set; }

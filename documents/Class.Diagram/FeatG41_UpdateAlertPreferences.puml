@@ -1,0 +1,257 @@
+@startuml FeatG41_UpdateAlertPreferences_ClassDiagram
+!define RECTANGLE class
+
+skinparam backgroundColor #FEFEFE
+skinparam classBackgroundColor #FFFFFF
+skinparam classBorderColor #000000
+skinparam packageBackgroundColor #E8E8E8
+skinparam packageBorderColor #666666
+skinparam stereotypeCBackgroundColor #ADD1B2
+skinparam arrowColor #333333
+
+title FeatG41 - Update Alert Preferences - Class Diagram\n(Domain-Centric Architecture + CQRS Pattern)
+
+' ============================================
+' PRESENTATION LAYER
+' ============================================
+package "PRESENTATION LAYER" #E1D5E7 {
+
+  class UpdateAlertPreferencesEndpoint <<Endpoint>> {
+    - _mediator: IMediator
+    --
+    + Configure(): void
+    + HandleAsync(req: UpdateAlertPreferencesRequestDto, ct): Task
+  }
+
+  class UpdateAlertPreferencesRequestDto <<DTO>> {
+    + MinSeverity: string?
+    + EnablePush: bool?
+    + EnableEmail: bool?
+    + EnableSms: bool?
+    + QuietHoursStart: TimeSpan?
+    + QuietHoursEnd: TimeSpan?
+  }
+
+  class UpdateAlertPreferencesResponseDto <<DTO>> {
+    + Success: bool
+    + Message: string
+  }
+
+  UpdateAlertPreferencesEndpoint --> UpdateAlertPreferencesRequestDto : uses
+  UpdateAlertPreferencesEndpoint --> UpdateAlertPreferencesResponseDto : returns
+}
+
+' ============================================
+' APPLICATION LAYER
+' ============================================
+package "APPLICATION LAYER" #D5E8D4 {
+
+  class UpdateAlertPreferencesRequest <<Record>> {
+    + AreaId: Guid
+    + UserId: Guid
+    + MinSeverity: string?
+    + EnablePush: bool?
+    + EnableEmail: bool?
+    + EnableSms: bool?
+    + QuietHoursStart: TimeSpan?
+    + QuietHoursEnd: TimeSpan?
+  }
+
+  class UpdateAlertPreferencesResponse <<Response>> {
+    + Success: bool
+    + Message: string
+  }
+
+  class UpdateAlertPreferencesHandler <<Handler>> {
+    - _subscriptionRepo: IUserAlertSubscriptionRepository
+    - _area_repo: IAreaRepository
+    - _logger: ILogger<UpdateAlertPreferencesHandler>
+    --
+    + Handle(request, ct): Task<UpdateAlertPreferencesResponse>
+  }
+
+  interface "IRequestHandler<UpdateAlertPreferencesRequest, UpdateAlertPreferencesResponse>" as IRequestHandler_G41
+  UpdateAlertPreferencesHandler ..|> IRequestHandler_G41 : implements
+
+  UpdateAlertPreferencesHandler --> UpdateAlertPreferencesRequest : handles
+  UpdateAlertPreferencesHandler --> UpdateAlertPreferencesResponse : returns
+}
+
+' ============================================
+' DOMAIN LAYER - ENTITIES
+' ============================================
+package "DOMAIN LAYER - Entities" #F8CECC {
+
+  class UserAlertSubscription <<Entity>> {
+    + Id: Guid
+    + UserId: Guid
+    + AreaId: Guid?
+    + StationId: Guid?
+    + MinSeverity: string
+    + EnablePush: bool
+    + EnableEmail: bool
+    + EnableSms: bool
+    + QuietHoursStart: TimeSpan?
+    + QuietHoursEnd: TimeSpan?
+    + CreatedBy: Guid
+    + CreatedAt: DateTime
+    + UpdatedBy: Guid
+    + UpdatedAt: DateTime
+    --
+    + User: User?
+    + Station: Station?
+    + Area: Area?
+  }
+
+  class Area <<Entity>> {
+    + Id: Guid
+    + Name: string
+    + Description: string?
+    + GeoPolygon: string?
+    + AreaType: string
+    + ParentAreaId: Guid?
+    + CreatedAt: DateTime
+    + UpdatedAt: DateTime
+    --
+    + ParentArea: Area?
+    + ChildAreas: List<Area>?
+    + Stations: List<Station>?
+  }
+
+  class Station <<Entity>> {
+    + Id: Guid
+    + Code: string
+    + Type: string
+    + Name: string
+    + LocationDesc: string
+    + Latitude: decimal?
+    + Longitude: decimal?
+    + Status: string
+    + CreatedAt: DateTime
+    + UpdatedAt: DateTime
+  }
+
+  class User <<Entity>> {
+    + Id: Guid
+    + Email: string
+    + PhoneNumber: string?
+    + FullName: string?
+    + CreatedAt: DateTime
+    + UpdatedAt: DateTime
+  }
+
+  ' Entity Relationships
+  User "1" *-- "many" UserAlertSubscription : has
+  Area "1" *-- "many" UserAlertSubscription : has
+  Station "1" *-- "many" UserAlertSubscription : has
+}
+
+' ============================================
+' DOMAIN LAYER - REPOSITORY INTERFACES
+' ============================================
+package "DOMAIN LAYER - Repositories" #FFE6CC {
+
+  interface IUserAlertSubscriptionRepository {
+    + CreateAsync(entity, ct): Task<Guid>
+    + UpdateAsync(entity, ct): Task<bool>
+    + DeleteAsync(id, ct): Task<bool>
+    + GetByIdAsync(id, ct): Task<UserAlertSubscription?>
+    + GetByUserIdAsync(userId, ct): Task<IEnumerable<UserAlertSubscription>>
+    + GetByStationIdAsync(stationId, ct): Task<IEnumerable<UserAlertSubscription>>
+    + GetByAreaIdAsync(areaId, ct): Task<IEnumerable<UserAlertSubscription>>
+    + GetByAreaIdsAsync(areaIds, ct): Task<IEnumerable<UserAlertSubscription>>
+  }
+
+  interface IAreaRepository {
+    + GetByIdAsync(id, ct): Task<Area?>
+    + GetAllAsync(ct): Task<IEnumerable<Area>>
+    + GetAreasContainingStationAsync(stationId, lat, lng, ct): Task<List<Area>>
+  }
+
+  IUserAlertSubscriptionRepository ..> UserAlertSubscription : manages
+  IAreaRepository ..> Area : manages
+}
+
+' ============================================
+' COMMON SERVICES
+' ============================================
+package "COMMON SERVICES" #E1D5E7 {
+
+  interface IMediator {
+    + Send<TResponse>(request, ct): Task<TResponse>
+  }
+}
+
+' ============================================
+' RELATIONSHIPS
+' ============================================
+
+' Presentation -> Application
+UpdateAlertPreferencesEndpoint ..> IMediator : uses
+UpdateAlertPreferencesEndpoint ..> UpdateAlertPreferencesRequest : sends
+
+' Application Handler uses Repositories
+UpdateAlertPreferencesHandler ..> IUserAlertSubscriptionRepository : uses
+UpdateAlertPreferencesHandler ..> IAreaRepository : uses
+
+' Handler produces/updates domain entities
+UpdateAlertPreferencesHandler ..> UserAlertSubscription : creates/updates
+
+' ============================================
+' NOTES
+' ============================================
+note top of UpdateAlertPreferencesHandler
+  **UPDATE ALERT PREFERENCES FLOW**
+
+  1. Get authenticated user ID from JWT claims
+  2. Get area ID from route parameter
+  3. Fetch user's subscription for this area
+  4. Verify authorization (subscription.UserId == request.UserId)
+  5. Update only provided fields (partial update):
+     - MinSeverity
+     - EnablePush / EnableEmail / EnableSms
+     - QuietHoursStart / QuietHoursEnd
+  6. Save changes to repository
+  7. Return success/failure response
+
+  **API Endpoint:**
+  PUT /api/v1/alerts/subscriptions/{areaId}
+end note
+
+note bottom of UserAlertSubscription
+  **Notification Channels:**
+  - Push: FCM push notifications
+  - Email: Email notifications
+  - SMS: SMS notifications (premium)
+
+  **MinSeverity Values:**
+  - info: All alerts
+  - caution: Caution and above
+  - warning: Warning and critical
+  - critical: Critical only
+
+  **Quiet Hours:**
+  - Start/End times in UTC
+  - User won't receive notifications during these hours
+end note
+
+' ============================================
+' LEGEND
+' ============================================
+legend bottom left
+  **LEGEND**
+
+  **Colors:**
+  🟣 Presentation Layer (FastEndpoints)
+  🟢 Application Layer (CQRS Handlers)
+  🔴 Domain Entities
+  🟠 Repository Interfaces
+  🟣 Common Services
+
+  **Relationships:**
+  ---> Dependency
+  ...> Uses/Implements
+  *--- Composition (1 to many)
+endlegend
+
+@enduml

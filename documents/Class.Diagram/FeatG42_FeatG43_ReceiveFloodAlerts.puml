@@ -1,0 +1,505 @@
+@startuml FeatG42_FeatG43_ReceiveFloodAlerts_ClassDiagram
+!define RECTANGLE class
+
+skinparam backgroundColor #FEFEFE
+skinparam classBackgroundColor #FFFFFF
+skinparam classBorderColor #000000
+skinparam packageBackgroundColor #E8E8E8
+skinparam packageBorderColor #666666
+skinparam stereotypeCBackgroundColor #ADD1B2
+skinparam arrowColor #333333
+
+title FeatG42 & FeatG43 - Receive Flood Alerts - Class Diagram\n(Domain-Centric Architecture + CQRS Pattern)
+
+' ============================================
+' PRESENTATION LAYER
+' ============================================
+package "PRESENTATION LAYER" #E1D5E7 {
+
+  class AlertProcessingJob <<BackgroundJob>> {
+    + ExecuteAsync(ct): Task
+  }
+
+  class NotificationDispatchJob <<BackgroundJob>> {
+    + ExecuteAsync(ct): Task
+  }
+}
+
+' ============================================
+' APPLICATION LAYER
+' ============================================
+package "APPLICATION LAYER" #D5E8D4 {
+
+  ' --- ProcessAlerts Feature (G42) ---
+  class ProcessAlertsRequest <<Record>> {
+  }
+
+  class ProcessAlertsResponse <<Response>> {
+    + Success: bool
+    + Message: string
+    + AlertsCreated: int
+    + AlertsUpdated: int
+    + AlertsPending: int
+  }
+
+  class ProcessAlertsHandler <<Handler>> {
+    - _ruleRepo: IAlertRuleRepository
+    - _sensor_repo: ISensorReadingRepository
+    - _alert_repo: IAlertRepository
+    - _cooldown_repo: IAlertCooldownConfigRepository
+    - _station_repo: IStationRepository
+    - _globalThresholdService: IGlobalThresholdService
+    - _logger: ILogger<ProcessAlertsHandler>
+    --
+    + Handle(request, ct): Task<ProcessAlertsResponse>
+    - ProcessCustomRule(rule, reading, ct): Task<(int, int, int)>
+    - ProcessGlobalThreshold(reading, ct): Task<(int, int, int)>
+    - HandleExistingAlert(alert, reading, ct): Task<string>
+    - CreateNewAlert(ruleId, stationId, severity, reading, ct): Task
+    - MapSeverityToPriority(severity): NotificationPriority
+  }
+
+  interface "IRequestHandler<ProcessAlertsRequest, ProcessAlertsResponse>" as IRequestHandler_G42
+  ProcessAlertsHandler ..|> IRequestHandler_G42 : implements
+
+  ' --- DispatchNotifications Feature (G43) ---
+  class DispatchNotificationsRequest <<Record>> {
+  }
+
+  class DispatchNotificationsResponse <<Response>> {
+    + Success: bool
+    + Message: string
+    + NotificationsCreated: int
+    + NotificationsSent: int
+    + NotificationsFailed: int
+    + AlertsProcessed: int
+  }
+
+  class DispatchNotificationsHandler <<Handler>> {
+    - _alert_repo: IAlertRepository
+    - _subscription_repo: IUserAlertSubscriptionRepository
+    - _user_repo: IUserRepository
+    - _notificationLog_repo: INotificationLogRepository
+    - _routingService: IPriorityRoutingService
+    - _templateService: INotificationTemplateService
+    - _dispatchService: INotificationDispatchService
+    - _station_repo: IStationRepository
+    - _area_repo: IAreaRepository
+    - _userSubscription_repo: IUserSubscriptionRepository
+    - _logger: ILogger<DispatchNotificationsHandler>
+    --
+    + Handle(request, ct): Task<DispatchNotificationsResponse>
+    - IsInQuietHours(start, end): bool
+    - FilterChannelsByPreferences(channels, subscription): List<NotificationChannel>
+    - GetDestination(user, channel): string
+  }
+
+  interface "IRequestHandler<DispatchNotificationsRequest, DispatchNotificationsResponse>" as IRequestHandler_G43
+  DispatchNotificationsHandler ..|> IRequestHandler_G43 : implements
+
+  ' Relationships
+  ProcessAlertsHandler --> ProcessAlertsRequest : handles
+  ProcessAlertsHandler --> ProcessAlertsResponse : returns
+  DispatchNotificationsHandler --> DispatchNotificationsRequest : handles
+  DispatchNotificationsHandler --> DispatchNotificationsResponse : returns
+}
+
+' ============================================
+' DOMAIN LAYER - ENTITIES
+' ============================================
+package "DOMAIN LAYER - Entities" #F8CECC {
+
+  class Alert <<Entity>> {
+    + Id: Guid
+    + AlertRuleId: Guid?
+    + StationId: Guid
+    + TriggeredAt: DateTime
+    + ResolvedAt: DateTime?
+    + Status: string
+    + Severity: string
+    + Priority: NotificationPriority
+    + CurrentValue: decimal
+    + Message: string
+    + NotificationSent: bool
+    + NotificationCount: int
+    + LastNotificationAt: DateTime?
+    + CreatedBy: Guid
+    + CreatedAt: DateTime
+    + UpdatedBy: Guid
+    + UpdatedAt: DateTime
+    --
+    + AlertRule: AlertRule?
+    + Station: Station?
+    + NotificationLogs: ICollection<NotificationLog>?
+  }
+
+  class AlertRule <<Entity>> {
+    + Id: Guid
+    + StationId: Guid
+    + Name: string
+    + RuleType: string
+    + ThresholdValue: decimal
+    + DurationMin: int?
+    + Severity: string
+    + IsActive: bool
+    + IsGlobalDefault: bool
+    + MinTierRequired: SubscriptionTier
+    + CreatedBy: Guid
+    + CreatedAt: DateTime
+    + UpdatedBy: Guid
+    + UpdatedAt: DateTime
+    --
+    + Station: Station?
+    + Alerts: ICollection<Alert>?
+  }
+
+  class AlertCooldownConfig <<Entity>> {
+    + Id: Guid
+    + Severity: string
+    + CooldownMinutes: int
+    + CreatedAt: DateTime
+  }
+
+  class UserAlertSubscription <<Entity>> {
+    + Id: Guid
+    + UserId: Guid
+    + AreaId: Guid?
+    + StationId: Guid?
+    + MinSeverity: string
+    + EnablePush: bool
+    + EnableEmail: bool
+    + EnableSms: bool
+    + QuietHoursStart: TimeSpan?
+    + QuietHoursEnd: TimeSpan?
+    + CreatedBy: Guid
+    + CreatedAt: DateTime
+    + UpdatedBy: Guid
+    + UpdatedAt: DateTime
+    --
+    + User: User?
+    + Station: Station?
+    + Area: Area?
+  }
+
+  class NotificationLog <<Entity>> {
+    + Id: Guid
+    + UserId: Guid
+    + AlertId: Guid
+    + Channel: NotificationChannel
+    + Destination: string
+    + Content: string
+    + Title: string?
+    + Priority: NotificationPriority
+    + RetryCount: int
+    + MaxRetries: int
+    + Status: string
+    + SentAt: DateTime?
+    + DeliveredAt: DateTime?
+    + ErrorMessage: string?
+    + CreatedBy: Guid
+    + CreatedAt: DateTime
+    + UpdatedBy: Guid
+    + UpdatedAt: DateTime
+    --
+    + User: User?
+    + Alert: Alert?
+  }
+
+  class Station <<Entity>> {
+    + Id: Guid
+    + Code: string
+    + Type: string
+    + Name: string
+    + LocationDesc: string
+    + Latitude: decimal?
+    + Longitude: decimal?
+    + RoadName: string
+    + Direction: string
+    + Status: string
+    + ThresholdWarning: decimal?
+    + ThresholdCritical: decimal?
+    + AdministrativeAreaId: Guid?
+    + InstalledAt: DateTimeOffset?
+    + LastSeenAt: DateTimeOffset?
+    + IsIncidentActive: bool
+    + CreatedBy: Guid
+    + CreatedAt: DateTime
+    + UpdatedBy: Guid
+    + UpdatedAt: DateTime
+    --
+    + AdministrativeArea: AdministrativeArea?
+  }
+
+  class SensorReading <<Entity>> {
+    + Id: Guid
+    + StationId: Guid
+    + Value: double
+    + Distance: double
+    + SensorHeight: double
+    + Unit: string
+    + Status: int
+    + MeasuredAt: DateTime
+    + CreatedBy: Guid
+    + CreatedAt: DateTime
+    + UpdatedBy: Guid
+    + UpdatedAt: DateTime
+    --
+    + Station: Station?
+  }
+
+  class User <<Entity>> {
+    + Id: Guid
+    + Email: string
+    + PhoneNumber: string?
+    + FullName: string?
+    + FcmToken: string?
+    + PasswordHash: string?
+    + AvatarUrl: string?
+    + Provider: string
+    + Status: string
+    + EmailVerifiedAt: DateTime?
+    + PhoneVerifiedAt: DateTime?
+    + LastLoginAt: DateTime?
+    + CreatedAt: DateTime
+    + UpdatedAt: DateTime
+  }
+
+  ' Entity Relationships
+  AlertRule "1" *-- "many" Alert : triggers
+  Alert "1" *-- "many" NotificationLog : generates
+  Station "1" *-- "many" Alert : has
+  Station "1" *-- "many" SensorReading : has
+  Station "1" *-- "many" AlertRule : has
+  User "1" *-- "many" UserAlertSubscription : has
+  User "1" *-- "many" NotificationLog : receives
+}
+
+' ============================================
+' DOMAIN LAYER - REPOSITORY INTERFACES
+' ============================================
+package "DOMAIN LAYER - Repositories" #FFE6CC {
+
+  interface IAlertRepository {
+    + GetByIdAsync(id, ct): Task<Alert?>
+    + CreateAsync(entity, ct): Task<Guid>
+    + UpdateAsync(entity, ct): Task<bool>
+    + GetActiveAlertsByStationAsync(stationId, ct): Task<IEnumerable<Alert>>
+    + GetAlertsBySeverityAsync(severity, status, ct): Task<IEnumerable<Alert>>
+    + GetUnnotifiedAlertsAsync(take, ct): Task<IEnumerable<Alert>>
+    + CountAlertsAsync(fromDate, toDate, ct): Task<int>
+    + CountAlertsBySeverityAsync(fromDate, toDate, ct): Task<Dictionary<string, int>>
+    + CountAlertsByStatusAsync(fromDate, toDate, ct): Task<Dictionary<string, int>>
+  }
+
+  interface IAlertRuleRepository {
+    + GetActiveRulesByStationAsync(stationId, ct): Task<IEnumerable<AlertRule>>
+  }
+
+  interface IAlertCooldownConfigRepository {
+    + GetCooldownMinutesAsync(severity, ct): Task<int>
+  }
+
+  interface IUserAlertSubscriptionRepository {
+    + CreateAsync(entity, ct): Task<Guid>
+    + UpdateAsync(entity, ct): Task<bool>
+    + DeleteAsync(id, ct): Task<bool>
+    + GetByIdAsync(id, ct): Task<UserAlertSubscription?>
+    + GetByUserIdAsync(userId, ct): Task<IEnumerable<UserAlertSubscription>>
+    + GetByStationIdAsync(stationId, ct): Task<IEnumerable<UserAlertSubscription>>
+    + GetByAreaIdAsync(areaId, ct): Task<IEnumerable<UserAlertSubscription>>
+    + GetByAreaIdsAsync(areaIds, ct): Task<IEnumerable<UserAlertSubscription>>
+  }
+
+  interface INotificationLogRepository {
+    + CreateAsync(entity, ct): Task<Guid>
+    + UpdateAsync(entity, ct): Task<bool>
+    + GetPendingNotificationsAsync(maxRetries, ct): Task<IEnumerable<NotificationLog>>
+    + GetByUserIdAsync(userId, skip, take, ct): Task<IEnumerable<NotificationLog>>
+    + IsUserNotifiedAsync(userId, alertId, ct): Task<bool>
+    + GetPendingAndRetryNotificationsAsync(limit, ct): Task<List<NotificationLog>>
+  }
+
+  interface ISensorReadingRepository {
+    + GetLatestReadingsByStationsAsync(stationIds, ct): Task<IEnumerable<SensorReading>>
+  }
+
+  interface IStationRepository {
+    + GetAllAsync(ct): Task<IEnumerable<Station>>
+    + GetByIdAsync(id, ct): Task<Station?>
+  }
+
+  interface IAreaRepository {
+    + GetAreasContainingStationAsync(stationId, lat, lng, ct): Task<List<Area>>
+  }
+
+  interface IUserRepository {
+    + GetByIdAsync(id, ct): Task<User?>
+  }
+
+  interface IUserSubscriptionRepository {
+    + GetUserTierAsync(userId, ct): Task<SubscriptionTier>
+  }
+
+  interface IGlobalThresholdService {
+    + CalculateSeverity(value): (string severity, int level)
+  }
+
+  ' Repository manages Entity relationships
+  IAlertRepository ..> Alert : manages
+  IAlertRuleRepository ..> AlertRule : manages
+  IUserAlertSubscriptionRepository ..> UserAlertSubscription : manages
+  INotificationLogRepository ..> NotificationLog : manages
+  ISensorReadingRepository ..> SensorReading : manages
+  IStationRepository ..> Station : manages
+}
+
+' ============================================
+' COMMON SERVICES
+' ============================================
+package "COMMON SERVICES" #E1D5E7 {
+
+  interface IPriorityRoutingService {
+    + DeterminePriority(severity, userTier): NotificationPriority
+    + GetAvailableChannelsForTier(userTier): List<NotificationChannel>
+    + ShouldNotifyUser(severity, userTier, minSeverity): bool
+    + GetDispatchDelaySeconds(userTier, priority): int
+    + GetMaxRetriesForTier(userTier, priority): int
+  }
+
+  interface INotificationTemplateService {
+    + GenerateTitle(alert, priority): string
+    + GenerateBody(alert, station, channel): string
+    + GenerateSmsContent(alert, station): string
+  }
+
+  interface INotificationDispatchService {
+    + DispatchNotificationAsync(notificationLog, user, ct): Task<bool>
+  }
+
+  interface IMediator {
+    + Send<TResponse>(request, ct): Task<TResponse>
+  }
+}
+
+' ============================================
+' RELATIONSHIPS
+' ============================================
+
+' Presentation -> Application (Background Jobs call Handlers via MediatR)
+AlertProcessingJob ..> IMediator : uses
+AlertProcessingJob ..> ProcessAlertsRequest : sends
+NotificationDispatchJob ..> IMediator : uses
+NotificationDispatchJob ..> DispatchNotificationsRequest : sends
+
+' Application Handlers use Repositories
+ProcessAlertsHandler ..> IAlertRuleRepository : uses
+ProcessAlertsHandler ..> ISensorReadingRepository : uses
+ProcessAlertsHandler ..> IAlertRepository : uses
+ProcessAlertsHandler ..> IAlertCooldownConfigRepository : uses
+ProcessAlertsHandler ..> IStationRepository : uses
+ProcessAlertsHandler ..> IGlobalThresholdService : uses
+
+DispatchNotificationsHandler ..> IAlertRepository : uses
+DispatchNotificationsHandler ..> IUserAlertSubscriptionRepository : uses
+DispatchNotificationsHandler ..> IUserRepository : uses
+DispatchNotificationsHandler ..> INotificationLogRepository : uses
+DispatchNotificationsHandler ..> IStationRepository : uses
+DispatchNotificationsHandler ..> IAreaRepository : uses
+DispatchNotificationsHandler ..> IUserSubscriptionRepository : uses
+
+' Application Handlers use Services
+DispatchNotificationsHandler ..> IPriorityRoutingService : uses
+DispatchNotificationsHandler ..> INotificationTemplateService : uses
+DispatchNotificationsHandler ..> INotificationDispatchService : uses
+
+' ============================================
+' NOTES
+' ============================================
+note top of ProcessAlertsHandler
+  **PROCESS ALERTS FLOW (FeatG42)**
+
+  1. Get all active stations
+  2. Get latest sensor readings for each station
+  3. For each reading:
+     - Check custom AlertRule first
+     - If no custom rule → use Global Threshold
+  4. For each rule/threshold:
+     - Check if threshold exceeded
+     - Check if alert already exists (open)
+     - If exists → handle with cooldown logic
+     - If not → create new alert
+  5. Return count of created/updated alerts
+
+  **Cooldown Logic:**
+  - Critical: 30 min
+  - Warning: 60 min
+  - Caution: 120 min
+  - Within cooldown: update value only
+  - Cooldown expired: allow new notification
+end note
+
+note top of DispatchNotificationsHandler
+  **DISPATCH NOTIFICATIONS FLOW (FeatG43)**
+
+  1. Get pending alerts (NotificationSent = false)
+  2. For each alert:
+     - Get station details
+     - Find areas containing station
+     - Get area-based subscriptions
+     - Get direct station subscriptions
+     - Deduplicate by UserId
+  3. For each subscription:
+     - Check user tier and severity threshold
+     - Check quiet hours
+     - Determine priority and channels
+     - Create NotificationLog for each channel
+  4. Dispatch notifications:
+     - Retry with exponential backoff
+     - Max retries based on tier
+  5. Mark alert as notified
+end note
+
+note bottom of UserAlertSubscription
+  **Subscription Types:**
+  - Area-based: User subscribes to Area
+  - Station-based: User subscribes to Station (Gov/Admin)
+
+  **Channels:**
+  - Push (FCM)
+  - Email
+  - SMS
+  - InApp (always available)
+end note
+
+note right of Alert
+  **Alert Status Values:**
+  - open: Active alert
+  - resolved: Alert resolved
+
+  **Severity Levels:**
+  - info (level 0): Safe
+  - caution (level 1): 10-20cm
+  - warning (level 2): 20-40cm
+  - critical (level 3): 40+cm
+end note
+
+' ============================================
+' LEGEND
+' ============================================
+legend bottom left
+  **LEGEND**
+
+  **Colors:**
+  🟣 Presentation Layer (FastEndpoints/Background Jobs)
+  🟢 Application Layer (CQRS Handlers)
+  🔴 Domain Entities
+  🟠 Repository Interfaces
+  🟣 Common Services
+
+  **Relationships:**
+  ---> Dependency
+  ...> Uses/Implements
+  *--- Composition (1 to many)
+endlegend
+
+@enduml

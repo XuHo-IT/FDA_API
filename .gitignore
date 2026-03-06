@@ -18,6 +18,12 @@ appsettings.Development.json
 # Firebase service account file
 firebase-service-account.json
 
+# IOT code
+FDA_IOT_ESP32.ino
+
+# Claude AI code
+.claude/
+
 # vscode dir
 .vscode/
 

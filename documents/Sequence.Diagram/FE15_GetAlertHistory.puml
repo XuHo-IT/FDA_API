@@ -1,0 +1,45 @@
+@startuml FeatG40_GetAlertHistory
+title FeatG40 - Get Alert History Flow
+
+actor User
+participant UI
+participant GetAlertHistoryEndpoint
+participant MediatR
+participant GetAlertHistoryHandler
+participant Repository
+database Database
+
+User -> UI: 1. GET /alerts/history\n(pageNumber, pageSize)
+UI -> GetAlertHistoryEndpoint: 2. GET /api/v1/alerts/history
+GetAlertHistoryEndpoint -> GetAlertHistoryEndpoint: 3. Extract JWT user ID
+
+alt User NOT authenticated
+    GetAlertHistoryEndpoint --> UI: 4. 401 Unauthorized
+else User authenticated
+    GetAlertHistoryEndpoint -> MediatR: 5. Send(GetAlertHistoryRequest)
+    MediatR -> GetAlertHistoryHandler: 6. Handle(request)
+
+    GetAlertHistoryHandler -> Repository: 7. Get notification logs\nby user ID
+    Repository -> Database: 8. SELECT NotificationLogs\nWHERE UserId = ?
+    Database --> Repository: 9. NotificationLogs
+    Repository --> GetAlertHistoryHandler: 10. List<NotificationLog>
+
+    GetAlertHistoryHandler -> Repository: 11. Get paginated AlertIds\n(latest first)
+    Repository -> Database: 12. SELECT DISTINCT AlertId\nORDER BY CreatedAt SKIP TAKE
+    Database --> Repository: 13. Paginated AlertIds
+    Repository --> GetAlertHistoryHandler: 14. List<AlertId>
+
+    GetAlertHistoryHandler -> Repository: 15. Get alerts with\nstation details
+    Repository -> Database: 16. SELECT Alerts + Stations\nWHERE AlertId IN (?)
+    Database --> Repository: 17. Alert details
+    Repository --> GetAlertHistoryHandler: 18. List<Alert>
+
+    GetAlertHistoryHandler -> GetAlertHistoryHandler: 19. Build AlertHistoryDto
+
+    GetAlertHistoryHandler --> MediatR: 20. Response\n(success: true, data)
+    MediatR --> GetAlertHistoryEndpoint: 21. Response
+    GetAlertHistoryEndpoint --> UI: 22. 200 OK\n(alerts, pagination)
+    UI --> User: 23. Display alert history
+end
+
+@enduml
