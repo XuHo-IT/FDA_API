@@ -698,6 +698,219 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                     b.ToTable("FloodEvents", (string)null);
                 });
 
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.FloodReport", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Address")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ConfidenceLevel")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("medium")
+                        .HasComment("low | medium | high");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("Latitude")
+                        .HasPrecision(9, 6)
+                        .HasColumnType("numeric(9,6)");
+
+                    b.Property<decimal>("Longitude")
+                        .HasPrecision(9, 6)
+                        .HasColumnType("numeric(9,6)");
+
+                    b.Property<string>("Priority")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("normal")
+                        .HasComment("normal | high | critical");
+
+                    b.Property<Guid?>("ReporterUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Severity")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("medium")
+                        .HasComment("low | medium | high");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("published")
+                        .HasComment("published | hidden | escalated");
+
+                    b.Property<int>("TrustScore")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(50)
+                        .HasComment("0-100");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("ix_flood_reports_created");
+
+                    b.HasIndex("Priority")
+                        .HasDatabaseName("ix_flood_reports_priority");
+
+                    b.HasIndex("ReporterUserId")
+                        .HasDatabaseName("ix_flood_reports_reporter");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("ix_flood_reports_status");
+
+                    b.HasIndex("TrustScore")
+                        .HasDatabaseName("ix_flood_reports_trust_score");
+
+                    b.HasIndex("Latitude", "Longitude")
+                        .HasDatabaseName("ix_flood_reports_location");
+
+                    b.ToTable("FloodReports", null, t =>
+                        {
+                            t.HasCheckConstraint("chk_priority", "priority IN ('normal', 'high', 'critical')");
+
+                            t.HasCheckConstraint("chk_severity", "severity IN ('low', 'medium', 'high')");
+
+                            t.HasCheckConstraint("chk_status", "status IN ('published', 'hidden', 'escalated')");
+
+                            t.HasCheckConstraint("chk_trust_score", "trust_score >= 0 AND trust_score <= 100");
+                        });
+                });
+
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.FloodReportFlag", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("FloodReportId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasComment("spam | fake | inappropriate");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FloodReportId")
+                        .HasDatabaseName("ix_flood_report_flags_report");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_flood_report_flags_user");
+
+                    b.HasIndex("FloodReportId", "UserId")
+                        .IsUnique()
+                        .HasDatabaseName("uq_flag");
+
+                    b.ToTable("FloodReportFlags", null, t =>
+                        {
+                            t.HasCheckConstraint("chk_flag_reason", "reason IN ('spam', 'fake', 'inappropriate')");
+                        });
+                });
+
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.FloodReportMedia", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("FloodReportId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("MediaType")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("photo")
+                        .HasComment("photo | video");
+
+                    b.Property<string>("MediaUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ThumbnailUrl")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FloodReportId")
+                        .HasDatabaseName("ix_flood_report_media_report");
+
+                    b.ToTable("FloodReportMedia", null, t =>
+                        {
+                            t.HasCheckConstraint("chk_media_type", "media_type IN ('photo', 'video')");
+                        });
+                });
+
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.FloodReportVote", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("FloodReportId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("VoteType")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasDefaultValue("up")
+                        .HasComment("up | down");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FloodReportId")
+                        .HasDatabaseName("ix_flood_report_votes_report");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_flood_report_votes_user");
+
+                    b.HasIndex("FloodReportId", "UserId")
+                        .IsUnique()
+                        .HasDatabaseName("uq_vote");
+
+                    b.ToTable("FloodReportVotes", null, t =>
+                        {
+                            t.HasCheckConstraint("chk_vote_type", "vote_type IN ('up', 'down')");
+                        });
+                });
+
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.NotificationLog", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1953,6 +2166,65 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
                     b.Navigation("AdministrativeArea");
                 });
 
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.FloodReport", b =>
+                {
+                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.User", "Reporter")
+                        .WithMany()
+                        .HasForeignKey("ReporterUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Reporter");
+                });
+
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.FloodReportFlag", b =>
+                {
+                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.FloodReport", "FloodReport")
+                        .WithMany("Flags")
+                        .HasForeignKey("FloodReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FloodReport");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.FloodReportMedia", b =>
+                {
+                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.FloodReport", "FloodReport")
+                        .WithMany("Media")
+                        .HasForeignKey("FloodReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FloodReport");
+                });
+
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.FloodReportVote", b =>
+                {
+                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.FloodReport", "FloodReport")
+                        .WithMany("Votes")
+                        .HasForeignKey("FloodReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FDAAPI.Domain.RelationalDb.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FloodReport");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.NotificationLog", b =>
                 {
                     b.HasOne("FDAAPI.Domain.RelationalDb.Entities.Alert", "Alert")
@@ -2171,6 +2443,15 @@ namespace FDAAPI.Domain.RelationalDb.Migrations
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.AlertRule", b =>
                 {
                     b.Navigation("Alerts");
+                });
+
+            modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.FloodReport", b =>
+                {
+                    b.Navigation("Flags");
+
+                    b.Navigation("Media");
+
+                    b.Navigation("Votes");
                 });
 
             modelBuilder.Entity("FDAAPI.Domain.RelationalDb.Entities.PricingPlan", b =>

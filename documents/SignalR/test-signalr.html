@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@latest/dist/browser/signalr.min.js"></script>
+  </head>
+  <body>
+    <h3>SignalR Test</h3>
+    <pre id="log"></pre>
+    <script>
+      const log = (msg) => {
+        document.getElementById("log").textContent +=
+          JSON.stringify(msg, null, 2) + "\n---\n";
+      };
+
+      const connection = new signalR.HubConnectionBuilder()
+        .withUrl("https://uat.fda.id.vn/hubs/flood-data") // đổi port cho đúng
+        .withAutomaticReconnect()
+        .build();
+
+      connection.on("ReceiveSensorUpdate", (data) => {
+        console.log("ReceiveSensorUpdate:", data);
+        log(data);
+      });
+
+      connection
+        .start()
+        .then(() => log({ status: "Connected!" }))
+        .catch((err) => log({ error: err.toString() }));
+    </script>
+  </body>
+</html>

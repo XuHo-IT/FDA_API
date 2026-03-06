@@ -1,14 +1,12 @@
 name: uat-cd
 
 on:
-  push:
-    branches:
-      - uat
-  pull_request:
-    branches:
-      - uat
+  workflow_run:
+    workflows: ["uat-ci"]
     types:
-      - closed
+      - completed
+    branches:
+      - uat
   workflow_dispatch:
 
 jobs:
@@ -17,8 +15,7 @@ jobs:
     runs-on: ubuntu-22.04
     if: |
       github.event_name == 'workflow_dispatch' ||
-      github.event_name == 'push' ||
-      (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
 
     steps:
       - name: 📥 Checkout Code
@@ -45,13 +42,21 @@ jobs:
             # Pull image - Dùng file .env.uat có sẵn trên VPS
             echo "📥 Pulling latest UAT image..."
             docker compose -p fda_uat --env-file .env.uat -f docker-compose.uat.yml pull fdaapi_uat
+           
             # Restart container
             echo "▶️ Recreating UAT container..."
             docker compose -p fda_uat --env-file .env.uat -f docker-compose.uat.yml up -d --force-recreate fdaapi_uat
+           
             echo "⏳ Waiting for stabilization..."
             sleep 15
             
+            # Clean up to reduce server load.
+            echo "🧹 Cleaning up old images and build cache..."
             docker image prune -f
+
+            # Delete old images that are no longer used by any containers (keep the latest version that was just pulled).
+            docker image prune -a -f --filter "until=24h"
+            
             echo "✅ UAT deployment step completed!"
 
       - name: 🏥 Health Check

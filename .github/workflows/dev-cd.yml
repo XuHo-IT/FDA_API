@@ -1,14 +1,13 @@
 name: dev-cd
 
 on:
-  push:
-    branches:
-      - dev
-  pull_request:
-    branches:
-      - dev
+  workflow_run:
+    workflows: ["dev-ci"]
     types:
-      - closed
+      - completed
+    branches:
+      - dev
+  workflow_dispatch:
 
 jobs:
   publish-source:
@@ -17,8 +16,8 @@ jobs:
 
     # Chạy khi: push trực tiếp HOẶC merge PR (không chạy nếu close PR mà không merge)
     if: |
-      github.event_name == 'push' ||
-      (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
 
     steps:
       - name: 📥 Checkout Code
@@ -34,10 +33,29 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script_stop: true
           script: |
+           script: |
             set -e
             cd /home/dev/FDA_API
+            
+            # Cập nhật code cấu hình
             git fetch origin
             git reset --hard origin/dev
-            docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
-            docker compose -p fda_dev --env-file .env -f docker-compose.dev.yml up -d --build --remove-orphans
-            docker image prune -f
+            
+            # Đăng nhập
+            echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+            
+            # 1. Hạ container cũ xuống trước để tránh Conflict tên
+            echo "🛑 Stopping old containers..."
+            docker compose -p fda_dev -f docker-compose.dev.yml down --remove-orphans
+            
+            # 2. Pull image mới
+            echo "📥 Pulling latest images..."
+            docker compose -p fda_dev -f docker-compose.dev.yml pull
+            
+            # 3. Khởi chạy lại hệ thống mới
+            echo "🚀 Deploying new version..."
+            docker compose -p fda_dev --env-file .env -f docker-compose.dev.yml up -d
+            
+            # 4. Dọn dẹp image cũ và rác để giải phóng dung lượng (Mục tiêu giảm nặng)
+            echo "🧹 Cleaning up..."
+            docker system prune -f
