@@ -33,9 +33,10 @@ namespace FDAAPI.App.Common.DTOs
     }
 
     /// <summary>
-    /// GeoJSON LineString Geometry DTO — for road segment gradient features
+    /// GeoJSON LineString Geometry DTO — for road segment gradient features.
+    /// Distinct from Routing.LineStringGeometry which uses double[][].
     /// </summary>
-    public class LineStringGeometry
+    public class GeoJsonLineStringGeometry
     {
         public string Type { get; set; } = "LineString";
         public decimal[][] Coordinates { get; set; } = Array.Empty<decimal[]>();

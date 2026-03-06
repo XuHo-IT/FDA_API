@@ -29,13 +29,16 @@
       }
     },
 
-    // --- LOẠI 2: LineString (road segments) ---
+    // --- LOẠI 2: LineString (road segments — follows actual road via GraphHopper) ---
     {
       "type": "Feature",
       "geometry": {
         "type": "LineString",
         "coordinates": [
           [106.7123, 10.8456],
+          [106.7130, 10.8460],
+          [106.7145, 10.8470],
+          [106.7200, 10.8510],
           [106.7234, 10.8567]
         ]
       },
@@ -192,3 +195,5 @@ async function refreshFloodMap() {
 3. **Filter geometry type**: dùng `['==', ['geometry-type'], 'LineString']` và `['==', ['geometry-type'], 'Point']` để tách 2 loại feature từ cùng 1 source.
 
 4. **Mapbox GL JS version**: `line-gradient` với `['get', 'startColor']` yêu cầu **v2.6+**. Với version cũ hơn, dùng hardcoded color thay vì `['get', 'startColor']`.
+
+5. **Road geometry**: LineString coordinates giờ có **nhiều điểm trung gian** (từ GraphHopper routing engine), line sẽ bám theo đường thực tế trên bản đồ thay vì đường thẳng. Nếu GraphHopper không khả dụng, fallback về đường thẳng 2 điểm. FE không cần xử lý gì thêm — Mapbox tự render multi-point LineString.
