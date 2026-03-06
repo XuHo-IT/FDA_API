@@ -43,6 +43,9 @@ namespace FDAAPI.Domain.RelationalDb.RealationalDB
         public DbSet<PricingPlan> PricingPlans { get; set; }
         public DbSet<UserSubscription> UserSubscriptions { get; set; }
         public DbSet<PredictionLog> PredictionLogs { get; set; } = null!;
+        public DbSet<AlertTemplate> AlertTemplates { get; set; } = null!;
+        public DbSet<SensorIncident> SensorIncidents { get; set; } = null!;
+        public DbSet<StationComponent> StationComponents { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

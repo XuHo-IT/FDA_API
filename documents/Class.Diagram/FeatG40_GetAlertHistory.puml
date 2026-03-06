@@ -1,0 +1,353 @@
+@startuml FeatG40_GetAlertHistory_ClassDiagram
+!define RECTANGLE class
+
+skinparam backgroundColor #FEFEFE
+skinparam classBackgroundColor #FFFFFF
+skinparam classBorderColor #000000
+skinparam packageBackgroundColor #E8E8E8
+skinparam packageBorderColor #666666
+skinparam stereotypeCBackgroundColor #ADD1B2
+skinparam arrowColor #333333
+
+title FeatG40 - Get Alert History - Class Diagram\n(Domain-Centric Architecture + CQRS Pattern)
+
+' ============================================
+' PRESENTATION LAYER
+' ============================================
+package "PRESENTATION LAYER" #E1D5E7 {
+
+  class GetAlertHistoryEndpoint <<Endpoint>> {
+    - _mediator: IMediator
+    --
+    + Configure(): void
+    + HandleAsync(req: GetAlertHistoryRequestDto, ct): Task
+  }
+
+  class GetAlertHistoryRequestDto <<DTO>> {
+    + StartDate: DateTime?
+    + EndDate: DateTime?
+    + Severity: string?
+    + Status: string?
+    + PageNumber: int
+    + PageSize: int
+  }
+
+  class GetAlertHistoryResponseDto <<DTO>> {
+    + Success: bool
+    + Message: string
+    + Alerts: List<AlertHistoryDto>
+    + TotalCount: int
+    + PageNumber: int
+    + PageSize: int
+    + TotalPages: int
+  }
+
+  class AlertHistoryDto_pres <<DTO>> {
+    + AlertId: Guid
+    + StationId: Guid
+    + StationName: string
+    + StationCode: string
+    + Severity: string
+    + Priority: NotificationPriority
+    + WaterLevel: decimal
+    + Message: string
+    + TriggeredAt: DateTime
+    + ResolvedAt: DateTime?
+    + Status: string
+    + Notifications: List<NotificationDetailDto_pres>
+  }
+
+  class NotificationDetailDto_pres <<DTO>> {
+    + NotificationId: Guid
+    + Channel: NotificationChannel
+    + Priority: NotificationPriority
+    + Status: string
+    + SentAt: DateTime?
+    + DeliveredAt: DateTime?
+    + ErrorMessage: string?
+    + Title: string?
+  }
+
+  GetAlertHistoryEndpoint --> GetAlertHistoryRequestDto : uses
+  GetAlertHistoryEndpoint --> GetAlertHistoryResponseDto : returns
+  GetAlertHistoryResponseDto *-- AlertHistoryDto_pres : contains
+  AlertHistoryDto_pres *-- NotificationDetailDto_pres : contains
+}
+
+' ============================================
+' APPLICATION LAYER
+' ============================================
+package "APPLICATION LAYER" #D5E8D4 {
+
+  class GetAlertHistoryRequest <<Record>> {
+    + UserId: Guid
+    + StartDate: DateTime?
+    + EndDate: DateTime?
+    + Severity: string?
+    + Status: string?
+    + PageNumber: int
+    + PageSize: int
+  }
+
+  class GetAlertHistoryResponse <<Response>> {
+    + Success: bool
+    + Message: string
+    + Alerts: List<AlertHistoryDto>
+    + TotalCount: int
+    + PageNumber: int
+    + PageSize: int
+    + TotalPages: int
+  }
+
+  class AlertHistoryDto <<DTO>> {
+    + AlertId: Guid
+    + StationId: Guid
+    + StationName: string
+    + StationCode: string
+    + Severity: string
+    + Priority: NotificationPriority
+    + WaterLevel: decimal
+    + Message: string
+    + TriggeredAt: DateTime
+    + ResolvedAt: DateTime?
+    + Status: string
+    + Notifications: List<NotificationDetailDto>
+  }
+
+  class NotificationDetailDto <<DTO>> {
+    + NotificationId: Guid
+    + Channel: NotificationChannel
+    + Priority: NotificationPriority
+    + Status: string
+    + SentAt: DateTime?
+    + DeliveredAt: DateTime?
+    + ErrorMessage: string?
+    + Title: string?
+  }
+
+  class GetAlertHistoryHandler <<Handler>> {
+    - _dbContext: AppDbContext
+    - _notificationLog_repo: INotificationLogRepository
+    --
+    + Handle(request, ct): Task<GetAlertHistoryResponse>
+  }
+
+  interface "IRequestHandler<GetAlertHistoryRequest, GetAlertHistoryResponse>" as IRequestHandler_G40
+  GetAlertHistoryHandler ..|> IRequestHandler_G40 : implements
+
+  GetAlertHistoryHandler --> GetAlertHistoryRequest : handles
+  GetAlertHistoryHandler --> GetAlertHistoryResponse : returns
+  GetAlertHistoryResponse *-- AlertHistoryDto : contains
+  AlertHistoryDto *-- NotificationDetailDto : contains
+}
+
+' ============================================
+' DOMAIN LAYER - ENTITIES
+' ============================================
+package "DOMAIN LAYER - Entities" #F8CECC {
+
+  class Alert <<Entity>> {
+    + Id: Guid
+    + AlertRuleId: Guid?
+    + StationId: Guid
+    + TriggeredAt: DateTime
+    + ResolvedAt: DateTime?
+    + Status: string
+    + Severity: string
+    + Priority: NotificationPriority
+    + CurrentValue: decimal
+    + Message: string
+    + NotificationSent: bool
+    + NotificationCount: int
+    + LastNotificationAt: DateTime?
+    + CreatedBy: Guid
+    + CreatedAt: DateTime
+    + UpdatedBy: Guid
+    + UpdatedAt: DateTime
+    --
+    + AlertRule: AlertRule?
+    + Station: Station?
+    + NotificationLogs: ICollection<NotificationLog>?
+  }
+
+  class NotificationLog <<Entity>> {
+    + Id: Guid
+    + UserId: Guid
+    + AlertId: Guid
+    + Channel: NotificationChannel
+    + Destination: string
+    + Content: string
+    + Title: string?
+    + Priority: NotificationPriority
+    + RetryCount: int
+    + MaxRetries: int
+    + Status: string
+    + SentAt: DateTime?
+    + DeliveredAt: DateTime?
+    + ErrorMessage: string?
+    + CreatedBy: Guid
+    + CreatedAt: DateTime
+    + UpdatedBy: Guid
+    + UpdatedAt: DateTime
+    --
+    + User: User?
+    + Alert: Alert?
+  }
+
+  class Station <<Entity>> {
+    + Id: Guid
+    + Code: string
+    + Type: string
+    + Name: string
+    + LocationDesc: string
+    + Latitude: decimal?
+    + Longitude: decimal?
+    + Status: string
+    + CreatedAt: DateTime
+    + UpdatedAt: DateTime
+  }
+
+  class User <<Entity>> {
+    + Id: Guid
+    + Email: string
+    + PhoneNumber: string?
+    + FullName: string?
+    + CreatedAt: DateTime
+    + UpdatedAt: DateTime
+  }
+
+  ' Entity Relationships
+  Alert "1" *-- "many" NotificationLog : has
+  Station "1" *-- "many" Alert : has
+  User "1" *-- "many" NotificationLog : receives
+}
+
+' ============================================
+' DOMAIN LAYER - REPOSITORY INTERFACES
+' ============================================
+package "DOMAIN LAYER - Repositories" #FFE6CC {
+
+  interface INotificationLogRepository {
+    + CreateAsync(entity, ct): Task<Guid>
+    + UpdateAsync(entity, ct): Task<bool>
+    + GetPendingNotificationsAsync(maxRetries, ct): Task<IEnumerable<NotificationLog>>
+    + GetByUserIdAsync(userId, skip, take, ct): Task<IEnumerable<NotificationLog>>
+    + IsUserNotifiedAsync(userId, alertId, ct): Task<bool>
+    + GetPendingAndRetryNotificationsAsync(limit, ct): Task<List<NotificationLog>>
+  }
+
+  interface IAlertRepository {
+    + GetByIdAsync(id, ct): Task<Alert?>
+    + GetActiveAlertsByStationAsync(stationId, ct): Task<IEnumerable<Alert>>
+    + GetUnnotifiedAlertsAsync(take, ct): Task<IEnumerable<Alert>>
+  }
+
+  interface IStationRepository {
+    + GetByIdAsync(id, ct): Task<Station?>
+  }
+
+  INotificationLogRepository ..> NotificationLog : manages
+  IAlertRepository ..> Alert : manages
+  IStationRepository ..> Station : manages
+}
+
+' ============================================
+' COMMON SERVICES
+' ============================================
+package "COMMON SERVICES" #E1D5E7 {
+
+  interface IMediator {
+    + Send<TResponse>(request, ct): Task<TResponse>
+  }
+}
+
+' ============================================
+' RELATIONSHIPS
+' ============================================
+
+' Presentation -> Application
+GetAlertHistoryEndpoint ..> IMediator : uses
+GetAlertHistoryEndpoint ..> GetAlertHistoryRequest : sends
+
+' Application Handler uses Repositories
+GetAlertHistoryHandler ..> INotificationLogRepository : uses
+
+' Handler accesses entities via DbContext
+GetAlertHistoryHandler ..> Alert : reads
+GetAlertHistoryHandler ..> Station : reads
+GetAlertHistoryHandler ..> NotificationLog : reads
+
+' ============================================
+' NOTES
+' ============================================
+note top of GetAlertHistoryHandler
+  **GET ALERT HISTORY FLOW**
+
+  1. Get authenticated user ID from JWT claims
+  2. Build query: Get NotificationLogs for user
+  3. Filter by:
+     - StartDate / EndDate
+     - Severity (info, caution, warning, critical)
+     - Status (sent, delivered, failed)
+  4. Get total count (distinct alerts)
+  5. Get paginated AlertIds (latest first)
+  6. Get all notifications for these alerts
+  7. Group by AlertId and build DTOs
+  8. Return paginated response with alert details
+
+  **API Endpoint:**
+  GET /api/v1/alerts/history?PageNumber=1&PageSize=20
+end note
+
+note bottom of AlertHistoryDto
+  **Alert Status Values:**
+  - open: Active alert
+  - resolved: Alert resolved
+
+  **Severity Levels:**
+  - info: Information only
+  - caution: Caution level (10-20cm)
+  - warning: Warning level (20-40cm)
+  - critical: Critical level (40+cm)
+
+  **Notification Status:**
+  - pending: Waiting to send
+  - sent: Successfully sent
+  - delivered: Delivered to device
+  - failed: Failed to send
+end note
+
+note right of NotificationLog
+  **Notification Channels:**
+  - Push: FCM push notification
+  - Email: Email notification
+  - SMS: SMS notification
+  - InApp: In-app notification
+
+  **Priority Levels:**
+  - Low: Normal priority
+  - Medium: Medium priority
+  - High: High priority
+  - Critical: Critical priority
+end note
+
+' ============================================
+' LEGEND
+' ============================================
+legend bottom left
+  **LEGEND**
+
+  **Colors:**
+  🟣 Presentation Layer (FastEndpoints)
+  🟢 Application Layer (CQRS Handlers)
+  🔴 Domain Entities
+  🟠 Repository Interfaces
+  🟣 Common Services
+
+  **Relationships:**
+  ---> Dependency
+  ...> Uses/Implements
+  *--- Composition (1 to many)
+endlegend
+
+@enduml

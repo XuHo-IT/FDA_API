@@ -98,6 +98,18 @@ using System.Text;
 using FDAAPI.App.FeatG74_RequestSafeRoute;
 using FDAAPI.Infra.Services.Routing;
 using FDAAPI.App.FeatG5_AuthResetPassword;
+using FDAAPI.App.FeatG99_AlertTemplateList;
+using FDAAPI.App.FeatG100_AlertTemplateCreate;
+using FDAAPI.App.FeatG101_AlertTemplateUpdate;
+using FDAAPI.App.FeatG102_AlertTemplateDelete;
+using FDAAPI.App.FeatG103_AlertTemplateGet;
+using FDAAPI.App.FeatG104_AlertTemplatePreview;
+using FDAAPI.App.FeatG105_StationComponentCreate;
+using FDAAPI.App.FeatG106_StationComponentUpdate;
+using FDAAPI.App.FeatG107_StationComponentDelete;
+using FDAAPI.App.FeatG108_StationComponentList;
+using FDAAPI.App.FeatG109_StationComponentGet;
+using FDAAPI.App.FeatG130_IncidentManagement;
 
 namespace FDAAPI.Infra.Configuration
 {
@@ -283,7 +295,18 @@ namespace FDAAPI.Infra.Configuration
                 typeof(CreateSafeRouteRequest).Assembly,
                 typeof(FDAAPI.App.FeatG76_LogPrediction.LogPredictionRequest).Assembly,
                 typeof(FDAAPI.App.FeatG77_GetPredictionComparisons.GetPredictionComparisonsRequest).Assembly,
-                typeof(FDAAPI.App.FeatG78_GetPredictionAccuracyStats.GetPredictionAccuracyStatsRequest).Assembly
+                typeof(FDAAPI.App.FeatG78_GetPredictionAccuracyStats.GetPredictionAccuracyStatsRequest).Assembly,
+                typeof(CreateAlertTemplateRequest).Assembly,
+                typeof(UpdateAlertTemplateRequest).Assembly,
+                typeof(DeleteAlertTemplateRequest).Assembly,
+                typeof(GetAlertTemplateByIdRequest).Assembly,
+                typeof(PreviewAlertTemplateRequest).Assembly,
+                typeof(CreateStationComponentRequest).Assembly,
+                typeof(UpdateStationComponentRequest).Assembly,
+                typeof(DeleteStationComponentRequest).Assembly,
+                typeof(GetStationComponentsRequest).Assembly,
+                typeof(GetStationComponentByIdRequest).Assembly,
+                typeof(CreateIncidentRequest).Assembly
             };
 
             // Register MediatR with all feature assemblies and ValidationBehavior
@@ -326,6 +349,9 @@ namespace FDAAPI.Infra.Configuration
 
             services.AddScoped<IAlertRepository, PgsqlAlertRepository>();
             services.AddScoped<IAlertRuleRepository, PgsqlAlertRuleRepository>();
+            services.AddScoped<IAlertTemplateRepository, PgsqlAlertTemplateRepository>();
+            services.AddScoped<ISensorIncidentRepository, PgsqlSensorIncidentRepository>();
+            services.AddScoped<IStationComponentRepository, PgsqlStationComponentRepository>();
             services.AddScoped<INotificationLogRepository, PgsqlNotificationLogRepository>();
             services.AddScoped<IUserAlertSubscriptionRepository, PgsqlUserAlertSubscriptionRepository>();
             services.AddScoped<IPriorityRoutingService, PriorityRoutingService>();
