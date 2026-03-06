@@ -19,17 +19,26 @@ namespace FDAAPI.App.Common.DTOs
     public class GeoJsonFeature
     {
         public string Type { get; set; } = "Feature";
-        public GeoJsonGeometry Geometry { get; set; } = new();
+        public object Geometry { get; set; } = new GeoJsonGeometry();
         public object? Properties { get; set; }
     }
 
     /// <summary>
-    /// GeoJSON Geometry DTO
+    /// GeoJSON Point Geometry DTO
     /// </summary>
     public class GeoJsonGeometry
     {
         public string Type { get; set; } = "Point";
         public decimal[] Coordinates { get; set; } = Array.Empty<decimal>();
+    }
+
+    /// <summary>
+    /// GeoJSON LineString Geometry DTO — for road segment gradient features
+    /// </summary>
+    public class LineStringGeometry
+    {
+        public string Type { get; set; } = "LineString";
+        public decimal[][] Coordinates { get; set; } = Array.Empty<decimal[]>();
     }
 
     /// <summary>

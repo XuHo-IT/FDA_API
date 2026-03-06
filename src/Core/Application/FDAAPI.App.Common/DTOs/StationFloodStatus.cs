@@ -27,5 +27,9 @@ namespace FDAAPI.App.Common.DTOs
         // Station status
         public string StationStatus { get; set; } = string.Empty;
         public DateTimeOffset? LastSeenAt { get; set; }
+
+        // Coordinates (for road segment generation)
+        public decimal? Latitude { get; set; }
+        public decimal? Longitude { get; set; }
     }
 }

@@ -87,7 +87,9 @@ namespace FDAAPI.App.FeatG31_GetMapCurrentStatus
                         Severity = severity,
                         SeverityLevel = level,
                         StationStatus = station.Status ?? "unknown",
-                        LastSeenAt = station.LastSeenAt
+                        LastSeenAt = station.LastSeenAt,
+                        Latitude = station.Latitude,
+                        Longitude = station.Longitude
                     };
                 }).ToList();
 
@@ -138,6 +140,51 @@ namespace FDAAPI.App.FeatG31_GetMapCurrentStatus
                     })
                     .ToList();
 
+                // 5. Build road segment LineString features
+                var roadSegmentFeatures = new List<GeoJsonFeature>();
+                var stationsWithCoords = stationStatuses
+                    .Where(s => s.Latitude.HasValue && s.Longitude.HasValue && !string.IsNullOrEmpty(s.RoadName))
+                    .GroupBy(s => s.RoadName);
+
+                foreach (var road in stationsWithCoords)
+                {
+                    var stationList = road.ToList();
+                    if (stationList.Count < 2) continue;
+
+                    var ordered = OrderStationsByProximity(stationList);
+
+                    for (int i = 0; i < ordered.Count - 1; i++)
+                    {
+                        var stA = ordered[i];
+                        var stB = ordered[i + 1];
+
+                        roadSegmentFeatures.Add(new GeoJsonFeature
+                        {
+                            Type = "Feature",
+                            Geometry = new LineStringGeometry
+                            {
+                                Coordinates = new[]
+                                {
+                                    new[] { stA.Longitude!.Value, stA.Latitude!.Value },
+                                    new[] { stB.Longitude!.Value, stB.Latitude!.Value }
+                                }
+                            },
+                            Properties = new
+                            {
+                                roadName = stA.RoadName,
+                                startStationId = stA.StationId,
+                                endStationId = stB.StationId,
+                                startSeverityLevel = stA.SeverityLevel,
+                                endSeverityLevel = stB.SeverityLevel,
+                                startColor = GetMarkerColor(stA.SeverityLevel),
+                                endColor = GetMarkerColor(stB.SeverityLevel)
+                            }
+                        });
+                    }
+                }
+
+                var allFeatures = features.Concat(roadSegmentFeatures).ToList();
+
                 return new GetMapCurrentStatusResponse
                 {
                     Success = true,
@@ -146,10 +193,11 @@ namespace FDAAPI.App.FeatG31_GetMapCurrentStatus
                     Data = new GeoJsonFeatureCollection
                     {
                         Type = "FeatureCollection",
-                        Features = features,
+                        Features = allFeatures,
                         Metadata = new
                         {
                             totalStations = features.Count,
+                            roadSegments = roadSegmentFeatures.Count,
                             stationsWithData = features.Count(f => ((dynamic)f.Properties!).waterLevel != null),
                             stationsNoData = features.Count(f => ((dynamic)f.Properties!).waterLevel == null),
                             generatedAt = DateTime.UtcNow,
@@ -225,6 +273,29 @@ namespace FDAAPI.App.FeatG31_GetMapCurrentStatus
                 0 => "SAFE",
                 _ => "NO DATA"
             };
+        }
+
+        /// <summary>
+        /// Order stations along a road using nearest-neighbor chain starting from the westernmost station.
+        /// </summary>
+        private List<StationFloodStatus> OrderStationsByProximity(List<StationFloodStatus> stations)
+        {
+            var remaining = stations.ToList();
+            var ordered = new List<StationFloodStatus>();
+            var current = remaining.MinBy(s => s.Longitude);
+            remaining.Remove(current!);
+            ordered.Add(current!);
+
+            while (remaining.Count > 0)
+            {
+                var next = remaining.MinBy(s =>
+                    Math.Pow((double)(s.Latitude! - current!.Latitude!), 2) +
+                    Math.Pow((double)(s.Longitude! - current!.Longitude!), 2));
+                remaining.Remove(next!);
+                ordered.Add(next!);
+                current = next;
+            }
+            return ordered;
         }
     }
 }
