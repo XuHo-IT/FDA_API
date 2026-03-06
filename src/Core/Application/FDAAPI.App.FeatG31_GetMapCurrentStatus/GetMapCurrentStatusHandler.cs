@@ -1,10 +1,11 @@
 ﻿using FDAAPI.App.Common.DTOs;
 using FDAAPI.App.Common.Models.Map;
+using FDAAPI.App.Common.Models.Routing;
+using FDAAPI.App.Common.Services;
 using FDAAPI.Domain.RelationalDb.RealationalDB;
 using FDAAPI.Domain.RelationalDb.Repositories;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace FDAAPI.App.FeatG31_GetMapCurrentStatus
 {
@@ -12,13 +13,16 @@ namespace FDAAPI.App.FeatG31_GetMapCurrentStatus
     {
         private readonly IStationRepository _stationRepository;
         private readonly AppDbContext _dbContext;
+        private readonly IGraphHopperService _graphHopperService;
 
         public GetMapCurrentStatusHandler(
             IStationRepository stationRepository,
-            AppDbContext dbContext)
+            AppDbContext dbContext,
+            IGraphHopperService graphHopperService)
         {
             _stationRepository = stationRepository;
             _dbContext = dbContext;
+            _graphHopperService = graphHopperService;
         }
 
         public async Task<GetMapCurrentStatusResponse> Handle(
@@ -140,48 +144,71 @@ namespace FDAAPI.App.FeatG31_GetMapCurrentStatus
                     })
                     .ToList();
 
-                // 5. Build road segment LineString features
+                // 5. Build road segment LineString features using GraphHopper road geometry
                 var roadSegmentFeatures = new List<GeoJsonFeature>();
                 var stationsWithCoords = stationStatuses
                     .Where(s => s.Latitude.HasValue && s.Longitude.HasValue && !string.IsNullOrEmpty(s.RoadName))
                     .GroupBy(s => s.RoadName);
 
+                // Collect all station pairs
+                var stationPairs = new List<(StationFloodStatus stA, StationFloodStatus stB)>();
                 foreach (var road in stationsWithCoords)
                 {
                     var stationList = road.ToList();
                     if (stationList.Count < 2) continue;
-
                     var ordered = OrderStationsByProximity(stationList);
-
                     for (int i = 0; i < ordered.Count - 1; i++)
-                    {
-                        var stA = ordered[i];
-                        var stB = ordered[i + 1];
-
-                        roadSegmentFeatures.Add(new GeoJsonFeature
-                        {
-                            Type = "Feature",
-                            Geometry = new LineStringGeometry
-                            {
-                                Coordinates = new[]
-                                {
-                                    new[] { stA.Longitude!.Value, stA.Latitude!.Value },
-                                    new[] { stB.Longitude!.Value, stB.Latitude!.Value }
-                                }
-                            },
-                            Properties = new
-                            {
-                                roadName = stA.RoadName,
-                                startStationId = stA.StationId,
-                                endStationId = stB.StationId,
-                                startSeverityLevel = stA.SeverityLevel,
-                                endSeverityLevel = stB.SeverityLevel,
-                                startColor = GetMarkerColor(stA.SeverityLevel),
-                                endColor = GetMarkerColor(stB.SeverityLevel)
-                            }
-                        });
-                    }
+                        stationPairs.Add((ordered[i], ordered[i + 1]));
                 }
+
+                // Call GraphHopper in parallel for all pairs
+                var routeTasks = stationPairs.Select(async pair =>
+                {
+                    var (stA, stB) = pair;
+                    decimal[][] routeCoords;
+                    try
+                    {
+                        var routeResponse = await _graphHopperService.GetRouteAsync(new GraphHopperRouteRequest
+                        {
+                            Points = new[]
+                            {
+                                new[] { stA.Longitude!.Value, stA.Latitude!.Value },
+                                new[] { stB.Longitude!.Value, stB.Latitude!.Value }
+                            },
+                            Profile = "car",
+                            Instructions = false
+                        }, ct);
+
+                        var path = routeResponse.Paths.FirstOrDefault();
+                        routeCoords = path?.Points.Coordinates.Length >= 2
+                            ? path.Points.Coordinates
+                                .Select(c => new[] { (decimal)c[0], (decimal)c[1] })
+                                .ToArray()
+                            : FallbackCoords(stA, stB);
+                    }
+                    catch
+                    {
+                        routeCoords = FallbackCoords(stA, stB);
+                    }
+
+                    return new GeoJsonFeature
+                    {
+                        Type = "Feature",
+                        Geometry = new GeoJsonLineStringGeometry { Coordinates = routeCoords },
+                        Properties = new
+                        {
+                            roadName = stA.RoadName,
+                            startStationId = stA.StationId,
+                            endStationId = stB.StationId,
+                            startSeverityLevel = stA.SeverityLevel,
+                            endSeverityLevel = stB.SeverityLevel,
+                            startColor = GetMarkerColor(stA.SeverityLevel),
+                            endColor = GetMarkerColor(stB.SeverityLevel)
+                        }
+                    };
+                });
+
+                roadSegmentFeatures.AddRange(await Task.WhenAll(routeTasks));
 
                 var allFeatures = features.Concat(roadSegmentFeatures).ToList();
 
@@ -272,6 +299,15 @@ namespace FDAAPI.App.FeatG31_GetMapCurrentStatus
                 1 => "CAUTION",
                 0 => "SAFE",
                 _ => "NO DATA"
+            };
+        }
+
+        private static decimal[][] FallbackCoords(StationFloodStatus stA, StationFloodStatus stB)
+        {
+            return new[]
+            {
+                new[] { stA.Longitude!.Value, stA.Latitude!.Value },
+                new[] { stB.Longitude!.Value, stB.Latitude!.Value }
             };
         }
 
