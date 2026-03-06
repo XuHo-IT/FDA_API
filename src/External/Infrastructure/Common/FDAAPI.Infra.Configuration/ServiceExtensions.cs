@@ -119,7 +119,6 @@ using FDAAPI.App.FeatG106_StationComponentUpdate;
 using FDAAPI.App.FeatG107_StationComponentDelete;
 using FDAAPI.App.FeatG108_StationComponentList;
 using FDAAPI.App.FeatG109_StationComponentGet;
-using FDAAPI.App.FeatG130_IncidentManagement;
 
 namespace FDAAPI.Infra.Configuration
 {
@@ -313,7 +312,7 @@ namespace FDAAPI.Infra.Configuration
                 typeof(GetFloodReportRequest).Assembly,
                 typeof(UpdateFloodReportRequest).Assembly,
                 typeof(DeleteFloodReportRequest).Assembly,
-                typeof(GetNearbyFloodReportsRequest).Assembly
+                typeof(GetNearbyFloodReportsRequest).Assembly,
                 typeof(FDAAPI.App.FeatG76_LogPrediction.LogPredictionRequest).Assembly,
                 typeof(FDAAPI.App.FeatG77_GetPredictionComparisons.GetPredictionComparisonsRequest).Assembly,
                 typeof(FDAAPI.App.FeatG78_GetPredictionAccuracyStats.GetPredictionAccuracyStatsRequest).Assembly,
@@ -327,7 +326,6 @@ namespace FDAAPI.Infra.Configuration
                 typeof(DeleteStationComponentRequest).Assembly,
                 typeof(GetStationComponentsRequest).Assembly,
                 typeof(GetStationComponentByIdRequest).Assembly,
-                typeof(CreateIncidentRequest).Assembly
             };
 
             // Register MediatR with all feature assemblies and ValidationBehavior

@@ -117,7 +117,6 @@
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG107_StationComponentDelete\FDAAPI.App.FeatG107_StationComponentDelete.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG108_StationComponentList\FDAAPI.App.FeatG108_StationComponentList.csproj" />
     <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG109_StationComponentGet\FDAAPI.App.FeatG109_StationComponentGet.csproj" />
-    <ProjectReference Include="..\..\..\Core\Application\FDAAPI.App.FeatG130_IncidentManagement\FDAAPI.App.FeatG130_IncidentManagement.csproj" />
   </ItemGroup>
 
 </Project>
